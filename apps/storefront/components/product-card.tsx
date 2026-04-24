@@ -1,6 +1,7 @@
 import type { CommerceProduct } from "@mrmf/shared";
 import Image from "next/image";
 import Link from "next/link";
+import { AddToCartButton } from "./add-to-cart-button";
 
 export function ProductCard({ product }: { product: CommerceProduct }) {
   const price =
@@ -25,12 +26,19 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
           {price}
         </p>
         <p className="mt-3 flex-1 text-sm leading-7">{product.shortDescription}</p>
-        <Link
-          href={`/shop/${product.slug}`}
-          className="mt-5 inline-flex justify-center bg-brand-mahogany px-4 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
-        >
-          View details
-        </Link>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <Link
+            href={`/shop/${product.slug}`}
+            className="inline-flex justify-center border border-brand-mahogany px-4 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] transition hover:bg-brand-mahogany hover:text-brand-ivory"
+          >
+            Details
+          </Link>
+          <AddToCartButton
+            productSlug={product.slug}
+            productName={product.name}
+            className="inline-flex items-center justify-center gap-2 bg-brand-mahogany px-4 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+          />
+        </div>
       </div>
     </article>
   );

@@ -7,6 +7,7 @@
     "./brand": "./src/brand.ts",
     "./business-rules": "./src/business-rules.ts",
     "./cart": "./src/cart.ts",
+    "./checkout": "./src/checkout.ts",
     "./commerce": "./src/commerce.ts",
     "./forms": "./src/forms.ts",
     "./pickup": "./src/pickup.ts",

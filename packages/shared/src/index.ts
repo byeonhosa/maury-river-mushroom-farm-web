@@ -1,6 +1,7 @@
 export * from "./brand";
 export * from "./business-rules";
 export * from "./cart";
+export * from "./checkout";
 export * from "./commerce";
 export * from "./forms";
 export * from "./pickup";

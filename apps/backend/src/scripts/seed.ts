@@ -1,13 +1,20 @@
 import type { ExecArgs } from "@medusajs/framework/types";
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
+  batchLinksWorkflow,
   createCollectionsWorkflow,
   createApiKeysWorkflow,
+  createLocationFulfillmentSetWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
+  createRegionsWorkflow,
   createSalesChannelsWorkflow,
+  createServiceZonesWorkflow,
+  createShippingOptionsWorkflow,
   createShippingProfilesWorkflow,
+  createStockLocationsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
+  linkSalesChannelsToStockLocationWorkflow,
   updateProductsWorkflow
 } from "@medusajs/medusa/core-flows";
 import type { ProductCategory } from "@mrmf/shared";
@@ -17,7 +24,12 @@ import {
   buildSeedPlan,
   medusaSeedCategories,
   medusaSeedCollections,
-  medusaSeedShippingProfiles
+  medusaSeedFulfillmentSets,
+  medusaSeedRegion,
+  medusaSeedServiceZones,
+  medusaSeedShippingProfiles,
+  medusaSeedShippingOptions,
+  medusaSeedStockLocations
 } from "./medusa-seed-data";
 
 interface QueryGraph {
@@ -44,6 +56,28 @@ interface ShippingProfileRecord extends EntityRecord {
   type: string;
 }
 
+interface RegionRecord extends EntityRecord {
+  name: string;
+  currency_code: string;
+}
+
+interface StockLocationRecord extends EntityRecord {
+  name: string;
+}
+
+interface FulfillmentSetRecord extends EntityRecord {
+  name: string;
+  type: string;
+}
+
+interface ServiceZoneRecord extends EntityRecord {
+  name: string;
+}
+
+interface ShippingOptionRecord extends EntityRecord {
+  name: string;
+}
+
 interface SalesChannelRecord extends EntityRecord {
   name: string;
 }
@@ -62,6 +96,8 @@ const seedSalesChannelName =
   process.env.MEDUSA_SEED_SALES_CHANNEL_NAME ?? "Maury River Storefront";
 const seedPublishableKeyTitle =
   process.env.MEDUSA_SEED_PUBLISHABLE_KEY_TITLE ?? "Maury River Storefront Publishable Key";
+const seedFulfillmentProviderId =
+  process.env.MEDUSA_SEED_FULFILLMENT_PROVIDER_ID ?? "manual_manual";
 
 function categoryMap(records: CategoryRecord[]): Record<ProductCategory, string | undefined> {
   const byHandle = new Map(records.map((record) => [record.handle, record.id]));
@@ -217,6 +253,37 @@ async function ensureShippingProfiles(query: QueryGraph, container: ExecArgs["co
   return existing;
 }
 
+async function ensureRegion(query: QueryGraph, container: ExecArgs["container"]) {
+  const existing = await queryRecords<RegionRecord>(query, "region", ["id", "name", "currency_code"], {
+    name: medusaSeedRegion.name
+  });
+
+  assertUniqueSeedRecords(existing, (region) => region.name, "region");
+
+  if (existing[0]) {
+    return existing[0];
+  }
+
+  const { result } = await createRegionsWorkflow(container).run({
+    input: {
+      regions: [
+        {
+          name: medusaSeedRegion.name,
+          currency_code: medusaSeedRegion.currencyCode,
+          countries: medusaSeedRegion.countries,
+          automatic_taxes: false,
+          metadata: {
+            mrmf_seed_key: medusaSeedRegion.key,
+            description: medusaSeedRegion.description
+          }
+        }
+      ]
+    }
+  });
+
+  return result[0] as RegionRecord;
+}
+
 async function ensureSalesChannel(query: QueryGraph, container: ExecArgs["container"]) {
   const existing = await queryRecords<SalesChannelRecord>(
     query,
@@ -243,6 +310,300 @@ async function ensureSalesChannel(query: QueryGraph, container: ExecArgs["contai
   });
 
   return result[0];
+}
+
+function isDuplicateLinkError(error: unknown) {
+  return error instanceof Error && /duplicate|already exists|violates unique/i.test(error.message);
+}
+
+async function ensureStockLocations({
+  query,
+  container,
+  salesChannel
+}: {
+  query: QueryGraph;
+  container: ExecArgs["container"];
+  salesChannel: SalesChannelRecord;
+}) {
+  const names = medusaSeedStockLocations.map((location) => location.name);
+  const existing = await queryRecords<StockLocationRecord>(
+    query,
+    "stock_location",
+    ["id", "name"],
+    {
+      name: names
+    }
+  );
+  assertUniqueSeedRecords(existing, (location) => location.name, "stock location");
+  const existingNames = new Set(existing.map((location) => location.name));
+  const missing = medusaSeedStockLocations.filter(
+    (location) => !existingNames.has(location.name)
+  );
+
+  const created =
+    missing.length > 0
+      ? (
+          await createStockLocationsWorkflow(container).run({
+            input: {
+              locations: missing.map((location) => ({
+                name: location.name,
+                address: location.address,
+                metadata: {
+                  mrmf_seed_key: location.key,
+                  description: location.description
+                }
+              }))
+            }
+          })
+        ).result.map((location) => ({ id: location.id, name: location.name }))
+      : [];
+  const stockLocations = [...existing, ...created];
+
+  for (const location of stockLocations) {
+    await linkSalesChannelsToStockLocationWorkflow(container).run({
+      input: {
+        id: location.id,
+        add: [salesChannel.id],
+        remove: []
+      }
+    });
+
+    try {
+      await batchLinksWorkflow(container).run({
+        input: {
+          create: [
+            {
+              [Modules.STOCK_LOCATION]: { stock_location_id: location.id },
+              [Modules.FULFILLMENT]: { fulfillment_provider_id: seedFulfillmentProviderId }
+            }
+          ],
+          delete: []
+        }
+      });
+    } catch (error) {
+      if (!isDuplicateLinkError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  return stockLocations;
+}
+
+async function ensureFulfillmentSets({
+  query,
+  container,
+  stockLocations
+}: {
+  query: QueryGraph;
+  container: ExecArgs["container"];
+  stockLocations: StockLocationRecord[];
+}) {
+  const names = medusaSeedFulfillmentSets.map((set) => set.name);
+  const existing = await queryRecords<FulfillmentSetRecord>(
+    query,
+    "fulfillment_set",
+    ["id", "name", "type"],
+    {
+      name: names
+    }
+  );
+  assertUniqueSeedRecords(existing, (set) => set.name, "fulfillment set");
+  const existingNames = new Set(existing.map((set) => set.name));
+  const created: FulfillmentSetRecord[] = [];
+
+  for (const fulfillmentSet of medusaSeedFulfillmentSets.filter(
+    (set) => !existingNames.has(set.name)
+  )) {
+    const stockLocationSeed = medusaSeedStockLocations.find(
+      (location) => location.key === fulfillmentSet.stockLocationKey
+    );
+    const stockLocation = stockLocations.find(
+      (location) => location.name === stockLocationSeed?.name
+    );
+
+    if (!stockLocation) {
+      throw new Error(`Missing stock location for fulfillment set ${fulfillmentSet.name}.`);
+    }
+
+    await createLocationFulfillmentSetWorkflow(container).run({
+      input: {
+        location_id: stockLocation.id,
+        fulfillment_set_data: {
+          name: fulfillmentSet.name,
+          type: fulfillmentSet.type
+        }
+      }
+    });
+
+    const newRecord = await queryRecords<FulfillmentSetRecord>(
+      query,
+      "fulfillment_set",
+      ["id", "name", "type"],
+      {
+        name: fulfillmentSet.name
+      }
+    );
+
+    if (!newRecord[0]) {
+      throw new Error(`Failed to create fulfillment set ${fulfillmentSet.name}.`);
+    }
+
+    created.push(newRecord[0]);
+  }
+
+  return [...existing, ...created];
+}
+
+async function ensureServiceZones({
+  query,
+  container,
+  fulfillmentSets
+}: {
+  query: QueryGraph;
+  container: ExecArgs["container"];
+  fulfillmentSets: FulfillmentSetRecord[];
+}) {
+  const names = medusaSeedServiceZones.map((zone) => zone.name);
+  const existing = await queryRecords<ServiceZoneRecord>(
+    query,
+    "service_zone",
+    ["id", "name"],
+    {
+      name: names
+    }
+  );
+  assertUniqueSeedRecords(existing, (zone) => zone.name, "service zone");
+  const existingNames = new Set(existing.map((zone) => zone.name));
+  const missing = medusaSeedServiceZones.filter((zone) => !existingNames.has(zone.name));
+
+  if (missing.length > 0) {
+    const { result } = await createServiceZonesWorkflow(container).run({
+      input: {
+        data: missing.map((zone) => {
+          const fulfillmentSetSeed = medusaSeedFulfillmentSets.find(
+            (set) => set.key === zone.fulfillmentSetKey
+          );
+          const fulfillmentSet = fulfillmentSets.find(
+            (set) => set.name === fulfillmentSetSeed?.name
+          );
+
+          if (!fulfillmentSet) {
+            throw new Error(`Missing fulfillment set for service zone ${zone.name}.`);
+          }
+
+          return {
+            name: zone.name,
+            fulfillment_set_id: fulfillmentSet.id,
+            geo_zones: [
+              {
+                type: "country" as const,
+                country_code: zone.countryCode
+              }
+            ]
+          };
+        })
+      }
+    });
+
+    return [...existing, ...result.map((zone) => ({ id: zone.id, name: zone.name }))];
+  }
+
+  return existing;
+}
+
+async function ensureShippingOptions({
+  query,
+  container,
+  region,
+  shippingProfileRecords,
+  serviceZoneRecords
+}: {
+  query: QueryGraph;
+  container: ExecArgs["container"];
+  region: RegionRecord;
+  shippingProfileRecords: ShippingProfileRecord[];
+  serviceZoneRecords: ServiceZoneRecord[];
+}) {
+  const names = medusaSeedShippingOptions.map((option) => option.name);
+  const existing = await queryRecords<ShippingOptionRecord>(
+    query,
+    "shipping_option",
+    ["id", "name"],
+    {
+      name: names
+    }
+  );
+  assertUniqueSeedRecords(existing, (option) => option.name, "shipping option");
+  const existingNames = new Set(existing.map((option) => option.name));
+  const shippingProfileIdByKey = idMap(
+    shippingProfileRecords,
+    (record) =>
+      medusaSeedShippingProfiles.find((profile) => profile.type === record.type)?.key ??
+      "fresh-local"
+  );
+  const serviceZoneSeedByName = new Map(medusaSeedServiceZones.map((zone) => [zone.name, zone]));
+  const serviceZoneIdByKey = serviceZoneRecords.reduce<Record<string, string | undefined>>(
+    (map, record) => {
+      const serviceZoneSeed = serviceZoneSeedByName.get(record.name);
+
+      if (serviceZoneSeed) {
+        map[serviceZoneSeed.key] = record.id;
+      }
+
+      return map;
+    },
+    {}
+  );
+  const missing = medusaSeedShippingOptions.filter((option) => !existingNames.has(option.name));
+
+  if (missing.length > 0) {
+    const { result } = await createShippingOptionsWorkflow(container).run({
+      input: missing.map((option) => {
+        const shippingProfileId = shippingProfileIdByKey[option.shippingProfileKey];
+        const serviceZoneId = serviceZoneIdByKey[option.serviceZoneKey];
+
+        if (!shippingProfileId) {
+          throw new Error(`Missing shipping profile for shipping option ${option.name}.`);
+        }
+
+        if (!serviceZoneId) {
+          throw new Error(`Missing service zone for shipping option ${option.name}.`);
+        }
+
+        return {
+          name: option.name,
+          service_zone_id: serviceZoneId,
+          shipping_profile_id: shippingProfileId,
+          provider_id: seedFulfillmentProviderId,
+          type: {
+            label: option.name,
+            code: option.code,
+            description: option.description
+          },
+          price_type: "flat" as const,
+          prices: [
+            {
+              region_id: region.id,
+              amount: option.amount
+            }
+          ],
+          data: {
+            mrmf_seed_key: option.key,
+            description: option.description,
+            fulfillment_type: option.fulfillmentType,
+            is_parcel: option.isParcel,
+            requires_pickup_window: option.requiresPickupWindow,
+            requires_final_confirmation: option.requiresFinalConfirmation
+          }
+        };
+      })
+    });
+
+    return [...existing, ...result.map((option) => ({ id: option.id, name: option.name }))];
+  }
+
+  return existing;
 }
 
 async function ensurePublishableApiKey({
@@ -394,7 +755,7 @@ export default async function seedMauryRiverMushroomFarm({ container, args }: Ex
     });
 
     console.log(
-      `Seed plan: ${plan.categories.length} categories, ${plan.collections.length} collections, ${plan.shippingProfiles.length} shipping profiles, ${plan.products.length} products.`
+      `Seed plan: ${plan.categories.length} categories, ${plan.collections.length} collections, ${plan.shippingProfiles.length} shipping profiles, ${plan.regions.length} region, ${plan.stockLocations.length} stock location, ${plan.fulfillmentSets.length} fulfillment set, ${plan.serviceZones.length} service zone, ${plan.shippingOptions.length} shipping options, ${plan.products.length} products.`
     );
 
     return;
@@ -404,7 +765,30 @@ export default async function seedMauryRiverMushroomFarm({ container, args }: Ex
   const categoryRecords = await ensureCategories(query, container);
   const collectionRecords = await ensureCollections(query, container);
   const shippingProfileRecords = await ensureShippingProfiles(query, container);
+  const region = await ensureRegion(query, container);
   const salesChannel = await ensureSalesChannel(query, container);
+  const stockLocations = await ensureStockLocations({
+    query,
+    container,
+    salesChannel
+  });
+  const fulfillmentSets = await ensureFulfillmentSets({
+    query,
+    container,
+    stockLocations
+  });
+  const serviceZones = await ensureServiceZones({
+    query,
+    container,
+    fulfillmentSets
+  });
+  const shippingOptions = await ensureShippingOptions({
+    query,
+    container,
+    region,
+    shippingProfileRecords,
+    serviceZoneRecords: serviceZones
+  });
   const publishableApiKey = await ensurePublishableApiKey({
     query,
     container,
@@ -420,7 +804,7 @@ export default async function seedMauryRiverMushroomFarm({ container, args }: Ex
   });
 
   console.log(
-    `Seeded Maury River Mushroom Farm commerce data: ${categoryRecords.length} categories, ${collectionRecords.length} collections, ${shippingProfileRecords.length} shipping profiles, ${productResult.created} products created, ${productResult.updated} products updated, ${productResult.skipped} products already present.`
+    `Seeded Maury River Mushroom Farm commerce data: ${categoryRecords.length} categories, ${collectionRecords.length} collections, ${shippingProfileRecords.length} shipping profiles, ${stockLocations.length} stock location, ${fulfillmentSets.length} fulfillment set, ${serviceZones.length} service zone, ${shippingOptions.length} shipping options, ${productResult.created} products created, ${productResult.updated} products updated, ${productResult.skipped} products already present.`
   );
   console.log(
     `Store API publishable key ready: ${publishableApiKey.token}. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY to this value for Medusa-backed storefront reads.`

@@ -4,6 +4,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AddToCartButton } from "../../../components/add-to-cart-button";
 import { getProduct, listProducts } from "../../../lib/products";
 
 export async function generateStaticParams() {
@@ -84,11 +85,16 @@ export default async function ProductDetailPage({
         ) : null}
 
         <div className="mt-8 flex flex-wrap gap-3">
+          <AddToCartButton
+            productSlug={product.slug}
+            productName={product.name}
+            className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+          />
           <Link
             href="/cart"
-            className="bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+            className="border border-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em]"
           >
-            View cart shell
+            View cart
           </Link>
           <Link
             href="/contact"
