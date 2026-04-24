@@ -4,6 +4,8 @@ import {
   batchLinksWorkflow,
   createCollectionsWorkflow,
   createApiKeysWorkflow,
+  createInventoryItemsWorkflow,
+  createInventoryLevelsWorkflow,
   createLocationFulfillmentSetWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
@@ -15,13 +17,17 @@ import {
   createStockLocationsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
+  updateInventoryItemsWorkflow,
+  updateInventoryLevelsWorkflow,
   updateProductsWorkflow
 } from "@medusajs/medusa/core-flows";
 import type { ProductCategory } from "@mrmf/shared";
 
 import {
+  buildMedusaInventorySpecs,
   buildMedusaProductPayloads,
   buildSeedPlan,
+  type MedusaSeedInventorySpec,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedFulfillmentSets,
@@ -90,6 +96,40 @@ interface ApiKeyRecord extends EntityRecord {
 
 interface ProductRecord extends EntityRecord {
   handle: string;
+}
+
+interface ProductVariantRecord extends EntityRecord {
+  sku: string | null;
+  manage_inventory: boolean;
+}
+
+interface InventoryItemRecord extends EntityRecord {
+  sku?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+interface InventoryLevelRecord extends EntityRecord {
+  inventory_item_id: string;
+  location_id: string;
+  stocked_quantity: number | string;
+}
+
+interface ProductModuleService {
+  listProductVariants(
+    filters?: Record<string, unknown>,
+    config?: Record<string, unknown>
+  ): Promise<ProductVariantRecord[]>;
+}
+
+interface InventoryModuleService {
+  listInventoryItems(
+    selector: Record<string, unknown>,
+    config?: Record<string, unknown>
+  ): Promise<InventoryItemRecord[]>;
+  listInventoryLevels(
+    selector: Record<string, unknown>,
+    config?: Record<string, unknown>
+  ): Promise<InventoryLevelRecord[]>;
 }
 
 const seedSalesChannelName =
@@ -739,6 +779,251 @@ async function ensureProducts({
   return { created: 0, updated: existingUpdates.length, skipped: existing.length };
 }
 
+function inventoryItemMetadata(spec: MedusaSeedInventorySpec) {
+  return {
+    mrmf_seed_key: spec.productSlug,
+    mrmf_product_slug: spec.productSlug,
+    managed_by_seed: true
+  };
+}
+
+function toNumber(value: number | string) {
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function ensureProductInventory({
+  container,
+  stockLocations
+}: {
+  container: ExecArgs["container"];
+  stockLocations: StockLocationRecord[];
+}) {
+  const stockLocation = stockLocations[0];
+
+  if (!stockLocation) {
+    throw new Error("Missing stock location for seeded product inventory.");
+  }
+
+  const specs = buildMedusaInventorySpecs().filter((spec) => spec.manageInventory);
+  const skus = specs.map((spec) => spec.sku);
+  const productModule = container.resolve<ProductModuleService>(Modules.PRODUCT);
+  const inventoryModule = container.resolve<InventoryModuleService>(Modules.INVENTORY);
+  const variants = await productModule.listProductVariants(
+    {
+      sku: skus
+    },
+    {
+      take: skus.length + 10
+    }
+  );
+
+  assertUniqueSeedRecords(
+    variants.filter((variant) => typeof variant.sku === "string"),
+    (variant) => variant.sku ?? "",
+    "product variant sku"
+  );
+
+  const variantBySku = new Map(
+    variants.flatMap((variant) => (variant.sku ? [[variant.sku, variant]] : []))
+  );
+  const missingVariantSkus = specs
+    .filter((spec) => !variantBySku.has(spec.sku))
+    .map((spec) => spec.sku);
+
+  if (missingVariantSkus.length > 0) {
+    throw new Error(
+      `Missing seeded product variants for inventory SKUs: ${missingVariantSkus.join(", ")}`
+    );
+  }
+
+  const existingItems = await inventoryModule.listInventoryItems(
+    {
+      sku: skus
+    },
+    {
+      take: skus.length + 10
+    }
+  );
+
+  assertUniqueSeedRecords(
+    existingItems.filter((item) => typeof item.sku === "string"),
+    (item) => item.sku ?? "",
+    "inventory item sku"
+  );
+
+  const itemBySku = new Map(
+    existingItems.flatMap((item) => (item.sku ? [[item.sku, item]] : []))
+  );
+  const missingItemSpecs = specs.filter((spec) => !itemBySku.has(spec.sku));
+  const createdItemIds = new Set<string>();
+
+  if (missingItemSpecs.length > 0) {
+    const { result } = await createInventoryItemsWorkflow(container).run({
+      input: {
+        items: missingItemSpecs.map((spec) => ({
+          sku: spec.sku,
+          title: spec.title,
+          description: spec.description,
+          requires_shipping: spec.requiresShipping,
+          metadata: inventoryItemMetadata(spec),
+          location_levels: [
+            {
+              location_id: stockLocation.id,
+              stocked_quantity: spec.stockedQuantity
+            }
+          ]
+        }))
+      }
+    });
+
+    for (const item of result) {
+      if (item.sku) {
+        itemBySku.set(item.sku, item);
+        createdItemIds.add(item.id);
+      }
+    }
+  }
+
+  const itemUpdates = specs
+    .map((spec) => {
+      const item = itemBySku.get(spec.sku);
+
+      if (!item || createdItemIds.has(item.id)) {
+        return undefined;
+      }
+
+      return {
+        id: item.id,
+        sku: spec.sku,
+        title: spec.title,
+        description: spec.description,
+        requires_shipping: spec.requiresShipping,
+        metadata: {
+          ...(item.metadata ?? {}),
+          ...inventoryItemMetadata(spec)
+        }
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  if (itemUpdates.length > 0) {
+    await updateInventoryItemsWorkflow(container).run({
+      input: {
+        updates: itemUpdates
+      }
+    });
+  }
+
+  const inventoryItemIds = specs
+    .map((spec) => itemBySku.get(spec.sku)?.id)
+    .filter((id): id is string => typeof id === "string");
+  const existingLevels =
+    inventoryItemIds.length > 0
+      ? await inventoryModule.listInventoryLevels(
+          {
+            inventory_item_id: inventoryItemIds,
+            location_id: stockLocation.id
+          },
+          {
+            take: inventoryItemIds.length + 10
+          }
+        )
+      : [];
+  const levelByInventoryItemId = new Map(
+    existingLevels.map((level) => [level.inventory_item_id, level])
+  );
+  const levelCreates = specs
+    .map((spec) => {
+      const inventoryItemId = itemBySku.get(spec.sku)?.id;
+
+      if (!inventoryItemId || levelByInventoryItemId.has(inventoryItemId)) {
+        return undefined;
+      }
+
+      return {
+        inventory_item_id: inventoryItemId,
+        location_id: stockLocation.id,
+        stocked_quantity: spec.stockedQuantity
+      };
+    })
+    .filter((level): level is NonNullable<typeof level> => Boolean(level));
+  const levelUpdates = specs
+    .map((spec) => {
+      const inventoryItemId = itemBySku.get(spec.sku)?.id;
+      const level = inventoryItemId ? levelByInventoryItemId.get(inventoryItemId) : undefined;
+
+      if (!inventoryItemId || !level || toNumber(level.stocked_quantity) === spec.stockedQuantity) {
+        return undefined;
+      }
+
+      return {
+        id: level.id,
+        inventory_item_id: inventoryItemId,
+        location_id: stockLocation.id,
+        stocked_quantity: spec.stockedQuantity
+      };
+    })
+    .filter((level): level is NonNullable<typeof level> => Boolean(level));
+
+  if (levelCreates.length > 0) {
+    await createInventoryLevelsWorkflow(container).run({
+      input: {
+        inventory_levels: levelCreates
+      }
+    });
+  }
+
+  if (levelUpdates.length > 0) {
+    await updateInventoryLevelsWorkflow(container).run({
+      input: {
+        updates: levelUpdates
+      }
+    });
+  }
+
+  let linkedVariants = 0;
+
+  for (const spec of specs) {
+    const variant = variantBySku.get(spec.sku);
+    const item = itemBySku.get(spec.sku);
+
+    if (!variant || !item) {
+      continue;
+    }
+
+    try {
+      await batchLinksWorkflow(container).run({
+        input: {
+          create: [
+            {
+              [Modules.PRODUCT]: { variant_id: variant.id },
+              [Modules.INVENTORY]: { inventory_item_id: item.id }
+            }
+          ],
+          delete: []
+        }
+      });
+    } catch (error) {
+      if (!isDuplicateLinkError(error)) {
+        throw error;
+      }
+    }
+
+    linkedVariants += 1;
+  }
+
+  return {
+    stockLocation: stockLocation.name,
+    inventoryItemsCreated: missingItemSpecs.length,
+    inventoryItemsUpdated: itemUpdates.length,
+    inventoryLevelsCreated: levelCreates.length,
+    inventoryLevelsUpdated: levelUpdates.length,
+    variantLinksEnsured: linkedVariants
+  };
+}
+
 export default async function seedMauryRiverMushroomFarm({ container, args }: ExecArgs) {
   if (args.includes("--plan") || args.includes("--dry-run")) {
     const plan = buildSeedPlan({
@@ -802,9 +1087,16 @@ export default async function seedMauryRiverMushroomFarm({ container, args }: Ex
     shippingProfileRecords,
     salesChannel
   });
+  const inventoryResult = await ensureProductInventory({
+    container,
+    stockLocations
+  });
 
   console.log(
     `Seeded Maury River Mushroom Farm commerce data: ${categoryRecords.length} categories, ${collectionRecords.length} collections, ${shippingProfileRecords.length} shipping profiles, ${stockLocations.length} stock location, ${fulfillmentSets.length} fulfillment set, ${serviceZones.length} service zone, ${shippingOptions.length} shipping options, ${productResult.created} products created, ${productResult.updated} products updated, ${productResult.skipped} products already present.`
+  );
+  console.log(
+    `Seeded inventory at ${inventoryResult.stockLocation}: ${inventoryResult.inventoryItemsCreated} inventory items created, ${inventoryResult.inventoryItemsUpdated} inventory items updated, ${inventoryResult.inventoryLevelsCreated} inventory levels created, ${inventoryResult.inventoryLevelsUpdated} inventory levels updated, ${inventoryResult.variantLinksEnsured} variant links ensured.`
   );
   console.log(
     `Store API publishable key ready: ${publishableApiKey.token}. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY to this value for Medusa-backed storefront reads.`

@@ -24,6 +24,7 @@ describe("storefront product adapter", () => {
               id: "prod_fresh_lions_mane",
               handle: "fresh-lions-mane",
               title: "Fresh Lion's Mane",
+              variants: [{ id: "variant_fresh_lions_mane" }],
               metadata: {
                 fulfillment: [
                   "farm-pickup",
@@ -51,6 +52,7 @@ describe("storefront product adapter", () => {
     expect(products[0]).toMatchObject({
       source: "medusa",
       slug: "fresh-lions-mane",
+      variantId: "variant_fresh_lions_mane",
       shippable: false,
       fulfillmentMode: "fresh-local"
     });

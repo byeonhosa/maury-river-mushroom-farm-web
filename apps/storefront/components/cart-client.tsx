@@ -7,51 +7,85 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   notifyCartUpdated,
-  readCartItems,
-  removeCartItem,
-  updateCartItemQuantity
+  readCartItems
 } from "../lib/cart-storage";
+import {
+  resolveCartLines,
+  syncHybridCart,
+  updateHybridCartItems,
+  type CartBridgeResult
+} from "../lib/cart-adapter";
 import { formatCurrency } from "../lib/format";
-
-function resolveCartLines(products: CommerceProduct[], items: CartLineInput[]) {
-  const productBySlug = new Map(products.map((product) => [product.slug, product]));
-
-  return items
-    .map((item) => {
-      const product = productBySlug.get(item.productSlug);
-
-      return product ? { product, quantity: item.quantity } : undefined;
-    })
-    .filter((line): line is { product: CommerceProduct; quantity: number } => Boolean(line));
-}
 
 export function CartClient({ products }: { products: CommerceProduct[] }) {
   const [items, setItems] = useState<CartLineInput[]>([]);
+  const [bridge, setBridge] = useState<CartBridgeResult>();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    const syncCart = () => setItems(readCartItems());
+    let mounted = true;
+    const syncCart = async () => {
+      setIsSyncing(true);
+      const localItems = readCartItems();
 
-    syncCart();
+      setItems(localItems);
+
+      try {
+        const result = await syncHybridCart(products);
+
+        if (mounted) {
+          setBridge(result);
+          setItems(result.items);
+        }
+      } finally {
+        if (mounted) {
+          setIsSyncing(false);
+        }
+      }
+    };
+
+    void syncCart();
     window.addEventListener("storage", syncCart);
     window.addEventListener("mrmf-cart-updated", syncCart);
 
     return () => {
+      mounted = false;
       window.removeEventListener("storage", syncCart);
       window.removeEventListener("mrmf-cart-updated", syncCart);
     };
-  }, []);
+  }, [products]);
 
   const resolvedLines = useMemo(() => resolveCartLines(products, items), [items, products]);
   const cart = useMemo(() => summarizeCommerceCart(resolvedLines), [resolvedLines]);
 
+  async function commitItems(nextItems: CartLineInput[]) {
+    setItems(nextItems);
+    setIsSyncing(true);
+
+    try {
+      const result = await updateHybridCartItems(products, nextItems);
+
+      setBridge(result);
+      setItems(result.items);
+      notifyCartUpdated();
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
   function setQuantity(productSlug: string, quantity: number) {
-    setItems(updateCartItemQuantity(productSlug, quantity));
-    notifyCartUpdated();
+    const normalizedQuantity = Number.isFinite(quantity)
+      ? Math.max(1, Math.min(99, Math.floor(quantity)))
+      : 1;
+    const nextItems = items.map((item) =>
+      item.productSlug === productSlug ? { ...item, quantity: normalizedQuantity } : item
+    );
+
+    void commitItems(nextItems);
   }
 
   function removeLine(productSlug: string) {
-    setItems(removeCartItem(productSlug));
-    notifyCartUpdated();
+    void commitItems(items.filter((item) => item.productSlug !== productSlug));
   }
 
   return (
@@ -181,6 +215,32 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
               <li key={restriction}>{restriction}</li>
             ))}
           </ul>
+        </div>
+
+        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+            Cart bridge
+          </p>
+          <p className="mt-3 text-sm leading-7">
+            {isSyncing
+              ? "Checking the Medusa cart bridge..."
+              : bridge?.source === "medusa"
+                ? `Medusa-backed cart active: ${bridge.medusaCartId}`
+                : "Staged browser cart active."}
+          </p>
+          {bridge?.error ? <p className="mt-2 text-xs leading-6">{bridge.error}</p> : null}
+          {bridge?.safeShippingOptions.length ? (
+            <div className="mt-3">
+              <p className="font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-ebony">
+                Safe Medusa options
+              </p>
+              <ul className="mt-2 space-y-1 text-xs leading-6">
+                {bridge.safeShippingOptions.map((option) => (
+                  <li key={option.id}>{option.name}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </aside>
     </section>
