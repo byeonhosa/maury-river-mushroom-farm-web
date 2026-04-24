@@ -6,7 +6,9 @@ import {
   buildMedusaProductPayloads,
   medusaSeedCategories,
   medusaSeedCollections,
-  medusaSeedShippingProfiles
+  medusaSeedRegion,
+  medusaSeedShippingProfiles,
+  medusaSeedShippingOptions
 } from "../src/scripts/medusa-seed-data";
 
 describe("backend seed data contract", () => {
@@ -34,6 +36,35 @@ describe("backend seed data contract", () => {
       "subscription-preorder",
       "wholesale-preorder"
     ]);
+  });
+
+  it("defines a local development region and safe shipping options", () => {
+    expect(medusaSeedRegion).toMatchObject({
+      name: "Maury River Local Development Region",
+      currencyCode: "usd",
+      countries: ["us"]
+    });
+    expect(medusaSeedShippingOptions.map((option) => option.key)).toEqual([
+      "farm-pickup",
+      "lexington-farmers-market-pickup",
+      "natural-bridge-local-market-pickup",
+      "fresh-local-delivery",
+      "fresh-local-preorder",
+      "shelf-stable-parcel",
+      "supplement-parcel",
+      "subscription-preorder-pickup",
+      "chef-preorder-coordination"
+    ]);
+    expect(
+      medusaSeedShippingOptions
+        .filter((option) => option.isParcel)
+        .map((option) => option.shippingProfileKey)
+    ).toEqual(["shelf-stable-shipping", "supplement-shipping"]);
+    expect(
+      medusaSeedShippingOptions.some(
+        (option) => option.isParcel && option.shippingProfileKey === "fresh-local"
+      )
+    ).toBe(false);
   });
 
   it("maps every seed product to a Medusa payload with rich mushroom metadata", () => {

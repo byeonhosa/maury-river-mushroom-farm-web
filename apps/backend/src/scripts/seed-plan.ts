@@ -32,5 +32,5 @@ const plan = buildSeedPlan({
 });
 
 console.log(
-  `Seed plan OK: ${plan.categories.length} categories, ${plan.collections.length} collections, ${plan.shippingProfiles.length} shipping profiles, ${plan.products.length} products.`
+  `Seed plan OK: ${plan.categories.length} categories, ${plan.collections.length} collections, ${plan.shippingProfiles.length} shipping profiles, ${plan.regions.length} region, ${plan.stockLocations.length} stock location, ${plan.fulfillmentSets.length} fulfillment set, ${plan.serviceZones.length} service zone, ${plan.shippingOptions.length} shipping options, ${plan.products.length} products.`
 );

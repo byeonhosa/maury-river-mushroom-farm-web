@@ -1,9 +1,11 @@
 import {
   getProductBySlug,
+  getCartSupportedFulfillmentTypes,
   medusaProductToCommerceProduct,
   pickupLocations,
   summarizeCommerceCart,
   summarizeCart,
+  validateCheckout,
   validatePickupSelection
 } from "../src";
 import { describe, expect, it } from "vitest";
@@ -88,6 +90,117 @@ describe("cart and pickup commerce rules", () => {
     expect(summary.fulfillmentType).toBe("mixed");
     expect(summary.restrictions).toContain(
       "Mixed carts must separate local pickup or delivery items from shipped shelf-stable items before live checkout."
+    );
+  });
+
+  it("blocks checkout when fresh products are assigned parcel shipping", () => {
+    const fresh = medusaProductToCommerceProduct({
+      id: "prod_fresh_lions_mane",
+      handle: "fresh-lions-mane"
+    });
+    const summary = summarizeCommerceCart([{ product: fresh, quantity: 1 }]);
+    const validation = validateCheckout({
+      cart: summary,
+      contact: {
+        name: "Test Customer",
+        email: "customer@example.com",
+        phone: "540-555-0100"
+      },
+      fulfillment: {
+        type: "shipping",
+        shippingAddress: "123 Test Street"
+      },
+      policyAccepted: true
+    });
+
+    expect(validation.canProceed).toBe(false);
+    expect(validation.errors).toContain(
+      "The selected fulfillment option is not available for every item in the cart."
+    );
+    expect(validation.errors).toContain(
+      "Fresh and local-only products cannot use parcel shipping. Choose pickup, local delivery, or split the order."
+    );
+  });
+
+  it("requires pickup location and window for local fresh checkout", () => {
+    const fresh = medusaProductToCommerceProduct({
+      id: "prod_fresh_lions_mane",
+      handle: "fresh-lions-mane"
+    });
+    const summary = summarizeCommerceCart([{ product: fresh, quantity: 1 }]);
+
+    expect(getCartSupportedFulfillmentTypes(summary)).toEqual([
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder"
+    ]);
+
+    const missingPickup = validateCheckout({
+      cart: summary,
+      contact: {
+        name: "Test Customer",
+        email: "customer@example.com",
+        phone: "540-555-0100"
+      },
+      fulfillment: {
+        type: "farm-pickup"
+      },
+      policyAccepted: true
+    });
+
+    expect(missingPickup.canProceed).toBe(false);
+    expect(missingPickup.errors).toContain("Select a valid pickup location.");
+
+    const validPickup = validateCheckout({
+      cart: summary,
+      contact: {
+        name: "Test Customer",
+        email: "customer@example.com",
+        phone: "540-555-0100"
+      },
+      fulfillment: {
+        type: "farm-pickup",
+        pickupLocationSlug: "farm-pickup",
+        pickupWindowLabel: "Provisional farm pickup"
+      },
+      policyAccepted: true
+    });
+
+    expect(validPickup.canProceed).toBe(true);
+  });
+
+  it("keeps mixed carts blocked until fulfillment is split", () => {
+    const fresh = medusaProductToCommerceProduct({
+      id: "prod_fresh_lions_mane",
+      handle: "fresh-lions-mane"
+    });
+    const salt = medusaProductToCommerceProduct({
+      id: "prod_mushroom_salt",
+      handle: "mushroom-salt"
+    });
+    const summary = summarizeCommerceCart([
+      { product: fresh, quantity: 1 },
+      { product: salt, quantity: 1 }
+    ]);
+    const validation = validateCheckout({
+      cart: summary,
+      contact: {
+        name: "Test Customer",
+        email: "customer@example.com",
+        phone: "540-555-0100"
+      },
+      fulfillment: {
+        type: "farm-pickup",
+        pickupLocationSlug: "farm-pickup",
+        pickupWindowLabel: "Provisional farm pickup"
+      },
+      policyAccepted: true
+    });
+
+    expect(validation.canProceed).toBe(false);
+    expect(validation.errors).toContain(
+      "Mixed carts must be split into local pickup or delivery items and shippable shelf-stable items before checkout."
     );
   });
 

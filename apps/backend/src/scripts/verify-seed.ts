@@ -11,6 +11,9 @@ import pg from "pg";
 import {
   medusaSeedCategories,
   medusaSeedCollections,
+  medusaSeedRegion,
+  medusaSeedServiceZones,
+  medusaSeedShippingOptions,
   medusaSeedShippingProfiles
 } from "./medusa-seed-data";
 
@@ -36,6 +39,23 @@ interface SeedApiKeyRow {
   title: string;
   token: string;
   sales_channel_count: string | number;
+}
+
+interface SeedRegionRow {
+  id: string;
+  name: string;
+  currency_code: string;
+  country_codes: string[] | null;
+}
+
+interface SeedShippingOptionRow {
+  name: string;
+  code: string;
+  shipping_profile_type: string | null;
+  service_zone_name: string | null;
+  provider_id: string | null;
+  price_amount: string | number | null;
+  data: Record<string, unknown> | null;
 }
 
 const shippingProfileTypeByFulfillmentMode = Object.fromEntries(
@@ -92,6 +112,23 @@ async function verifySeed() {
     const shippingProfileResult = await client.query<{ type: string }>(
       "select type from shipping_profile where deleted_at is null order by type"
     );
+    const regionResult = await client.query<SeedRegionRow>(
+      `
+        select
+          r.id,
+          r.name,
+          r.currency_code,
+          array_remove(array_agg(rc.iso_2), null) as country_codes
+        from region r
+        left join region_country rc
+          on rc.region_id = r.id
+          and rc.deleted_at is null
+        where r.name = $1
+          and r.deleted_at is null
+        group by r.id, r.name, r.currency_code
+      `,
+      [medusaSeedRegion.name]
+    );
     const publishableKeyResult = await client.query<SeedApiKeyRow>(
       `
         select
@@ -137,11 +174,33 @@ async function verifySeed() {
       group by p.id, p.handle, p.title, p.status, p.metadata, pc.handle, sp.type
       order by p.handle
     `);
+    const shippingOptionResult = await client.query<SeedShippingOptionRow>(`
+      select
+        so.name,
+        sot.code,
+        sp.type as shipping_profile_type,
+        sz.name as service_zone_name,
+        so.provider_id,
+        max(price.amount) as price_amount,
+        so.data
+      from shipping_option so
+      left join shipping_option_type sot on sot.id = so.shipping_option_type_id
+      left join shipping_profile sp on sp.id = so.shipping_profile_id and sp.deleted_at is null
+      left join service_zone sz on sz.id = so.service_zone_id and sz.deleted_at is null
+      left join shipping_option_price_set sops on sops.shipping_option_id = so.id and sops.deleted_at is null
+      left join price on price.price_set_id = sops.price_set_id and price.deleted_at is null
+      where so.deleted_at is null
+        and so.name = any($1)
+      group by so.id, so.name, sot.code, sp.type, sz.name, so.provider_id, so.data
+      order by so.name
+    `, [medusaSeedShippingOptions.map((option) => option.name)]);
 
     const categoryHandles = new Set(categoryResult.rows.map((row) => row.handle));
     const collectionHandles = new Set(collectionResult.rows.map((row) => row.handle));
     const shippingProfileTypes = new Set(shippingProfileResult.rows.map((row) => row.type));
     const productRows = new Map(productResult.rows.map((row) => [row.handle, row]));
+    const region = regionResult.rows[0];
+    const shippingOptionRows = new Map(shippingOptionResult.rows.map((row) => [row.name, row]));
     const publishableKey = publishableKeyResult.rows[0];
 
     for (const category of medusaSeedCategories) {
@@ -162,6 +221,57 @@ async function verifySeed() {
       requireCondition(
         shippingProfileTypes.has(profile.type),
         `Missing Medusa shipping profile ${profile.type}.`
+      );
+    }
+
+    requireCondition(Boolean(region), `Missing Medusa region ${medusaSeedRegion.name}.`);
+    requireCondition(
+      region!.currency_code === medusaSeedRegion.currencyCode,
+      "Seeded Medusa region currency mismatch."
+    );
+    for (const countryCode of medusaSeedRegion.countries) {
+      requireCondition(
+        (region!.country_codes ?? []).includes(countryCode),
+        `Seeded Medusa region is missing country ${countryCode}.`
+      );
+    }
+
+    for (const option of medusaSeedShippingOptions) {
+      const row = shippingOptionRows.get(option.name);
+      const profileType = shippingProfileTypeByFulfillmentMode[option.shippingProfileKey];
+      const serviceZone = medusaSeedServiceZones.find(
+        (zone) => zone.key === option.serviceZoneKey
+      );
+
+      requireCondition(Boolean(row), `Missing Medusa shipping option ${option.name}.`);
+      requireCondition(row!.code === option.code, `${option.name} code mismatch.`);
+      requireCondition(
+        row!.shipping_profile_type === profileType,
+        `${option.name} shipping profile mismatch.`
+      );
+      requireCondition(
+        row!.service_zone_name === serviceZone?.name,
+        `${option.name} service zone mismatch.`
+      );
+      requireCondition(
+        row!.provider_id === (process.env.MEDUSA_SEED_FULFILLMENT_PROVIDER_ID ?? "manual_manual"),
+        `${option.name} fulfillment provider mismatch.`
+      );
+      requireCondition(
+        asNumber(row!.price_amount) === option.amount,
+        `${option.name} price mismatch.`
+      );
+      requireCondition(
+        row!.data?.fulfillment_type === option.fulfillmentType,
+        `${option.name} fulfillment type data mismatch.`
+      );
+      requireCondition(
+        row!.data?.is_parcel === option.isParcel,
+        `${option.name} parcel flag data mismatch.`
+      );
+      requireCondition(
+        !(option.isParcel && option.shippingProfileKey === "fresh-local"),
+        `${option.name} must not attach parcel shipping to the fresh-local shipping profile.`
       );
     }
 
@@ -250,7 +360,7 @@ async function verifySeed() {
   }
 
   console.log(
-    `Verified Maury River Medusa seed: ${products.length} products, ${medusaSeedCategories.length} categories, ${medusaSeedCollections.length} collections, ${medusaSeedShippingProfiles.length} shipping profiles, and a storefront publishable API key.`
+    `Verified Maury River Medusa seed: ${products.length} products, ${medusaSeedCategories.length} categories, ${medusaSeedCollections.length} collections, ${medusaSeedShippingProfiles.length} shipping profiles, ${medusaSeedShippingOptions.length} shipping options, one local region, and a storefront publishable API key.`
   );
 }
 

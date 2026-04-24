@@ -3,10 +3,12 @@ import {
   classifyProductFulfillment,
   getProductMetadata,
   getFulfillmentLabel,
+  pickupLocations,
   productCategories,
   products,
   validateProductFulfillment,
   type FulfillmentMode,
+  type FulfillmentType,
   type Product,
   type ProductCategory
 } from "@mrmf/shared";
@@ -33,6 +35,57 @@ export interface MedusaSeedShippingProfile {
   description: string;
 }
 
+export interface MedusaSeedRegion {
+  key: string;
+  name: string;
+  currencyCode: string;
+  countries: string[];
+  description: string;
+}
+
+export interface MedusaSeedStockLocation {
+  key: string;
+  name: string;
+  address: {
+    address_1: string;
+    city: string;
+    country_code: string;
+    province: string;
+    postal_code: string;
+  };
+  description: string;
+}
+
+export interface MedusaSeedFulfillmentSet {
+  key: string;
+  name: string;
+  type: string;
+  stockLocationKey: string;
+  description: string;
+}
+
+export interface MedusaSeedServiceZone {
+  key: string;
+  name: string;
+  fulfillmentSetKey: string;
+  countryCode: string;
+  description: string;
+}
+
+export interface MedusaSeedShippingOption {
+  key: string;
+  name: string;
+  code: string;
+  description: string;
+  fulfillmentType: FulfillmentType;
+  shippingProfileKey: FulfillmentMode;
+  serviceZoneKey: string;
+  amount: number;
+  isParcel: boolean;
+  requiresPickupWindow: boolean;
+  requiresFinalConfirmation: boolean;
+}
+
 export interface MedusaProductMappingContext {
   categoryIdByKey: Record<ProductCategory, string | undefined>;
   collectionIdByKey: Record<string, string | undefined>;
@@ -44,6 +97,11 @@ export interface SeedPlan {
   categories: MedusaSeedCategory[];
   collections: MedusaSeedCollection[];
   shippingProfiles: MedusaSeedShippingProfile[];
+  regions: MedusaSeedRegion[];
+  stockLocations: MedusaSeedStockLocation[];
+  fulfillmentSets: MedusaSeedFulfillmentSet[];
+  serviceZones: MedusaSeedServiceZone[];
+  shippingOptions: MedusaSeedShippingOption[];
   products: CreateProductWorkflowInputDTO[];
 }
 
@@ -128,6 +186,152 @@ export const medusaSeedShippingProfiles: MedusaSeedShippingProfile[] = [
     name: "Wholesale preorder",
     type: "wholesale-preorder",
     description: "Restaurant and chef products requiring quote or direct coordination."
+  }
+];
+
+export const medusaSeedRegion: MedusaSeedRegion = {
+  key: "local-development-us",
+  name: "Maury River Local Development Region",
+  currencyCode: "usd",
+  countries: ["us"],
+  description: "Local development sales region for pickup, local delivery, and eligible US shipping."
+};
+
+export const medusaSeedStockLocations: MedusaSeedStockLocation[] = [
+  {
+    key: "maury-river-farm",
+    name: "Maury River Farm Fulfillment",
+    address: {
+      address_1: "Farm address requires owner confirmation",
+      city: "Lexington",
+      country_code: "us",
+      province: "VA",
+      postal_code: "24450"
+    },
+    description:
+      "Development stock location used for local pickup, market pickup, local delivery, and manual parcel fulfillment."
+  }
+];
+
+export const medusaSeedFulfillmentSets: MedusaSeedFulfillmentSet[] = [
+  {
+    key: "maury-river-manual-fulfillment",
+    name: "Maury River Manual Fulfillment",
+    type: "manual",
+    stockLocationKey: "maury-river-farm",
+    description:
+      "Manual fulfillment set for provisional local pickup, market pickup, local delivery, preorder, and shelf-stable parcel workflows."
+  }
+];
+
+export const medusaSeedServiceZones: MedusaSeedServiceZone[] = [
+  {
+    key: "maury-river-local-and-us",
+    name: "Maury River Local and US Development Zone",
+    fulfillmentSetKey: "maury-river-manual-fulfillment",
+    countryCode: "us",
+    description:
+      "Development service zone. Local pickup windows still require owner confirmation before launch."
+  }
+];
+
+export const medusaSeedShippingOptions: MedusaSeedShippingOption[] = [
+  ...pickupLocations.map((location) => ({
+    key: location.slug,
+    name: location.name,
+    code: location.slug,
+    description: location.description,
+    fulfillmentType: location.fulfillmentType,
+    shippingProfileKey: "fresh-local" as FulfillmentMode,
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 0,
+    isParcel: false,
+    requiresPickupWindow: true,
+    requiresFinalConfirmation: location.requiresFinalConfirmation
+  })),
+  {
+    key: "fresh-local-delivery",
+    name: "Fresh local delivery",
+    code: "fresh-local-delivery",
+    description:
+      "Manual local delivery for fresh mushrooms inside the approved delivery area after route confirmation.",
+    fulfillmentType: "local-delivery",
+    shippingProfileKey: "fresh-local",
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 0,
+    isParcel: false,
+    requiresPickupWindow: false,
+    requiresFinalConfirmation: true
+  },
+  {
+    key: "fresh-local-preorder",
+    name: "Fresh preorder coordination",
+    code: "fresh-local-preorder",
+    description:
+      "Preorder coordination for fresh harvest items when exact pickup or delivery timing is still pending.",
+    fulfillmentType: "local-preorder",
+    shippingProfileKey: "fresh-local",
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 0,
+    isParcel: false,
+    requiresPickupWindow: false,
+    requiresFinalConfirmation: true
+  },
+  {
+    key: "shelf-stable-parcel",
+    name: "Shelf-stable parcel shipping",
+    code: "shelf-stable-parcel",
+    description:
+      "Manual parcel shipping for eligible dried mushrooms, salts, seasonings, and pantry products.",
+    fulfillmentType: "shipping",
+    shippingProfileKey: "shelf-stable-shipping",
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 8,
+    isParcel: true,
+    requiresPickupWindow: false,
+    requiresFinalConfirmation: true
+  },
+  {
+    key: "supplement-parcel",
+    name: "Supplement parcel shipping",
+    code: "supplement-parcel",
+    description:
+      "Manual parcel shipping for eligible supplement products after supplement copy and policy review.",
+    fulfillmentType: "shipping",
+    shippingProfileKey: "supplement-shipping",
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 8,
+    isParcel: true,
+    requiresPickupWindow: false,
+    requiresFinalConfirmation: true
+  },
+  {
+    key: "subscription-preorder-pickup",
+    name: "Subscription preorder pickup",
+    code: "subscription-preorder-pickup",
+    description:
+      "Manual recurring pickup coordination for CSA-style boxes after cadence and windows are confirmed.",
+    fulfillmentType: "local-preorder",
+    shippingProfileKey: "subscription-preorder",
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 0,
+    isParcel: false,
+    requiresPickupWindow: false,
+    requiresFinalConfirmation: true
+  },
+  {
+    key: "chef-preorder-coordination",
+    name: "Chef preorder coordination",
+    code: "chef-preorder-coordination",
+    description:
+      "Restaurant and wholesale delivery or pickup coordination after quote approval.",
+    fulfillmentType: "restaurant-delivery",
+    shippingProfileKey: "wholesale-preorder",
+    serviceZoneKey: "maury-river-local-and-us",
+    amount: 0,
+    isParcel: false,
+    requiresPickupWindow: false,
+    requiresFinalConfirmation: true
   }
 ];
 
@@ -254,6 +458,11 @@ export function buildSeedPlan(context: MedusaProductMappingContext): SeedPlan {
     categories: medusaSeedCategories,
     collections: medusaSeedCollections,
     shippingProfiles: medusaSeedShippingProfiles,
+    regions: [medusaSeedRegion],
+    stockLocations: medusaSeedStockLocations,
+    fulfillmentSets: medusaSeedFulfillmentSets,
+    serviceZones: medusaSeedServiceZones,
+    shippingOptions: medusaSeedShippingOptions,
     products: buildMedusaProductPayloads(context)
   };
 }

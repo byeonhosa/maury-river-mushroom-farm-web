@@ -19,6 +19,7 @@ import type {
 export interface CommerceProduct {
   source: "shared-seed" | "medusa";
   id: string;
+  variantId?: string;
   slug: string;
   name: string;
   category: ProductCategory;
@@ -65,6 +66,7 @@ export interface MedusaProductLike {
     } | null;
   }>;
   variants?: Array<{
+    id?: string | null;
     prices?: Array<{
       amount?: number | string | null;
       currency_code?: string | null;
@@ -442,6 +444,7 @@ export function medusaProductToCommerceProduct(product: MedusaProductLike): Comm
   return {
     source: "medusa",
     id: product.id ?? fallbackSlug,
+    variantId: product.variants?.[0]?.id ?? undefined,
     slug: fallbackSlug,
     name: product.title ?? fallback.name,
     category,
