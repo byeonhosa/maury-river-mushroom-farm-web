@@ -9,9 +9,8 @@ import { ProductGrid } from "../components/product-grid";
 import { SectionHeading } from "../components/section-heading";
 import { listProductsByCategory } from "../lib/products";
 
-const freshThisWeek = listProductsByCategory("fresh-mushrooms").slice(0, 3);
-
-export default function HomePage() {
+export default async function HomePage() {
+  const freshThisWeek = (await listProductsByCategory("fresh-mushrooms")).slice(0, 3);
   const featuredSpecies = speciesPages[0];
   const featuredRecipes = recipes.slice(0, 3);
 

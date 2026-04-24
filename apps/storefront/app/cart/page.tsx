@@ -1,12 +1,11 @@
-import { summarizeCart } from "@mrmf/shared";
 import { AlertTriangle, ArrowRight, ShoppingBasket } from "lucide-react";
 import Link from "next/link";
 
 import { PageHero } from "../../components/page-hero";
-import { cartShellItems, formatCurrency } from "../../lib/demo-cart";
+import { formatCurrency, getCartShellSummary } from "../../lib/demo-cart";
 
-export default function CartPage() {
-  const cart = summarizeCart(cartShellItems);
+export default async function CartPage() {
+  const cart = await getCartShellSummary();
 
   return (
     <>

@@ -1,6 +1,9 @@
 import { defineConfig, loadEnv } from "@medusajs/framework/utils";
+import path from "node:path";
 
-loadEnv(process.env.NODE_ENV ?? "development", process.cwd());
+const repositoryRoot = path.resolve(__dirname, "../..");
+
+loadEnv(process.env.NODE_ENV ?? "development", repositoryRoot);
 
 const databaseUrl =
   process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/mrmf";
@@ -8,6 +11,7 @@ const databaseUrl =
 export default defineConfig({
   projectConfig: {
     databaseUrl,
+    redisUrl: process.env.REDIS_URL,
     http: {
       storeCors: process.env.MEDUSA_STORE_CORS ?? "http://localhost:3000",
       adminCors: process.env.MEDUSA_ADMIN_CORS ?? "http://localhost:9000,http://localhost:3000",

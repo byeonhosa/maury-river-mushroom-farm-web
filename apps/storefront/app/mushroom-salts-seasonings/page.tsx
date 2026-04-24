@@ -2,7 +2,9 @@ import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
 import { listProductsByCategory } from "../../lib/products";
 
-export default function MushroomSaltsPage() {
+export default async function MushroomSaltsPage() {
+  const products = await listProductsByCategory("salts-seasonings");
+
   return (
     <>
       <PageHero eyebrow="Mushroom salts & seasonings" title="Mushroom flavor for everyday cooking.">
@@ -12,7 +14,7 @@ export default function MushroomSaltsPage() {
         </p>
       </PageHero>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <ProductGrid products={listProductsByCategory("salts-seasonings")} />
+        <ProductGrid products={products} />
       </section>
     </>
   );

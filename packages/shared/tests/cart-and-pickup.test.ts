@@ -1,5 +1,8 @@
 import {
+  getProductBySlug,
+  medusaProductToCommerceProduct,
   pickupLocations,
+  summarizeCommerceCart,
   summarizeCart,
   validatePickupSelection
 } from "../src";
@@ -53,5 +56,71 @@ describe("cart and pickup commerce rules", () => {
         allowedFulfillmentTypes: ["shipping"]
       })
     ).toMatchObject({ valid: false });
+  });
+
+  it("summarizes Medusa-backed products with the same mixed-cart restrictions", () => {
+    const fresh = medusaProductToCommerceProduct({
+      id: "prod_fresh_lions_mane",
+      handle: "fresh-lions-mane",
+      metadata: {
+        fulfillment: [
+          "farm-pickup",
+          "farmers-market-pickup",
+          "local-delivery",
+          "local-preorder",
+          "shipping"
+        ],
+        shippable: true
+      }
+    });
+    const salt = medusaProductToCommerceProduct({
+      id: "prod_mushroom_salt",
+      handle: "mushroom-salt"
+    });
+    const summary = summarizeCommerceCart([
+      { product: fresh, quantity: 1 },
+      { product: salt, quantity: 1 }
+    ]);
+
+    expect(fresh.source).toBe("medusa");
+    expect(fresh.shippable).toBe(false);
+    expect(fresh.fulfillmentMode).toBe("fresh-local");
+    expect(summary.fulfillmentType).toBe("mixed");
+    expect(summary.restrictions).toContain(
+      "Mixed carts must separate local pickup or delivery items from shipped shelf-stable items before live checkout."
+    );
+  });
+
+  it("normalizes Medusa snake_case metadata into the storefront product contract", () => {
+    const seed = getProductBySlug("mushroom-salt");
+
+    expect(seed).toBeDefined();
+
+    const product = medusaProductToCommerceProduct({
+      id: "prod_mushroom_salt",
+      handle: "mushroom-salt",
+      title: "Mushroom Salt",
+      metadata: {
+        product_format: "seasoning",
+        flavor_profile: "Savory test profile.",
+        cooking_methods: ["finish"],
+        storage_instructions: "Keep dry.",
+        shelf_life: "Test shelf life.",
+        related_recipes: ["mushroom-salt-roasted-potatoes"],
+        related_species_page: ["blue-oyster"],
+        visibility_status: "published"
+      }
+    });
+
+    expect(product.metadata).toMatchObject({
+      productFormat: "seasoning",
+      flavorProfile: "Savory test profile.",
+      cookingMethods: ["finish"],
+      storageInstructions: "Keep dry.",
+      shelfLife: "Test shelf life.",
+      relatedRecipes: ["mushroom-salt-roasted-potatoes"],
+      relatedSpeciesPage: ["blue-oyster"],
+      visibilityStatus: "published"
+    });
   });
 });

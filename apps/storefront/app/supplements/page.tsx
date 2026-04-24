@@ -3,7 +3,9 @@ import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
 import { listProductsByCategory } from "../../lib/products";
 
-export default function SupplementsPage() {
+export default async function SupplementsPage() {
+  const products = await listProductsByCategory("supplements");
+
   return (
     <>
       <PageHero eyebrow="Supplements" title="Functional mushroom products with careful language.">
@@ -19,7 +21,7 @@ export default function SupplementsPage() {
           </p>
           <p className="mt-2">{SUPPLEMENT_DISCLAIMER}</p>
         </div>
-        <ProductGrid products={listProductsByCategory("supplements")} />
+        <ProductGrid products={products} />
       </section>
     </>
   );
