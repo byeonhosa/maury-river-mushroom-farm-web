@@ -80,6 +80,18 @@ Or run all checks:
 corepack pnpm check
 ```
 
+## Troubleshooting
+
+If the local storefront starts throwing a missing module error from `apps/storefront/.next/server/vendor-chunks`, stop the dev server and delete the generated Next.js cache before restarting:
+
+```powershell
+Remove-Item -Recurse -Force apps\storefront\.next
+corepack pnpm install
+corepack pnpm --filter @mrmf/storefront dev
+```
+
+This is a local build-cache issue, not a source dependency change, when `corepack pnpm check` passes after the cleanup.
+
 ## Business rules
 
 Fresh mushrooms are perishable and are local-only by default. They may support farm pickup, farmers-market pickup, local delivery, or local preorder. Shelf-stable products may support shipping. Fresh mushroom shipping must not be enabled unless explicitly approved.
