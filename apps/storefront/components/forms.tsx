@@ -82,8 +82,8 @@ export function NewsletterForm() {
   );
 }
 
-export function AvailabilityInquiryForm() {
-  const products = listProducts();
+export async function AvailabilityInquiryForm() {
+  const products = await listProducts();
 
   return (
     <form action="/api/availability" method="post" className="grid gap-4">

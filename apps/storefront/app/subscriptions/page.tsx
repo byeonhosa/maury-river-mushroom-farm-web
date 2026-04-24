@@ -2,8 +2,8 @@ import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
 import { listProducts } from "../../lib/products";
 
-export default function SubscriptionsPage() {
-  const subscriptionProducts = listProducts().filter(
+export default async function SubscriptionsPage() {
+  const subscriptionProducts = (await listProducts()).filter(
     (product) => product.category === "subscriptions" || product.slug === "mixed-gourmet-mushroom-box"
   );
 

@@ -78,6 +78,9 @@ web_modules/
 .next
 out
 
+# Medusa generated build/type cache
+.medusa/
+
 # Nuxt.js build / generate output
 .nuxt
 dist

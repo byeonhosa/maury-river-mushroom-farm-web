@@ -3,7 +3,9 @@ import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
 import { listProductsByCategory } from "../../lib/products";
 
-export default function FreshMushroomsPage() {
+export default async function FreshMushroomsPage() {
+  const products = await listProductsByCategory("fresh-mushrooms");
+
   return (
     <>
       <PageHero eyebrow="Fresh mushrooms" title="Local harvest, handled like produce.">
@@ -15,7 +17,7 @@ export default function FreshMushroomsPage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <LocalFulfillmentCallout />
         <div className="mt-8">
-          <ProductGrid products={listProductsByCategory("fresh-mushrooms")} />
+          <ProductGrid products={products} />
         </div>
       </section>
     </>

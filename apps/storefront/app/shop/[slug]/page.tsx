@@ -6,8 +6,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct, listProducts } from "../../../lib/products";
 
-export function generateStaticParams() {
-  return listProducts().map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  return (await listProducts()).map((product) => ({ slug: product.slug }));
 }
 
 export default async function ProductDetailPage({
@@ -16,7 +16,7 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
 
   if (!product) {
     notFound();

@@ -19,8 +19,21 @@ The current public site remains live on GoDaddy. This repository is the replacem
 corepack prepare pnpm@9.15.4 --activate
 corepack pnpm install
 cp .env.example .env
+cp .env apps/backend/.env
 docker compose up -d postgres redis
 ```
+
+PowerShell:
+
+```powershell
+corepack prepare pnpm@9.15.4 --activate
+corepack pnpm install
+Copy-Item .env.example .env
+Copy-Item .env apps\backend\.env
+docker compose up -d postgres redis
+```
+
+If another local PostgreSQL service already uses port `5432`, set `POSTGRES_HOST_PORT=5433` and update both `.env` and `apps/backend/.env` so `DATABASE_URL=postgres://postgres:postgres@localhost:5433/mrmf`.
 
 Storefront: `http://localhost:3000`
 
@@ -37,8 +50,12 @@ corepack pnpm --filter @mrmf/storefront dev
 Run the Medusa seed after Postgres is up and the backend dependencies are installed:
 
 ```bash
+corepack pnpm --filter @mrmf/backend db:migrate
 corepack pnpm --filter @mrmf/backend seed
+corepack pnpm --filter @mrmf/backend seed:verify
 ```
+
+The seed prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
 
 To check the seed payload shape without writing commerce records or booting Medusa:
 
@@ -46,7 +63,7 @@ To check the seed payload shape without writing commerce records or booting Medu
 corepack pnpm --filter @mrmf/backend seed:plan
 ```
 
-The storefront currently uses `NEXT_PUBLIC_COMMERCE_ADAPTER=shared-seed`, a transitional adapter backed by `packages/shared`. Medusa seed data is mapped from the same records so product pages can move to the Medusa Store API later without rewriting the UI contract.
+The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa-hybrid`. It reads the Medusa Store API when `NEXT_PUBLIC_MEDUSA_BACKEND_URL` is available and falls back to the shared seed catalog during local development or static builds when Medusa is offline. Use `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa` to require Medusa reads, or `shared-seed` for a fully offline storefront.
 
 ## Checks
 

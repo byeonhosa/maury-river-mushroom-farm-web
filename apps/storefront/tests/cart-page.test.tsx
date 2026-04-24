@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import CartPage from "../app/cart/page";
 
 describe("CartPage", () => {
-  it("renders line items, subtotals, and mixed-cart fulfillment restrictions", () => {
-    render(<CartPage />);
+  it("renders line items, subtotals, and mixed-cart fulfillment restrictions", async () => {
+    render(await CartPage());
 
     expect(screen.getByRole("heading", { name: "Fresh Lion's Mane" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Mushroom Salt" })).toBeInTheDocument();

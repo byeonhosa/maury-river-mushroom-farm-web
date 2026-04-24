@@ -1,12 +1,12 @@
-import { pickupLocations, summarizeCart } from "@mrmf/shared";
+import { pickupLocations } from "@mrmf/shared";
 import { CreditCard, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 import { PageHero } from "../../components/page-hero";
-import { cartShellItems, formatCurrency } from "../../lib/demo-cart";
+import { formatCurrency, getCartShellSummary } from "../../lib/demo-cart";
 
-export default function CheckoutPage() {
-  const cart = summarizeCart(cartShellItems);
+export default async function CheckoutPage() {
+  const cart = await getCartShellSummary();
 
   return (
     <>
