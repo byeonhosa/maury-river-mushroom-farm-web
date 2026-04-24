@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #642d10;
+  background: #f1cd94;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(89, 100, 74, 0.12), transparent 30rem),
+    linear-gradient(180deg, #f1cd94 0%, #f8e5c4 42%, #f1cd94 100%);
+  color: #642d10;
+  font-family: var(--font-body), Georgia, serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #642d10;
+  color: #f1cd94;
+}
+
+.brand-focus {
+  outline: 3px solid #59644a;
+  outline-offset: 4px;
+}
