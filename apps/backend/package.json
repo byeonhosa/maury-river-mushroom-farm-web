@@ -1,0 +1,26 @@
+{
+  "name": "@mrmf/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "medusa develop",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "start": "medusa start",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src medusa-config.ts --max-warnings=0",
+    "test": "vitest run",
+    "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed:plan": "ts-node ./src/scripts/seed-plan.ts"
+  },
+  "dependencies": {
+    "@medusajs/framework": "^2.8.7",
+    "@medusajs/medusa": "^2.8.7",
+    "@mrmf/shared": "workspace:*",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "ts-node": "10.9.2",
+    "vitest": "^3.1.1"
+  }
+}

@@ -96,6 +96,20 @@ export default {
   - Kohinoor Devanagari fallback: `system-ui`, `Inter`, or another clean sans-serif.
   - Athelas fallback: `Georgia` or another readable serif.
 
+## License-Safe Web Font Substitutes
+
+The initial website implementation does **not** embed Rafaella Regular, Kohinoor Devanagari Light, or Athelas Regular. Those remain the official brand-guide typefaces, but they require confirmed webfont licensing before use in production.
+
+Until licensed webfont files are provided, the website uses open-source Google Fonts loaded with `next/font/google`:
+
+| Role | Official Typeface | Interim Web Substitute | Reason |
+|---|---|---|---|
+| Heading / display | Rafaella Regular | Cormorant Garamond | Elegant high-contrast serif direction for brand-forward headlines. |
+| Sub-heading / navigation / eyebrow | Kohinoor Devanagari Light | Raleway | Clean geometric sans for navigation, labels, and structured UI text. |
+| Body text | Athelas Regular | Libre Baskerville | Readable literary serif for product education, recipes, and policies. |
+
+These substitutes are license-safe implementation fonts, not official replacements for the brand-guide fonts. If licensed webfont files are later obtained, replace the stack deliberately, test loading and layout shift, and document the change here.
+
 ## Implementation Notes for Codex
 
 - Define typography tokens early so the visual system can be applied consistently across the Next.js storefront.

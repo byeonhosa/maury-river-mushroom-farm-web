@@ -1,0 +1,60 @@
+import { getSpeciesBySlug, speciesPages } from "@mrmf/shared";
+import { notFound } from "next/navigation";
+
+export function generateStaticParams() {
+  return speciesPages.map((species) => ({ slug: species.slug }));
+}
+
+export default async function SpeciesDetailPage({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const species = getSpeciesBySlug(slug);
+
+  if (!species) {
+    notFound();
+  }
+
+  return (
+    <article className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
+        Mushroom species
+      </p>
+      <h1 className="mt-3 font-heading text-5xl leading-tight">{species.name}</h1>
+      <p className="mt-5 text-lg leading-8">{species.overview}</p>
+      {species.requiresLegalReview ? (
+        <p className="mt-6 border border-brand-burnt bg-brand-ivory p-4 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-burnt">
+          Functional mushroom copy on this page requires legal/business review.
+        </p>
+      ) : null}
+      <div className="mt-8 grid gap-5 sm:grid-cols-2">
+        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+          <h2 className="font-heading text-3xl">Flavor</h2>
+          <p className="mt-3 text-sm leading-7">{species.flavor}</p>
+        </div>
+        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+          <h2 className="font-heading text-3xl">Texture</h2>
+          <p className="mt-3 text-sm leading-7">{species.texture}</p>
+        </div>
+        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+          <h2 className="font-heading text-3xl">Storage</h2>
+          <p className="mt-3 text-sm leading-7">{species.storage}</p>
+        </div>
+        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+          <h2 className="font-heading text-3xl">Pairs with</h2>
+          <p className="mt-3 text-sm leading-7">{species.pairsWith.join(", ")}</p>
+        </div>
+      </div>
+      <section className="mt-8">
+        <h2 className="font-heading text-3xl">Cooking tips</h2>
+        <ul className="mt-4 list-disc space-y-2 pl-5 leading-7">
+          {species.cookingTips.map((tip) => (
+            <li key={tip}>{tip}</li>
+          ))}
+        </ul>
+      </section>
+    </article>
+  );
+}

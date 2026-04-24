@@ -1,0 +1,30 @@
+{
+  "name": "@mrmf/shared",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./brand": "./src/brand.ts",
+    "./business-rules": "./src/business-rules.ts",
+    "./cart": "./src/cart.ts",
+    "./commerce": "./src/commerce.ts",
+    "./forms": "./src/forms.ts",
+    "./pickup": "./src/pickup.ts",
+    "./policies": "./src/policies.ts",
+    "./products": "./src/products.ts",
+    "./recipes": "./src/recipes.ts",
+    "./species": "./src/species.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests --max-warnings=0",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.1"
+  }
+}
