@@ -1,20 +1,20 @@
-import { canShipProduct, isFreshProduct, type Product } from "@mrmf/shared";
+import type { CommerceProduct } from "@mrmf/shared";
 import Image from "next/image";
 import Link from "next/link";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: CommerceProduct }) {
   const price =
     product.price > 0 ? `$${product.price.toFixed(2)} / ${product.unitSize}` : product.unitSize;
 
   return (
     <article className="flex h-full flex-col overflow-hidden border border-brand-mahogany/20 bg-brand-ivory shadow-soft">
       <div className="relative aspect-[4/3] bg-brand-ebony">
-        <Image src={product.images[0].src} alt={product.images[0].alt} fill className="object-cover" />
+        <Image src={product.image.src} alt={product.image.alt} fill className="object-cover" />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap gap-2">
           <span className="bg-brand-ebony px-3 py-1 font-subheading text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ivory">
-            {isFreshProduct(product) ? "Fresh local-only" : canShipProduct(product) ? "Shippable" : "Local inquiry"}
+            {product.fulfillmentLabel}
           </span>
           <span className="bg-brand-mahogany px-3 py-1 font-subheading text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ivory">
             {product.inventoryStatus.replace("-", " ")}

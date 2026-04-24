@@ -1,7 +1,7 @@
-import { getProductsByCategory } from "@mrmf/shared";
 import { LocalFulfillmentCallout } from "../../components/local-fulfillment-callout";
 import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
+import { listProductsByCategory } from "../../lib/products";
 
 export default function FreshMushroomsPage() {
   return (
@@ -15,7 +15,7 @@ export default function FreshMushroomsPage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <LocalFulfillmentCallout />
         <div className="mt-8">
-          <ProductGrid products={getProductsByCategory("fresh-mushrooms")} />
+          <ProductGrid products={listProductsByCategory("fresh-mushrooms")} />
         </div>
       </section>
     </>

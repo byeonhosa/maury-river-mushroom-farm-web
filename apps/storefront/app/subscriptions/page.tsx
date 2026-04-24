@@ -1,9 +1,9 @@
-import { products } from "@mrmf/shared";
 import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
+import { listProducts } from "../../lib/products";
 
 export default function SubscriptionsPage() {
-  const subscriptionProducts = products.filter(
+  const subscriptionProducts = listProducts().filter(
     (product) => product.category === "subscriptions" || product.slug === "mixed-gourmet-mushroom-box"
   );
 

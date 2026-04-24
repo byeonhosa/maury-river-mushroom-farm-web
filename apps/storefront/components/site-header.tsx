@@ -39,11 +39,11 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/shop"
+            href="/cart"
             className="inline-flex h-11 items-center gap-2 bg-brand-mahogany px-4 font-subheading text-sm font-bold uppercase tracking-[0.08em] text-brand-ivory transition hover:bg-brand-ebony"
           >
             <ShoppingBasket className="h-4 w-4" aria-hidden="true" />
-            Shop
+            Cart
           </Link>
           <button
             type="button"

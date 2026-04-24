@@ -24,6 +24,13 @@ export type FulfillmentType =
   | "shipping"
   | "restaurant-delivery";
 
+export type FulfillmentMode =
+  | "fresh-local"
+  | "shelf-stable-shipping"
+  | "supplement-shipping"
+  | "subscription-preorder"
+  | "wholesale-preorder";
+
 export type InventoryStatus =
   | "available"
   | "seasonal"
@@ -36,6 +43,12 @@ export type VisibilityStatus = "published" | "draft" | "archived";
 export interface ProductImage {
   src: string;
   alt: string;
+}
+
+export interface FreshShippingApproval {
+  approvedBy: string;
+  approvedAt: string;
+  reason: string;
 }
 
 export interface Product {
@@ -56,12 +69,37 @@ export interface Product {
   shelfLife: string;
   fulfillment: FulfillmentType[];
   shippable: boolean;
+  freshShippingApproval?: FreshShippingApproval;
   inventoryStatus: InventoryStatus;
   images: ProductImage[];
   relatedRecipes: string[];
   relatedSpeciesPage: string[];
   supplementDisclaimer?: string;
   visibilityStatus: VisibilityStatus;
+}
+
+export interface PickupWindow {
+  label: string;
+  weekday: string;
+  startTime: string;
+  endTime: string;
+  cutoff: string;
+  requiresConfirmation: boolean;
+}
+
+export interface PickupLocation {
+  name: string;
+  slug: string;
+  fulfillmentType: FulfillmentType;
+  description: string;
+  addressNote: string;
+  windows: PickupWindow[];
+  requiresFinalConfirmation: boolean;
+}
+
+export interface CartLineInput {
+  productSlug: string;
+  quantity: number;
 }
 
 export interface SpeciesPage {

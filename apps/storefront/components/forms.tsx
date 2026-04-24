@@ -1,4 +1,4 @@
-import { products } from "@mrmf/shared";
+import { listProducts } from "../lib/products";
 
 const inputClass =
   "w-full border border-brand-mahogany/30 bg-brand-ivory px-4 py-3 text-brand-mahogany placeholder:text-brand-mahogany/60";
@@ -83,6 +83,8 @@ export function NewsletterForm() {
 }
 
 export function AvailabilityInquiryForm() {
+  const products = listProducts();
+
   return (
     <form action="/api/availability" method="post" className="grid gap-4">
       <label className="grid gap-2">

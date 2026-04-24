@@ -1,4 +1,4 @@
-import type { FulfillmentType, Product } from "./types";
+import type { FulfillmentMode, FulfillmentType, Product } from "./types";
 
 const localFulfillmentTypes: FulfillmentType[] = [
   "farm-pickup",
@@ -12,11 +12,19 @@ export function isFreshProduct(product: Product) {
   return product.productFormat === "fresh" || product.category === "fresh-mushrooms";
 }
 
+export function hasFreshShippingApproval(product: Product) {
+  return Boolean(
+    product.freshShippingApproval?.approvedBy &&
+      product.freshShippingApproval?.approvedAt &&
+      product.freshShippingApproval?.reason
+  );
+}
+
 export function canShipProduct(product: Product) {
   return (
     product.shippable === true &&
     product.fulfillment.includes("shipping") &&
-    !isFreshProduct(product)
+    (!isFreshProduct(product) || hasFreshShippingApproval(product))
   );
 }
 
@@ -24,16 +32,58 @@ export function requiresLocalFulfillment(product: Product) {
   return isFreshProduct(product) || !canShipProduct(product);
 }
 
+export function classifyProductFulfillment(product: Product): FulfillmentMode {
+  if (product.category === "restaurant-wholesale" || product.productFormat === "wholesale") {
+    return "wholesale-preorder";
+  }
+
+  if (product.category === "subscriptions" || product.productFormat === "subscription-box") {
+    return "subscription-preorder";
+  }
+
+  if (product.category === "supplements" || product.productFormat === "capsule") {
+    return "supplement-shipping";
+  }
+
+  if (canShipProduct(product)) {
+    return "shelf-stable-shipping";
+  }
+
+  return "fresh-local";
+}
+
+export function getFulfillmentLabel(product: Product) {
+  const mode = classifyProductFulfillment(product);
+
+  const labels: Record<FulfillmentMode, string> = {
+    "fresh-local": "Fresh local-only",
+    "shelf-stable-shipping": "Shelf-stable shippable",
+    "supplement-shipping": "Supplement shippable",
+    "subscription-preorder": "Subscription preorder",
+    "wholesale-preorder": "Restaurant preorder"
+  };
+
+  return labels[mode];
+}
+
 export function validateProductFulfillment(products: Product[]) {
   const errors: string[] = [];
 
   for (const product of products) {
-    if (isFreshProduct(product) && product.shippable) {
-      errors.push(`${product.name} is fresh and must not be marked shippable.`);
+    if (isFreshProduct(product) && product.shippable && !hasFreshShippingApproval(product)) {
+      errors.push(
+        `${product.name} is fresh and must not be marked shippable without a documented owner approval.`
+      );
     }
 
-    if (isFreshProduct(product) && product.fulfillment.includes("shipping")) {
-      errors.push(`${product.name} is fresh and must not include shipping fulfillment.`);
+    if (
+      isFreshProduct(product) &&
+      product.fulfillment.includes("shipping") &&
+      !hasFreshShippingApproval(product)
+    ) {
+      errors.push(
+        `${product.name} is fresh and must not include shipping fulfillment without a documented owner approval.`
+      );
     }
 
     if (product.shippable && !product.fulfillment.includes("shipping")) {

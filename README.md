@@ -20,12 +20,33 @@ corepack prepare pnpm@9.15.4 --activate
 corepack pnpm install
 cp .env.example .env
 docker compose up -d postgres redis
-corepack pnpm dev
 ```
 
 Storefront: `http://localhost:3000`
 
 Medusa backend: `http://localhost:9000`
+
+Start each service in its own terminal when working on commerce data:
+
+```bash
+docker compose up -d postgres redis
+corepack pnpm --filter @mrmf/backend dev
+corepack pnpm --filter @mrmf/storefront dev
+```
+
+Run the Medusa seed after Postgres is up and the backend dependencies are installed:
+
+```bash
+corepack pnpm --filter @mrmf/backend seed
+```
+
+To check the seed payload shape without writing commerce records or booting Medusa:
+
+```bash
+corepack pnpm --filter @mrmf/backend seed:plan
+```
+
+The storefront currently uses `NEXT_PUBLIC_COMMERCE_ADAPTER=shared-seed`, a transitional adapter backed by `packages/shared`. Medusa seed data is mapped from the same records so product pages can move to the Medusa Store API later without rewriting the UI contract.
 
 ## Checks
 
@@ -59,3 +80,5 @@ Official brand fonts are documented in `docs/brand/typography.md`, but the initi
 ## Deployment
 
 Deployment is intentionally deferred. Notes for the future DigitalOcean Docker Compose deployment live in `docs/deployment`.
+
+Detailed local commerce setup notes live in `docs/deployment/local-commerce-setup.md`.

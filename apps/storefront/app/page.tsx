@@ -1,14 +1,15 @@
 import { ArrowRight, ChefHat, Clock, Leaf, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { products, recipes, speciesPages } from "@mrmf/shared";
+import { recipes, speciesPages } from "@mrmf/shared";
 import { CategoryCardGrid } from "../components/category-card-grid";
 import { LocalFulfillmentCallout } from "../components/local-fulfillment-callout";
 import { NewsletterForm } from "../components/forms";
 import { ProductGrid } from "../components/product-grid";
 import { SectionHeading } from "../components/section-heading";
+import { listProductsByCategory } from "../lib/products";
 
-const freshThisWeek = products.filter((product) => product.category === "fresh-mushrooms").slice(0, 3);
+const freshThisWeek = listProductsByCategory("fresh-mushrooms").slice(0, 3);
 
 export default function HomePage() {
   const featuredSpecies = speciesPages[0];

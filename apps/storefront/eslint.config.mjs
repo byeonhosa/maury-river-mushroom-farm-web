@@ -4,13 +4,7 @@ import tseslint from "typescript-eslint";
 
 export default [
   {
-    ignores: [
-      "**/.next/**",
-      "**/coverage/**",
-      "**/dist/**",
-      "**/node_modules/**",
-      "apps/storefront/next-env.d.ts"
-    ]
+    ignores: [".next/**", "coverage/**", "next-env.d.ts"]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -48,7 +42,7 @@ export default [
     }
   },
   {
-    files: ["apps/storefront/**/*.{ts,tsx}"],
+    files: ["**/*.{ts,tsx}"],
     rules: {
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs["core-web-vitals"].rules

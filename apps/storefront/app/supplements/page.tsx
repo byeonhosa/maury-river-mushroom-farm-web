@@ -1,6 +1,7 @@
-import { getProductsByCategory, SUPPLEMENT_DISCLAIMER } from "@mrmf/shared";
+import { SUPPLEMENT_DISCLAIMER } from "@mrmf/shared";
 import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
+import { listProductsByCategory } from "../../lib/products";
 
 export default function SupplementsPage() {
   return (
@@ -18,7 +19,7 @@ export default function SupplementsPage() {
           </p>
           <p className="mt-2">{SUPPLEMENT_DISCLAIMER}</p>
         </div>
-        <ProductGrid products={getProductsByCategory("supplements")} />
+        <ProductGrid products={listProductsByCategory("supplements")} />
       </section>
     </>
   );

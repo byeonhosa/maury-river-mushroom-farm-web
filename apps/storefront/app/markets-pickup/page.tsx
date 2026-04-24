@@ -1,3 +1,4 @@
+import { pickupLocations } from "@mrmf/shared";
 import { AvailabilityInquiryForm } from "../../components/forms";
 import { PageHero } from "../../components/page-hero";
 
@@ -12,17 +13,23 @@ export default function MarketsPickupPage() {
       </PageHero>
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
         <div className="space-y-5">
-          {[
-            ["Farm pickup", "Customers reserve or purchase during announced windows and receive clear pickup timing."],
-            ["Farmers-market pickup", "Market pickup can be tied to scheduled market days and preorder cutoffs."],
-            ["Local delivery", "Delivery should be route-based and capacity-aware, not an open-ended promise."],
-            ["Shelf-stable shipping", "Dried, seasoning, and supplement products can use shipping once packaging and policies are ready."]
-          ].map(([title, body]) => (
-            <div key={title} className="border border-brand-mahogany/20 bg-brand-ivory p-5">
-              <h2 className="font-heading text-3xl">{title}</h2>
-              <p className="mt-2 text-sm leading-7">{body}</p>
+          {pickupLocations.map((location) => (
+            <div key={location.slug} className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+              <h2 className="font-heading text-3xl">{location.name}</h2>
+              <p className="mt-2 text-sm leading-7">{location.description}</p>
+              <p className="mt-3 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+                {location.windows[0]?.label}: {location.windows[0]?.weekday},{" "}
+                {location.windows[0]?.startTime}-{location.windows[0]?.endTime}
+              </p>
+              <p className="mt-2 text-xs leading-6">{location.addressNote}</p>
             </div>
           ))}
+          <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+            <h2 className="font-heading text-3xl">Shelf-stable shipping</h2>
+            <p className="mt-2 text-sm leading-7">
+              Dried, seasoning, and supplement products can use shipping once packaging and policies are ready.
+            </p>
+          </div>
         </div>
         <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
           <h2 className="font-heading text-4xl">Ask about availability</h2>
