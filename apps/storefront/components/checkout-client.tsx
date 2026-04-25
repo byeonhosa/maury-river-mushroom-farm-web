@@ -3,6 +3,7 @@
 import {
   getCartSupportedFulfillmentTypes,
   getPickupWindowsForLocation,
+  getCommerceProductAvailability,
   pickupLocations,
   requiresPickupDetails,
   summarizeCommerceCart,
@@ -15,10 +16,12 @@ import { AlertTriangle, CreditCard, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { readCartItems } from "../lib/cart-storage";
+import { readCartFulfillmentSelection, readCartItems } from "../lib/cart-storage";
 import {
   resolveCartLines,
+  selectCartShippingMethod,
   syncHybridCart,
+  type MedusaShippingOptionLike,
   type CartBridgeResult
 } from "../lib/cart-adapter";
 import { formatCurrency } from "../lib/format";
@@ -41,10 +44,78 @@ const fulfillmentHelp: Record<FulfillmentType, string> = {
   "restaurant-delivery": "Coordinate chef and wholesale delivery after quote review."
 };
 
+interface CheckoutMethodOption {
+  id: string;
+  label: string;
+  description: string;
+  fulfillmentType: FulfillmentType;
+  shippingOptionId?: string;
+  amount?: number | null;
+  medusaOption?: MedusaShippingOptionLike;
+}
+
+function fallbackMethodOptions(supportedFulfillmentTypes: FulfillmentType[]): CheckoutMethodOption[] {
+  return supportedFulfillmentTypes.reduce<CheckoutMethodOption[]>((options, fulfillmentType) => {
+    if (fulfillmentType === "farm-pickup" || fulfillmentType === "farmers-market-pickup") {
+      options.push(
+        ...pickupLocations
+        .filter((location) => location.fulfillmentType === fulfillmentType)
+        .map((location) => ({
+          id: location.slug,
+          label: location.name,
+          description: `${location.description} ${location.addressNote}`,
+          fulfillmentType
+        }))
+      );
+
+      return options;
+    }
+
+    options.push({
+      id: fulfillmentType,
+      label: fulfillmentLabels[fulfillmentType],
+      description: fulfillmentHelp[fulfillmentType],
+      fulfillmentType
+    });
+
+    return options;
+  }, []);
+}
+
+function medusaMethodOptions(
+  shippingOptions: MedusaShippingOptionLike[] = []
+): CheckoutMethodOption[] {
+  return shippingOptions.flatMap((option) => {
+    const fulfillmentType = option.data?.fulfillment_type;
+
+    if (!fulfillmentType) {
+      return [];
+    }
+
+    return [
+      {
+        id: option.id,
+        label: option.name,
+        description:
+          typeof option.data?.description === "string"
+            ? option.data.description
+            : fulfillmentHelp[fulfillmentType],
+        fulfillmentType,
+        shippingOptionId: option.id,
+        amount: option.amount,
+        medusaOption: option
+      }
+    ];
+  });
+}
+
 export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
   const [items, setItems] = useState<CartLineInput[]>([]);
   const [bridge, setBridge] = useState<CartBridgeResult>();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isWritingShippingMethod, setIsWritingShippingMethod] = useState(false);
+  const [shippingMethodMessage, setShippingMethodMessage] = useState("");
+  const [selectedMethodId, setSelectedMethodId] = useState("");
   const [contact, setContact] = useState({
     name: "",
     email: "",
@@ -74,6 +145,17 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
         if (mounted) {
           setBridge(result);
           setItems(result.items);
+          const storedSelection = result.selectedFulfillment ?? readCartFulfillmentSelection();
+
+          if (storedSelection) {
+            setFulfillmentType(storedSelection.type);
+            setSelectedMethodId(storedSelection.shippingOptionId ?? storedSelection.pickupLocationSlug ?? storedSelection.type ?? "");
+            setPickupLocationSlug(storedSelection.pickupLocationSlug ?? "");
+            setPickupWindowLabel(storedSelection.pickupWindowLabel ?? "");
+            setLocalDeliveryNotes(storedSelection.localDeliveryNotes ?? "");
+            setShippingAddress(storedSelection.shippingAddress ?? "");
+            setPreorderNotes(storedSelection.preorderNotes ?? "");
+          }
         }
       } finally {
         if (mounted) {
@@ -99,17 +181,38 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
     () => getCartSupportedFulfillmentTypes(cart),
     [cart]
   );
+  const methodOptions = useMemo(() => {
+    const medusaOptions = medusaMethodOptions(bridge?.safeShippingOptions);
+
+    return medusaOptions.length > 0 ? medusaOptions : fallbackMethodOptions(supportedFulfillmentTypes);
+  }, [bridge?.safeShippingOptions, supportedFulfillmentTypes]);
 
   useEffect(() => {
-    if (supportedFulfillmentTypes.length === 0) {
+    if (methodOptions.length === 0) {
       setFulfillmentType(undefined);
+      setSelectedMethodId("");
       return;
     }
 
-    if (!fulfillmentType || !supportedFulfillmentTypes.includes(fulfillmentType)) {
-      setFulfillmentType(supportedFulfillmentTypes[0]);
+    const selected = methodOptions.find((option) => option.id === selectedMethodId);
+    const nextOption = selected ?? methodOptions[0];
+
+    if (!selected || fulfillmentType !== nextOption.fulfillmentType) {
+      setSelectedMethodId(nextOption.id);
+      setFulfillmentType(nextOption.fulfillmentType);
+
+      const pickupSlug =
+        typeof nextOption.medusaOption?.data?.mrmf_seed_key === "string"
+          ? nextOption.medusaOption.data.mrmf_seed_key
+          : nextOption.id;
+      const pickupLocation = pickupLocations.find((location) => location.slug === pickupSlug);
+
+      if (pickupLocation) {
+        setPickupLocationSlug(pickupLocation.slug);
+        setPickupWindowLabel(pickupLocation.windows[0]?.label ?? "");
+      }
     }
-  }, [fulfillmentType, supportedFulfillmentTypes]);
+  }, [fulfillmentType, methodOptions, selectedMethodId]);
 
   useEffect(() => {
     if (!requiresPickupDetails(fulfillmentType)) {
@@ -145,6 +248,86 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
   const pickupWindows = pickupLocationSlug
     ? getPickupWindowsForLocation(pickupLocationSlug)
     : [];
+  const selectedMethod = methodOptions.find((option) => option.id === selectedMethodId);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedMethod || !fulfillmentType) {
+      setShippingMethodMessage("");
+      return;
+    }
+
+    setIsWritingShippingMethod(true);
+
+    void selectCartShippingMethod({
+      products,
+      selection: {
+        type: fulfillmentType,
+        shippingOptionId: selectedMethod.shippingOptionId,
+        shippingOptionName: selectedMethod.label,
+        pickupLocationSlug,
+        pickupWindowLabel,
+        localDeliveryNotes,
+        shippingAddress,
+        preorderNotes
+      }
+    })
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+
+        setShippingMethodMessage(
+          result.source === "medusa"
+            ? "Fulfillment method saved to the Medusa cart. Checkout is still staged."
+            : result.error ?? "Fulfillment method is staged locally until Medusa is available."
+        );
+        setBridge((current) =>
+          result.medusaCart
+            ? {
+                ...(current ?? {
+                  mode: "medusa-hybrid" as const,
+                  source: "medusa" as const,
+                  items,
+                  safeShippingOptions: []
+                }),
+                source: result.source,
+                medusaCartId: result.medusaCartId,
+                medusaCart: result.medusaCart
+              }
+            : current
+        );
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setShippingMethodMessage(
+            error instanceof Error
+              ? error.message
+              : "Fulfillment method could not be saved to the Medusa cart."
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsWritingShippingMethod(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    fulfillmentType,
+    items,
+    localDeliveryNotes,
+    pickupLocationSlug,
+    pickupWindowLabel,
+    preorderNotes,
+    products,
+    selectedMethod,
+    shippingAddress
+  ]);
 
   return (
     <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
@@ -203,36 +386,63 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <MapPin className="h-5 w-5 text-brand-ebony" aria-hidden="true" />
             <h2 className="font-heading text-4xl">Fulfillment selection</h2>
           </div>
-          <div className="mt-5 grid gap-4">
-            {Object.entries(fulfillmentLabels).map(([value, label]) => {
-              const fulfillmentValue = value as FulfillmentType;
-              const disabled = !supportedFulfillmentTypes.includes(fulfillmentValue);
-
-              return (
+          {methodOptions.length > 0 ? (
+            <div className="mt-5 grid gap-4">
+              {methodOptions.map((option) => (
                 <label
-                  key={value}
+                  key={option.id}
                   className="block border border-brand-mahogany/20 bg-white p-4"
                 >
                   <span className="flex items-start gap-3">
                     <input
                       type="radio"
-                      name="fulfillment-type"
+                      name="fulfillment-method"
                       className="mt-1"
-                      disabled={disabled}
-                      checked={fulfillmentType === fulfillmentValue}
-                      onChange={() => setFulfillmentType(fulfillmentValue)}
+                      checked={selectedMethodId === option.id}
+                      onChange={() => {
+                        setSelectedMethodId(option.id);
+                        setFulfillmentType(option.fulfillmentType);
+
+                        const pickupSlug =
+                          typeof option.medusaOption?.data?.mrmf_seed_key === "string"
+                            ? option.medusaOption.data.mrmf_seed_key
+                            : option.id;
+                        const pickupLocation = pickupLocations.find(
+                          (location) => location.slug === pickupSlug
+                        );
+
+                        if (pickupLocation) {
+                          setPickupLocationSlug(pickupLocation.slug);
+                          setPickupWindowLabel(pickupLocation.windows[0]?.label ?? "");
+                        }
+                      }}
                     />
-                    <span className={disabled ? "opacity-50" : ""}>
-                      <span className="block font-heading text-2xl">{label}</span>
-                      <span className="mt-1 block text-sm leading-7">
-                        {fulfillmentHelp[fulfillmentValue]}
-                      </span>
+                    <span>
+                      <span className="block font-heading text-2xl">{option.label}</span>
+                      <span className="mt-1 block text-sm leading-7">{option.description}</span>
+                      {option.amount && option.amount > 0 ? (
+                        <span className="mt-1 block font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-ebony">
+                          {formatCurrency(option.amount)}
+                        </span>
+                      ) : null}
                     </span>
                   </span>
                 </label>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-5 border border-brand-burnt bg-white p-4 text-sm leading-7">
+              This cart does not have a safe fulfillment method yet. Remove unavailable items or
+              split local fresh products from shippable shelf-stable products.
+            </p>
+          )}
+
+          {shippingMethodMessage ? (
+            <p className="mt-4 text-sm leading-7">
+              {isWritingShippingMethod ? "Saving fulfillment method... " : ""}
+              {shippingMethodMessage}
+            </p>
+          ) : null}
 
           {requiresPickupDetails(fulfillmentType) ? (
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -385,6 +595,9 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
                   <p className="font-heading text-2xl">{line.product.name}</p>
                   <p className="font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-ebony">
                     {line.quantity} x {line.fulfillmentLabel}
+                  </p>
+                  <p className="mt-1 text-xs leading-6">
+                    {getCommerceProductAvailability(line.product).message}
                   </p>
                 </div>
                 <p>{formatCurrency(line.subtotal)}</p>

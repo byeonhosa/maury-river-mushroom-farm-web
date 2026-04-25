@@ -70,9 +70,9 @@ Preview the seed plan without writing product records or booting Medusa:
 corepack pnpm --filter @mrmf/backend seed:plan
 ```
 
-The seed creates product categories, collections, shipping profiles, a local development region, a manual fulfillment stock location, one fulfillment set, one US development service zone, provisional pickup/local-delivery/preorder shipping options, safe parcel shipping options for shelf-stable and supplement products, a storefront sales channel, the initial 10 products, inventory items, inventory levels, and product variant inventory links for managed products. It is idempotent: repeated runs update existing seeded products and inventory records rather than creating duplicates and reuse seeded region/shipping records by name. Product metadata preserves mushroom-specific fields for species, product format, flavor, texture, cooking, storage, shelf life, fulfillment, related recipes, related species pages, supplement disclaimer, inventory status, and visibility status.
+The seed creates product categories, collections, shipping profiles, a local development region, a manual fulfillment stock location, one fulfillment set, one US development service zone, provisional pickup/local-delivery/preorder shipping options, safe parcel shipping options for shelf-stable and supplement products, a storefront sales channel, the initial 10 products, inventory items, inventory levels, and product variant inventory links for managed products. It is idempotent: repeated runs update existing seeded products, shipping-option safety metadata, and inventory records rather than creating duplicates and reuse seeded region/shipping records by name. Product metadata preserves mushroom-specific fields for species, product format, flavor, texture, cooking, storage, shelf life, fulfillment, related recipes, related species pages, supplement disclaimer, inventory status, and visibility status.
 
-`seed:verify` connects to PostgreSQL through `DATABASE_URL` and checks that the expected products, categories, collections, variants, prices, metadata, shipping profile links, region, service zone, shipping options, managed inventory items, inventory levels, and variant inventory links exist in the database. It also verifies that no parcel shipping option is attached to the fresh-local shipping profile.
+`seed:verify` connects to PostgreSQL through `DATABASE_URL` and checks that the expected products, categories, collections, variants, prices, metadata, shipping profile links, region, service zone, shipping options, managed inventory items, inventory levels, and variant inventory links exist in the database. It also verifies shipping-option metadata for fulfillment type, allowed product fulfillment modes, pickup-window requirements, fresh-product blocking, and that no parcel shipping option is attached to the fresh-local shipping profile.
 
 The seed also creates or reuses a publishable Store API key, links it to the storefront sales channel, and prints the public `pk_...` value. Copy that value into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in the storefront env when you want `medusa-hybrid` to return Medusa products instead of the fallback catalog.
 
@@ -113,9 +113,21 @@ Adapter modes:
 
 Product listing pages, category pages, product detail pages, the staged cart, staged checkout, and availability form all read through the storefront adapter. The fallback exists so the site can still build in CI and on machines where Medusa is not running.
 
-The cart persists locally in the browser and supports add, quantity change, remove, subtotal, fulfillment labels, fresh/local-only warnings, and mixed-cart restrictions. With `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid`, it also attempts to mirror the staged cart into a Medusa Store API cart when products came from Medusa and include variant IDs. It uses the seeded region named by `NEXT_PUBLIC_MEDUSA_REGION_NAME`, stores the Medusa cart ID in browser storage, updates Medusa line quantities, removes stale Medusa lines, and exposes only shipping/pickup options that pass the storefront fulfillment rules.
+The cart persists locally in the browser and supports add, quantity change, remove, subtotal, fulfillment labels, fresh/local-only warnings, and mixed-cart restrictions. With `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid`, it also attempts to mirror the staged cart into a Medusa Store API cart when products came from Medusa and include variant IDs. It uses the seeded region named by `NEXT_PUBLIC_MEDUSA_REGION_NAME`, stores the Medusa cart ID in browser storage, updates Medusa line quantities, removes stale Medusa lines, and exposes only shipping/pickup options that pass the shared fulfillment rules and seeded shipping-option safety metadata.
 
-Checkout collects customer contact information, fulfillment choice, pickup window where applicable, order summary, and policy acknowledgement. It validates the same shared rules as the cart but does not submit a live order or collect live payment yet. The checkout payment step is explicitly staged/test-only even when the Medusa cart bridge is active.
+Checkout collects customer contact information, explicit fulfillment method, pickup window where applicable, order summary, and policy acknowledgement. It shows only methods valid for the current cart: farm pickup, farmers-market pickup, local delivery, local preorder, parcel shipping for eligible shelf-stable or supplement products, and chef/wholesale coordination. When a Medusa cart is active, the selected method is written to `/store/carts/:id/shipping-methods` with metadata describing the staged checkout selection. When Medusa is offline, the same selection is stored locally as a staged fallback. Checkout validates the same shared rules as the cart but does not submit a live order or collect live payment yet. The checkout payment step is explicitly staged/test-only even when the Medusa cart bridge is active.
+
+Current Medusa gap: the raw Store API may still return same-region parcel options for a fresh cart in local development. The seed tags parcel options with `blocks_fresh_products` and excludes `fresh-local` from `allowed_fulfillment_modes`; the storefront adapter must continue filtering with that metadata until native Medusa shipping rules are refined for launch.
+
+Availability behavior:
+
+- `coming-soon`: visible for education and launch planning, but not cartable.
+- `sold-out`: visible with sold-out messaging, but not cartable.
+- `seasonal`: cartable with harvest-dependent availability messaging.
+- `preorder`: cartable only when the product uses an explicit preorder fulfillment mode.
+- zero stock: review before launch; seeded zero-stock coming-soon and sold-out products are blocked by availability status.
+
+Cart recovery stores the Medusa cart ID and selected fulfillment method in browser storage. If the Medusa cart is stale, deleted, expired, or unavailable, the adapter clears the stale cart ID and keeps the customer-visible staged line items where practical. The next sync creates a new Medusa cart when the Store API is available.
 
 Cart adapter modes:
 
@@ -133,8 +145,9 @@ Cart adapter modes:
 6. Start the storefront with `corepack pnpm --filter @mrmf/storefront dev`.
 7. Visit `http://localhost:3000/shop` and confirm the catalog source line says `medusa` when the Store API is reachable or `shared-seed via medusa-hybrid` when it has fallen back.
 8. Add Blue Oyster Mushrooms to the cart and confirm `/cart` reports a Medusa-backed cart when Medusa products and the publishable key are active.
-9. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded with zero provisional stock until launch availability is confirmed, so this mixed-cart check may remain staged-only until inventory is updated.
-10. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
+9. Visit `/checkout`, choose a pickup method, and confirm the page reports that the fulfillment method was saved to the Medusa cart while payment remains staged.
+10. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded as coming soon with zero provisional stock until launch availability is confirmed, so this mixed-cart check may require temporarily using another available shelf-stable fixture in development.
+11. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
 
 ## Troubleshooting
 
@@ -143,11 +156,17 @@ Cart adapter modes:
 - Storefront falls back to shared seed data: start the Medusa backend, confirm `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, and set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` to the public key printed by the seed.
 - Cart bridge remains staged-only: confirm `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid`, confirm the product catalog source is `medusa`, and confirm products have Medusa variant IDs from the Store API.
 - Cart bridge reports missing region: rerun the seed and confirm `NEXT_PUBLIC_MEDUSA_REGION_NAME=Maury River Local Development Region`.
+- Missing publishable key: run `corepack pnpm --filter @mrmf/backend seed`, copy the printed public `pk_...` key, and set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in the storefront env.
 - Cart bridge reports a Store API status error: confirm Medusa is running on `http://localhost:9000`, CORS includes the storefront origin, and the publishable key has not been revoked.
 - Cart bridge reports that a sales channel is not associated with a stock location for a variant: rerun `seed` and `seed:verify`. Managed products must have inventory items, inventory levels, and variant inventory links before Store API carts can add them.
 - Cart bridge exposes no safe shipping options: mixed carts intentionally return no safe Medusa options; split fresh/local-only items from shippable shelf-stable items.
+- Raw Store API shows parcel options for a fresh cart: this is currently expected in local development. Confirm the parcel options are tagged with `blocks_fresh_products=true` and rely on the storefront safe-option filter until native Medusa shipping rules are finalized.
+- Cart shipping method save fails: confirm `seed:verify` passes, the cart source is Medusa-backed, the selected option appears in the safe options list, and the option metadata has `fulfillment_type`.
+- Stale Medusa cart IDs: refresh the page after the adapter clears the stale ID. If line items came from older product data, remove and re-add them.
 - `seed:verify` reports missing region or shipping options: rerun `db:migrate`, rerun `seed`, then rerun `seed:verify`. The seed records are keyed by stable names.
 - Checkout shows fulfillment options as unavailable: remove and re-add the cart items so local browser cart state matches the current product adapter data.
+- Products with zero stock: confirm whether the product should be `available`, `seasonal`, `preorder`, `coming-soon`, or `sold-out` in `packages/shared/src/products.ts`, then rerun the seed.
+- Coming-soon or preorder confusion: coming-soon products are blocked from cart; preorder products must use a preorder-capable fulfillment mode before checkout can continue.
 - Medusa peer dependency warnings during install are currently upstream/non-blocking for this phase.
 
 ## Payment And Email Placeholders

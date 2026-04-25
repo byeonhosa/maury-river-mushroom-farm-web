@@ -8,8 +8,10 @@ Concise open issues and follow-up work for the website rebuild.
 - Confirm final prices, unit sizes, inventory statuses, launch availability, and Medusa stock quantities for every product.
 - Move storefront from hybrid Medusa/fallback reads to required Medusa reads once production Store API keys and checkout settings are finalized.
 - Promote the hybrid staged/Medusa cart bridge to required Medusa carts once payment, tax, and final shipping/pickup settings are approved.
-- Add final Medusa shipping method selection to checkout after pickup windows, delivery rules, parcel rates, and tax settings are confirmed.
-- Revisit provisional Medusa service zone and shipping option pricing after final pickup, local delivery, and parcel shipping policies are approved.
+- Replace provisional checkout shipping-method selection with final launch settings after pickup windows, delivery rules, parcel rates, tax settings, and policy language are confirmed.
+- Revisit provisional Medusa service zone, shipping option metadata, and flat-rate pricing after final pickup, local delivery, and parcel shipping policies are approved.
+- Refine native Medusa shipping rules so the raw Store API no longer returns parcel options for fresh carts; storefront metadata filtering blocks them for now.
+- Decide whether stale Medusa cart recovery should preserve customer details beyond staged line items before production checkout is enabled.
 - Review Medusa peer dependency warnings; current warnings are upstream/non-blocking for this phase.
 - Obtain legal review for privacy, terms, refund, and shipping/pickup policies.
 - Obtain legal/business review for supplement and functional mushroom language.

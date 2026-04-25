@@ -353,6 +353,19 @@ export const medusaSeedShippingOptions: MedusaSeedShippingOption[] = [
   }
 ];
 
+export function buildMedusaShippingOptionData(option: MedusaSeedShippingOption) {
+  return {
+    mrmf_seed_key: option.key,
+    description: option.description,
+    fulfillment_type: option.fulfillmentType,
+    allowed_fulfillment_modes: [option.shippingProfileKey],
+    blocks_fresh_products: option.isParcel,
+    is_parcel: option.isParcel,
+    requires_pickup_window: option.requiresPickupWindow,
+    requires_final_confirmation: option.requiresFinalConfirmation
+  };
+}
+
 export function buildMedusaProductMetadata(product: Product) {
   const fulfillmentMode = classifyProductFulfillment(product);
 

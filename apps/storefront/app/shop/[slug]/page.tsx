@@ -1,4 +1,5 @@
 import {
+  getCommerceProductAvailability,
   SUPPLEMENT_DISCLAIMER
 } from "@mrmf/shared";
 import Image from "next/image";
@@ -23,6 +24,8 @@ export default async function ProductDetailPage({
     notFound();
   }
 
+  const availability = getCommerceProductAvailability(product);
+
   return (
     <section className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
       <div className="relative aspect-square overflow-hidden bg-brand-ebony">
@@ -35,6 +38,12 @@ export default async function ProductDetailPage({
         <h1 className="mt-3 font-heading text-5xl leading-tight">{product.name}</h1>
         <p className="mt-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-burnt">
           {product.price > 0 ? `$${product.price.toFixed(2)} / ${product.unitSize}` : product.unitSize}
+        </p>
+        <p className="mt-4 border border-brand-mahogany/20 bg-brand-ivory p-4 text-sm leading-7">
+          <span className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+            {availability.label}
+          </span>{" "}
+          {availability.message}
         </p>
         <p className="mt-6 text-lg leading-8">{product.longDescription}</p>
 
@@ -88,7 +97,8 @@ export default async function ProductDetailPage({
           <AddToCartButton
             productSlug={product.slug}
             productName={product.name}
-            className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+            disabledReason={!availability.canAddToCart ? availability.message : undefined}
+            className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory disabled:cursor-not-allowed disabled:opacity-60"
           />
           <Link
             href="/cart"

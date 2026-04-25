@@ -1,17 +1,25 @@
 import {
+  canAddCommerceProductToCart,
   canShipCommerceProduct,
+  getCommerceProductAvailability,
   getCartSupportedFulfillmentTypes,
   summarizeCommerceCart,
   type CartLineInput,
+  type CheckoutFulfillmentInput,
   type CommerceCartLineInput,
   type CommerceProduct,
+  type FulfillmentMode,
   type FulfillmentType
 } from "@mrmf/shared";
 
 import {
+  clearCartFulfillmentSelection,
   clearMedusaCartId,
+  readCartFulfillmentSelection,
   readCartItems,
   readMedusaCartId,
+  type StoredCartFulfillmentSelection,
+  writeCartFulfillmentSelection,
   writeCartItems,
   writeMedusaCartId
 } from "./cart-storage";
@@ -25,6 +33,7 @@ export interface MedusaCartLike {
   subtotal?: number | null;
   total?: number | null;
   items?: MedusaCartLineLike[];
+  shipping_methods?: MedusaCartShippingMethodLike[];
 }
 
 export interface MedusaCartLineLike {
@@ -33,6 +42,14 @@ export interface MedusaCartLineLike {
   product_handle?: string | null;
   quantity: number;
   metadata?: Record<string, unknown> | null;
+}
+
+export interface MedusaCartShippingMethodLike {
+  id: string;
+  shipping_option_id?: string | null;
+  name?: string | null;
+  amount?: number | null;
+  data?: Record<string, unknown> | null;
 }
 
 export interface MedusaRegionLike {
@@ -47,6 +64,8 @@ export interface MedusaShippingOptionLike {
   amount?: number | null;
   data?: {
     fulfillment_type?: FulfillmentType;
+    allowed_fulfillment_modes?: FulfillmentMode[];
+    blocks_fresh_products?: boolean;
     is_parcel?: boolean;
     requires_pickup_window?: boolean;
     requires_final_confirmation?: boolean;
@@ -61,6 +80,21 @@ export interface CartBridgeResult {
   medusaCartId?: string;
   medusaCart?: MedusaCartLike;
   safeShippingOptions: MedusaShippingOptionLike[];
+  selectedFulfillment?: StoredCartFulfillmentSelection;
+  recoveredFromCartId?: string;
+  error?: string;
+}
+
+export interface CartShippingMethodSelection extends CheckoutFulfillmentInput {
+  shippingOptionId?: string;
+  shippingOptionName?: string;
+}
+
+export interface ShippingMethodWriteBackResult {
+  source: CartBridgeSource;
+  selection: StoredCartFulfillmentSelection;
+  medusaCartId?: string;
+  medusaCart?: MedusaCartLike;
   error?: string;
 }
 
@@ -94,6 +128,10 @@ interface MedusaRegionsResponse {
 
 interface MedusaShippingOptionsResponse {
   shipping_options?: MedusaShippingOptionLike[];
+}
+
+interface MedusaShippingMethodResponse {
+  cart?: MedusaCartLike;
 }
 
 const defaultBackendUrl = "http://localhost:9000";
@@ -217,6 +255,12 @@ export function buildMedusaCartLinePayloads(
   items: CartLineInput[]
 ) {
   return resolveCartLines(products, items).map(({ product, quantity }) => {
+    const availability = getCommerceProductAvailability(product);
+
+    if (!canAddCommerceProductToCart(product)) {
+      throw new Error(`${product.name} is ${availability.label.toLowerCase()} and cannot be added to a Medusa cart yet.`);
+    }
+
     if (!product.variantId) {
       throw new Error(
         `${product.name} is missing a Medusa variant ID. Start Medusa and use Medusa-backed product reads before syncing the cart.`
@@ -230,6 +274,7 @@ export function buildMedusaCartLinePayloads(
         mrmf_managed: true,
         mrmf_slug: product.slug,
         fulfillment_mode: product.fulfillmentMode,
+        inventory_status: product.inventoryStatus,
         fulfillment: product.fulfillment,
         shippable: product.shippable
       }
@@ -406,6 +451,8 @@ export function filterSafeShippingOptions(
   const summary = summarizeCommerceCart(resolveCartLines(products, items));
   const supportedFulfillmentTypes = getCartSupportedFulfillmentTypes(summary);
   const cartHasLocalOnly = summary.lines.some((line) => !canShipCommerceProduct(line.product));
+  const cartHasFresh = summary.lines.some((line) => line.product.localOnly);
+  const fulfillmentModes = new Set(summary.lines.map((line) => line.product.fulfillmentMode));
 
   if (summary.fulfillmentType === "mixed") {
     return [];
@@ -413,9 +460,23 @@ export function filterSafeShippingOptions(
 
   return shippingOptions.filter((option) => {
     const fulfillmentType = option.data?.fulfillment_type;
+    const allowedFulfillmentModes = Array.isArray(option.data?.allowed_fulfillment_modes)
+      ? option.data.allowed_fulfillment_modes
+      : [];
     const isParcel = option.data?.is_parcel === true;
 
     if (!fulfillmentType) {
+      return false;
+    }
+
+    if (
+      allowedFulfillmentModes.length > 0 &&
+      ![...fulfillmentModes].every((mode) => allowedFulfillmentModes.includes(mode))
+    ) {
+      return false;
+    }
+
+    if (option.data?.blocks_fresh_products === true && cartHasFresh) {
       return false;
     }
 
@@ -429,6 +490,59 @@ export function filterSafeShippingOptions(
 
     return true;
   });
+}
+
+function buildShippingMethodData({
+  option,
+  selection
+}: {
+  option: MedusaShippingOptionLike;
+  selection: CartShippingMethodSelection;
+}) {
+  return {
+    ...(option.data ?? {}),
+    mrmf_selected_fulfillment_type: selection.type,
+    mrmf_checkout_status: "staged-payment-disabled",
+    pickup_location_slug: selection.pickupLocationSlug,
+    pickup_window_label: selection.pickupWindowLabel,
+    local_delivery_notes: selection.localDeliveryNotes,
+    shipping_address_note: selection.shippingAddress,
+    preorder_notes: selection.preorderNotes
+  };
+}
+
+export async function writeSelectedShippingMethodToMedusaCart({
+  cartId,
+  option,
+  selection,
+  options = {}
+}: {
+  cartId: string;
+  option: MedusaShippingOptionLike;
+  selection: CartShippingMethodSelection;
+  options?: CartAdapterOptions;
+}) {
+  if (!selection.type || option.data?.fulfillment_type !== selection.type) {
+    throw new Error("Selected Medusa shipping option does not match the checkout fulfillment type.");
+  }
+
+  const response = await medusaRequest<MedusaShippingMethodResponse>(
+    `/store/carts/${encodeURIComponent(cartId)}/shipping-methods`,
+    requireMedusaOptions(options),
+    {
+      method: "POST",
+      body: JSON.stringify({
+        option_id: option.id,
+        data: buildShippingMethodData({ option, selection })
+      })
+    }
+  );
+
+  if (!response.cart) {
+    throw new Error("Medusa did not return a cart after shipping method selection.");
+  }
+
+  return response.cart;
 }
 
 async function reconcileMedusaCart({
@@ -499,19 +613,22 @@ export async function syncHybridCart(
   const storage = resolved.storage;
   const mode = resolved.mode ?? "medusa-hybrid";
   const items = readCartItems(storage);
+  const selectedFulfillment = readCartFulfillmentSelection(storage);
 
   if (mode === "staged") {
     return {
       mode,
       source: "staged",
       items,
-      safeShippingOptions: []
+      safeShippingOptions: [],
+      selectedFulfillment
     };
   }
 
   try {
     let medusaCartId = readMedusaCartId(storage);
     let medusaCart: MedusaCartLike;
+    let recoveredFromCartId: string | undefined;
 
     if (items.length === 0) {
       if (!medusaCartId) {
@@ -519,11 +636,26 @@ export async function syncHybridCart(
           mode,
           source: "staged",
           items,
-          safeShippingOptions: []
+          safeShippingOptions: [],
+          selectedFulfillment
         };
       }
 
-      medusaCart = await getMedusaCart(medusaCartId, resolved);
+      try {
+        medusaCart = await getMedusaCart(medusaCartId, resolved);
+      } catch {
+        clearMedusaCartId(storage);
+        clearCartFulfillmentSelection(storage);
+
+        return {
+          mode,
+          source: "staged",
+          items,
+          safeShippingOptions: [],
+          error: "Saved Medusa cart was unavailable and has been cleared."
+        };
+      }
+
       medusaCart = await reconcileMedusaCart({
         cart: medusaCart,
         products,
@@ -537,7 +669,8 @@ export async function syncHybridCart(
         items,
         medusaCartId: medusaCart.id,
         medusaCart,
-        safeShippingOptions: []
+        safeShippingOptions: [],
+        selectedFulfillment
       };
     }
 
@@ -546,6 +679,7 @@ export async function syncHybridCart(
         medusaCart = await getMedusaCart(medusaCartId, resolved);
       } catch {
         clearMedusaCartId(storage);
+        recoveredFromCartId = medusaCartId;
         medusaCartId = undefined;
         medusaCart = await createMedusaCart({ products, items, options: resolved });
       }
@@ -571,7 +705,9 @@ export async function syncHybridCart(
       items,
       medusaCartId: medusaCart.id,
       medusaCart,
-      safeShippingOptions
+      safeShippingOptions,
+      selectedFulfillment,
+      recoveredFromCartId
     };
   } catch (error) {
     if (mode === "medusa") {
@@ -583,6 +719,7 @@ export async function syncHybridCart(
       source: "staged",
       items,
       safeShippingOptions: [],
+      selectedFulfillment,
       error: error instanceof Error ? error.message : "Medusa cart sync failed."
     };
   }
@@ -598,4 +735,94 @@ export async function updateHybridCartItems(
   writeCartItems(items, resolved.storage);
 
   return syncHybridCart(products, resolved);
+}
+
+export async function selectCartShippingMethod({
+  products,
+  selection,
+  options = {}
+}: {
+  products: CommerceProduct[];
+  selection: CartShippingMethodSelection;
+  options?: CartAdapterOptions;
+}): Promise<ShippingMethodWriteBackResult> {
+  const resolved = resolveOptions(options);
+  const mode = resolved.mode ?? "medusa-hybrid";
+  const storedSelection: StoredCartFulfillmentSelection = {
+    ...selection,
+    source: "staged"
+  };
+
+  writeCartFulfillmentSelection(storedSelection, resolved.storage);
+
+  if (!selection.type) {
+    return {
+      source: "staged",
+      selection: storedSelection,
+      error: "Select a fulfillment method before syncing checkout."
+    };
+  }
+
+  if (!selection.shippingOptionId) {
+    return {
+      source: "staged",
+      selection: storedSelection,
+      error: "Fulfillment method is staged locally until a Medusa shipping option is available."
+    };
+  }
+
+  try {
+    const bridge = await syncHybridCart(products, resolved);
+
+    if (bridge.source !== "medusa" || !bridge.medusaCartId) {
+      return {
+        source: "staged",
+        selection: storedSelection,
+        error: bridge.error ?? "Medusa cart is unavailable; fulfillment selection is staged locally."
+      };
+    }
+
+    const option = bridge.safeShippingOptions.find(
+      (candidate) => candidate.id === selection.shippingOptionId
+    );
+
+    if (!option) {
+      throw new Error("Selected shipping option is not safe for the current cart contents.");
+    }
+
+    if (option.data?.fulfillment_type !== selection.type) {
+      throw new Error("Selected shipping option does not match the selected fulfillment type.");
+    }
+
+    const medusaCart = await writeSelectedShippingMethodToMedusaCart({
+      cartId: bridge.medusaCartId,
+      option,
+      selection,
+      options: resolved
+    });
+    const medusaSelection: StoredCartFulfillmentSelection = {
+      ...selection,
+      shippingOptionName: option.name,
+      source: "medusa"
+    };
+
+    writeCartFulfillmentSelection(medusaSelection, resolved.storage);
+
+    return {
+      source: "medusa",
+      selection: medusaSelection,
+      medusaCartId: medusaCart.id,
+      medusaCart
+    };
+  } catch (error) {
+    if (mode === "medusa") {
+      throw error;
+    }
+
+    return {
+      source: "staged",
+      selection: storedSelection,
+      error: error instanceof Error ? error.message : "Medusa shipping method sync failed."
+    };
+  }
 }

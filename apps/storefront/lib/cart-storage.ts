@@ -1,7 +1,14 @@
-import type { CartLineInput } from "@mrmf/shared";
+import type { CartLineInput, CheckoutFulfillmentInput } from "@mrmf/shared";
 
 export const cartStorageKey = "mrmf-cart-v1";
 export const medusaCartStorageKey = "mrmf-medusa-cart-id-v1";
+export const cartFulfillmentSelectionStorageKey = "mrmf-cart-fulfillment-selection-v1";
+
+export interface StoredCartFulfillmentSelection extends CheckoutFulfillmentInput {
+  shippingOptionId?: string;
+  shippingOptionName?: string;
+  source?: "staged" | "medusa";
+}
 
 function normalizeQuantity(quantity: number) {
   return Number.isFinite(quantity) ? Math.max(1, Math.min(99, Math.floor(quantity))) : 1;
@@ -114,6 +121,35 @@ export function writeMedusaCartId(cartId: string, storage: Storage = window.loca
 
 export function clearMedusaCartId(storage: Storage = window.localStorage) {
   storage.removeItem(medusaCartStorageKey);
+}
+
+export function readCartFulfillmentSelection(storage: Storage = window.localStorage) {
+  try {
+    const raw = storage.getItem(cartFulfillmentSelectionStorageKey);
+
+    if (!raw) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(raw) as StoredCartFulfillmentSelection;
+
+    return parsed && typeof parsed === "object" ? parsed : undefined;
+  } catch {
+    storage.removeItem(cartFulfillmentSelectionStorageKey);
+
+    return undefined;
+  }
+}
+
+export function writeCartFulfillmentSelection(
+  selection: StoredCartFulfillmentSelection,
+  storage: Storage = window.localStorage
+) {
+  storage.setItem(cartFulfillmentSelectionStorageKey, JSON.stringify(selection));
+}
+
+export function clearCartFulfillmentSelection(storage: Storage = window.localStorage) {
+  storage.removeItem(cartFulfillmentSelectionStorageKey);
 }
 
 export function notifyCartUpdated() {

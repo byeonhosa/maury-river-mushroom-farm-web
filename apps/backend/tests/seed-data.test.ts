@@ -5,6 +5,7 @@ import {
   buildMedusaInventorySpecs,
   buildMedusaProductMetadata,
   buildMedusaProductPayloads,
+  buildMedusaShippingOptionData,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedRegion,
@@ -66,6 +67,26 @@ describe("backend seed data contract", () => {
         (option) => option.isParcel && option.shippingProfileKey === "fresh-local"
       )
     ).toBe(false);
+
+    const shelfStableParcel = medusaSeedShippingOptions.find(
+      (option) => option.key === "shelf-stable-parcel"
+    );
+    const farmPickup = medusaSeedShippingOptions.find((option) => option.key === "farm-pickup");
+
+    expect(shelfStableParcel).toBeDefined();
+    expect(farmPickup).toBeDefined();
+    expect(buildMedusaShippingOptionData(shelfStableParcel!)).toMatchObject({
+      fulfillment_type: "shipping",
+      allowed_fulfillment_modes: ["shelf-stable-shipping"],
+      blocks_fresh_products: true,
+      is_parcel: true
+    });
+    expect(buildMedusaShippingOptionData(farmPickup!)).toMatchObject({
+      fulfillment_type: "farm-pickup",
+      allowed_fulfillment_modes: ["fresh-local"],
+      blocks_fresh_products: false,
+      requires_pickup_window: true
+    });
   });
 
   it("maps every seed product to a Medusa payload with rich mushroom metadata", () => {
