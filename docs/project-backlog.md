@@ -1,23 +1,197 @@
 # Project Backlog
 
-Concise open issues and follow-up work for the website rebuild.
+Working roadmap for The Maury River Mushroom Farm website rebuild. Keep this
+document current as phases are completed, split, or deferred.
 
-- Replace generated SVG logo wrappers with official designer-provided vector files when available; current SVGs are development-only raster wrappers and not true vector masters.
-- Fill remaining product photo gaps: exact Blue Oyster and Golden Oyster photos, packaged mushroom salt, dried oyster mushrooms, lion's mane capsules, and future powder/grow-kit products.
-- Confirm final provenance, usage rights, and owner-approved alt text for all product and farm images.
-- Run a final production image optimization review once the launch photo set is selected.
-- Confirm final pickup locations, pickup windows, preorder cutoffs, local delivery rules, and market schedules; current values are provisional seed/config data.
-- Confirm final prices, unit sizes, inventory statuses, launch availability, and Medusa stock quantities for every product.
-- Move storefront from hybrid Medusa/fallback reads to required Medusa reads once production Store API keys and checkout settings are finalized.
-- Promote the hybrid staged/Medusa cart bridge to required Medusa carts once payment, tax, and final shipping/pickup settings are approved.
-- Replace provisional checkout shipping-method selection with final launch settings after pickup windows, delivery rules, parcel rates, tax settings, and policy language are confirmed.
-- Revisit provisional Medusa service zone, shipping option metadata, and flat-rate pricing after final pickup, local delivery, and parcel shipping policies are approved.
-- Refine native Medusa shipping rules so the raw Store API no longer returns parcel options for fresh carts; storefront metadata filtering blocks them for now.
-- Decide whether stale Medusa cart recovery should preserve customer details beyond staged line items before production checkout is enabled.
-- Review Medusa peer dependency warnings; current warnings are upstream/non-blocking for this phase.
-- Obtain legal review for privacy, terms, refund, and shipping/pickup policies.
-- Obtain legal/business review for supplement and functional mushroom language.
-- Configure production Stripe keys and webhook handling only after checkout approval.
-- Configure production email or CRM routing for contact, newsletter, wholesale, and availability forms.
-- Plan DigitalOcean deployment, backups, monitoring, and rollback process.
-- Plan GoDaddy/DNS migration separately; no DNS changes have been made.
+## Phase 0: Baseline cleanup and backlog update
+
+- Goal: Confirm `main` is clean, current checks pass, local startup paths are known,
+  and this roadmap is the active implementation sequence.
+- Major tasks: Update this backlog, verify local Docker/Postgres/Medusa/storefront
+  startup, run seed verification, smoke key routes, and document any local blockers.
+- Done when: `main` has this roadmap committed, checks and route smoke are recorded,
+  checkout remains staged/test-only, and no feature work has started.
+- Suggested branch: `codex/phase-0-baseline-cleanup` for future doc-only cleanup; use
+  direct `main` only for owner-approved baseline documentation commits.
+- Dependencies or cautions: Do not begin Phase 1 hardening here. Do not commit `.env`,
+  `.next`, logs, database files, or other generated local artifacts.
+
+## Phase 1: Native shipping rules / fulfillment hardening
+
+- Goal: Move as much fresh-product shipping protection as practical into Medusa
+  data/configuration while preserving storefront safety filters.
+- Major tasks: Review shipping profiles, fulfillment sets, service zones, shipping
+  options, product metadata, cart option filtering, and mixed-cart behavior. Refine
+  native Medusa rules so raw Store API options are safer for fresh carts.
+- Done when: Fresh products cannot receive parcel shipping through seeded backend
+  configuration, shelf-stable products still have parcel options, mixed carts are
+  clearly blocked or split, and tests cover the backend and storefront rules.
+- Suggested branch: `codex/native-shipping-rules`
+- Dependencies or cautions: Requires seeded Medusa/Postgres working locally. Fresh
+  mushroom shipping still needs explicit owner approval and a cold-chain plan.
+
+## Phase 2: Inventory and availability admin foundation
+
+- Goal: Give the owner an initial admin-friendly way to manage availability without
+  editing code for every launch-window change.
+- Major tasks: Define inventory/availability records, map Medusa inventory status to
+  storefront availability, create admin or scriptable update flows, document how to
+  change coming-soon, seasonal, preorder, sold-out, and stock quantities.
+- Done when: The owner can update product availability and stock through a documented
+  admin/script path, storefront messaging updates correctly, and seed data remains
+  idempotent.
+- Suggested branch: `codex/inventory-availability-admin`
+- Dependencies or cautions: Final prices, unit sizes, launch availability, and stock
+  quantities still need confirmation. Avoid creating a custom admin surface that fights
+  Medusa if Medusa admin can handle the needed workflow.
+
+## Phase 3: Notify-me / back-in-stock system
+
+- Goal: Capture demand for sold-out, seasonal, coming-soon, and preorder products.
+- Major tasks: Add notify-me forms, server-side validation, storage model, owner export
+  or email routing, customer confirmation copy, spam protection plan, and opt-in policy
+  handling.
+- Done when: Customers can request notifications from relevant product states, requests
+  are stored or routed safely, duplicate handling is documented, and privacy language is
+  updated for legal review.
+- Suggested branch: `codex/notify-me-back-in-stock`
+- Dependencies or cautions: Needs email/CRM direction or a safe interim storage/export
+  path. Do not imply product availability dates that the farm has not confirmed.
+
+## Phase 4: Visual design refresh
+
+- Goal: Move the storefront from functional scaffold to a polished premium local-food
+  experience while staying within the brand guide.
+- Major tasks: Refine homepage composition, category pages, product detail layout,
+  farm/market/restaurant pages, responsive spacing, image crops, card density, alt
+  text, typography, focus states, and accessibility.
+- Done when: Key routes feel cohesive on mobile and desktop, real photos are used only
+  where appropriate, no brand contrast rules are violated, and accessibility checks are
+  addressed.
+- Suggested branch: `codex/visual-design-refresh`
+- Dependencies or cautions: Exact Blue Oyster, Golden Oyster, packaged product photos,
+  official designer SVGs, final provenance, and owner-approved alt text remain needed.
+  Generated SVGs are raster wrappers, not production vector masters.
+
+## Phase 5: Stripe test mode, tax, and order-email scaffolding
+
+- Goal: Prepare checkout plumbing in safe test mode without enabling live payments or
+  final paid orders.
+- Major tasks: Configure Stripe test placeholders, tax assumptions, payment intent or
+  Medusa payment provider scaffolding, staged order email templates, webhook skeletons,
+  and policy acknowledgement flow.
+- Done when: Test-mode payment flow can be exercised without live credentials, order
+  email scaffolding is documented, checkout still cannot create a real paid order, and
+  secrets remain outside Git.
+- Suggested branch: `codex/stripe-tax-order-email-test`
+- Dependencies or cautions: Requires final tax/shipping assumptions and legal review of
+  checkout policies. Do not commit keys or enable live Stripe.
+
+## Phase 6: DigitalOcean staging deployment
+
+- Goal: Deploy a private staging environment on DigitalOcean for owner review.
+- Major tasks: Finalize Docker Compose services, environment variable checklist,
+  database migration/seed process, backups, logs, reverse proxy/TLS plan, health checks,
+  and rollback notes.
+- Done when: Staging runs storefront, Medusa, Postgres, and Redis from documented
+  commands; backups are tested; and staging is not connected to production DNS.
+- Suggested branch: `codex/digitalocean-staging`
+- Dependencies or cautions: Do not touch GoDaddy or production DNS. Requires staging
+  secrets and droplet access outside the repo.
+
+## Phase 7: Production app integration architecture
+
+- Goal: Design the bridge between the public website and the farm's future internal
+  production-tracking system.
+- Major tasks: Define integration boundaries, data ownership, API contracts, auth
+  model, caching strategy, failure modes, audit logging, and what customer-facing data
+  may be exposed.
+- Done when: Architecture docs identify source systems, sync direction, security model,
+  rollout stages, and implementation risks before code begins.
+- Suggested branch: `codex/production-integration-architecture`
+- Dependencies or cautions: Needs owner input on the internal production system. Avoid
+  exposing sensitive production, customer, or operational data.
+
+## Phase 8: FarmRaise/accounting export layer
+
+- Goal: Prepare clean exports for accounting, grants, or farm operations workflows.
+- Major tasks: Identify required fields, design order/customer/product export formats,
+  map taxes, discounts, fulfillment methods, and refunds, and create manual export
+  scripts or admin actions.
+- Done when: A test export can be generated from seeded/test orders, field mapping is
+  documented, and sensitive data handling is clear.
+- Suggested branch: `codex/farmraise-accounting-export`
+- Dependencies or cautions: Requires real order model decisions from Phase 5 and owner
+  confirmation of FarmRaise/accounting requirements.
+
+## Phase 9: AI Marketing Studio: drafts + campaign calendar
+
+- Goal: Help the owner draft product, recipe, market, and education campaigns without
+  auto-publishing.
+- Major tasks: Define campaign content types, draft generation guardrails, review
+  workflow, seasonal calendar, product availability inputs, and saved draft storage.
+- Done when: The owner can generate and edit draft campaign ideas, nothing posts
+  automatically, and supplement/health language is flagged for review.
+- Suggested branch: `codex/ai-marketing-studio-drafts`
+- Dependencies or cautions: Requires strong health-claim safeguards. Do not generate
+  disease-treatment claims or imply FDA review beyond required disclaimers.
+
+## Phase 10: Social account API integrations
+
+- Goal: Connect approved social accounts for read/write-capable future workflows.
+- Major tasks: Research platform APIs, auth flows, token storage, rate limits,
+  permissions, webhook options, and account-specific policy constraints.
+- Done when: Integration plan and test-mode connections are documented, tokens are held
+  outside Git, and the app can safely identify connected accounts.
+- Suggested branch: `codex/social-api-integrations`
+- Dependencies or cautions: Requires owner-controlled social app credentials and
+  platform approval. Respect API terms and avoid brittle scraping.
+
+## Phase 11: Comment triage and social analytics
+
+- Goal: Help the owner monitor comments, common questions, customer sentiment, and
+  campaign performance.
+- Major tasks: Pull comments/metrics where APIs permit, classify common topics, flag
+  urgent or sensitive messages, summarize performance, and keep human review central.
+- Done when: The owner can review triaged comments and basic analytics in a dashboard
+  or report without automatic public replies.
+- Suggested branch: `codex/comment-triage-analytics`
+- Dependencies or cautions: Depends on Phase 10 account connections. Handle customer
+  data carefully and avoid automated medical, legal, or refund advice.
+
+## Phase 12: Limited auto-posting and safe auto-replies
+
+- Goal: Add tightly controlled automation only after draft/review workflows are trusted.
+- Major tasks: Build approval queues, allowlists, scheduling controls, kill switches,
+  audit logs, safe reply templates, escalation rules, and platform-specific compliance
+  checks.
+- Done when: Auto-posting and replies are limited, reversible, logged, and require
+  explicit owner-approved rules.
+- Suggested branch: `codex/limited-auto-posting`
+- Dependencies or cautions: Depends on Phases 9-11. Do not auto-reply to health,
+  legal, refund, payment, or complaint topics without human review.
+
+## Phase 13: Launch readiness and production migration
+
+- Goal: Prepare the replacement site for owner-approved launch.
+- Major tasks: Final content review, legal review, supplement language review,
+  production Stripe/email/storage setup, staging signoff, backup restore test,
+  performance/accessibility pass, DNS migration plan, and rollback plan.
+- Done when: Owner approves launch checklist, production environment is ready, DNS plan
+  is scheduled, GoDaddy migration steps are documented, and rollback is tested.
+- Suggested branch: `codex/launch-readiness`
+- Dependencies or cautions: Do not deploy, change DNS, or touch GoDaddy until the owner
+  explicitly approves the production migration.
+
+## Cross-cutting backlog
+
+- Replace generated SVG logo wrappers with official designer-provided vector files.
+- Complete missing product photography and confirm image usage rights.
+- Confirm final pickup windows, delivery rules, preorder cutoffs, market schedules,
+  prices, unit sizes, and stock quantities.
+- Obtain legal review for privacy, terms, refund, shipping/pickup, supplement, and
+  health-related language.
+- Configure production email/CRM, Stripe, backups, monitoring, and deployment secrets
+  outside Git.
+- Review Medusa peer dependency warnings only when they block real work; current
+  warnings are documented as upstream/non-blocking.
