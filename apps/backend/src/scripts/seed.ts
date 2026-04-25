@@ -26,6 +26,7 @@ import type { ProductCategory } from "@mrmf/shared";
 import {
   buildMedusaInventorySpecs,
   buildMedusaProductPayloads,
+  buildMedusaShippingOptionData,
   buildSeedPlan,
   type MedusaSeedInventorySpec,
   medusaSeedCategories,
@@ -82,6 +83,7 @@ interface ServiceZoneRecord extends EntityRecord {
 
 interface ShippingOptionRecord extends EntityRecord {
   name: string;
+  data?: Record<string, unknown> | null;
 }
 
 interface SalesChannelRecord extends EntityRecord {
@@ -130,6 +132,13 @@ interface InventoryModuleService {
     selector: Record<string, unknown>,
     config?: Record<string, unknown>
   ): Promise<InventoryLevelRecord[]>;
+}
+
+interface FulfillmentModuleService {
+  updateShippingOptions(
+    id: string,
+    data: { name?: string; data?: Record<string, unknown> | null }
+  ): Promise<unknown>;
 }
 
 const seedSalesChannelName =
@@ -569,7 +578,7 @@ async function ensureShippingOptions({
   const existing = await queryRecords<ShippingOptionRecord>(
     query,
     "shipping_option",
-    ["id", "name"],
+    ["id", "name", "data"],
     {
       name: names
     }
@@ -596,6 +605,26 @@ async function ensureShippingOptions({
     {}
   );
   const missing = medusaSeedShippingOptions.filter((option) => !existingNames.has(option.name));
+  const optionByName = new Map(medusaSeedShippingOptions.map((option) => [option.name, option]));
+  const updateExistingShippingOptionMetadata = async (records: ShippingOptionRecord[]) => {
+    const fulfillmentModule = container.resolve<FulfillmentModuleService>(Modules.FULFILLMENT);
+
+    for (const record of records) {
+      const seedOption = optionByName.get(record.name);
+
+      if (!seedOption) {
+        continue;
+      }
+
+      await fulfillmentModule.updateShippingOptions(record.id, {
+        name: seedOption.name,
+        data: {
+          ...(record.data ?? {}),
+          ...buildMedusaShippingOptionData(seedOption)
+        }
+      });
+    }
+  };
 
   if (missing.length > 0) {
     const { result } = await createShippingOptionsWorkflow(container).run({
@@ -628,19 +657,22 @@ async function ensureShippingOptions({
               amount: option.amount
             }
           ],
-          data: {
-            mrmf_seed_key: option.key,
-            description: option.description,
-            fulfillment_type: option.fulfillmentType,
-            is_parcel: option.isParcel,
-            requires_pickup_window: option.requiresPickupWindow,
-            requires_final_confirmation: option.requiresFinalConfirmation
-          }
+          data: buildMedusaShippingOptionData(option)
         };
       })
     });
 
-    return [...existing, ...result.map((option) => ({ id: option.id, name: option.name }))];
+    const created = result.map((option) => ({ id: option.id, name: option.name }));
+
+    if (existing.length > 0) {
+      await updateExistingShippingOptionMetadata(existing);
+    }
+
+    return [...existing, ...created];
+  }
+
+  if (existing.length > 0) {
+    await updateExistingShippingOptionMetadata(existing);
   }
 
   return existing;

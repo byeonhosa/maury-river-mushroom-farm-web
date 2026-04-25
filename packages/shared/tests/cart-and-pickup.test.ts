@@ -1,5 +1,7 @@
 import {
+  canAddCommerceProductToCart,
   getProductBySlug,
+  getCommerceProductAvailability,
   getCartSupportedFulfillmentTypes,
   medusaProductToCommerceProduct,
   pickupLocations,
@@ -234,6 +236,74 @@ describe("cart and pickup commerce rules", () => {
       relatedRecipes: ["mushroom-salt-roasted-potatoes"],
       relatedSpeciesPage: ["blue-oyster"],
       visibilityStatus: "published"
+    });
+  });
+
+  it("blocks coming-soon and sold-out products from cartable checkout", () => {
+    const comingSoon = medusaProductToCommerceProduct({
+      id: "prod_mushroom_salt",
+      handle: "mushroom-salt"
+    });
+    const soldOut = medusaProductToCommerceProduct({
+      id: "prod_sold_out",
+      handle: "blue-oyster-mushrooms",
+      metadata: {
+        inventory_status: "sold-out"
+      }
+    });
+    const summary = summarizeCommerceCart([
+      { product: comingSoon, quantity: 1 },
+      { product: soldOut, quantity: 1 }
+    ]);
+
+    expect(canAddCommerceProductToCart(comingSoon)).toBe(false);
+    expect(canAddCommerceProductToCart(soldOut)).toBe(false);
+    expect(getCommerceProductAvailability(comingSoon)).toMatchObject({
+      label: "Coming soon",
+      canAddToCart: false,
+      blocksCheckout: true
+    });
+    expect(getCommerceProductAvailability(soldOut)).toMatchObject({
+      label: "Sold out",
+      canAddToCart: false,
+      blocksCheckout: true
+    });
+    expect(summary.restrictions.join(" ")).toContain(
+      "Mushroom Salt, Blue Oyster Mushrooms cannot be checked out"
+    );
+  });
+
+  it("allows seasonal products with harvest messaging and preorder products only through preorder fulfillment", () => {
+    const seasonal = medusaProductToCommerceProduct({
+      id: "prod_fresh_lions_mane",
+      handle: "fresh-lions-mane"
+    });
+    const preorder = medusaProductToCommerceProduct({
+      id: "prod_mixed_box",
+      handle: "mixed-gourmet-mushroom-box"
+    });
+    const preorderWithoutFlow = medusaProductToCommerceProduct({
+      id: "prod_bad_preorder",
+      handle: "mushroom-salt",
+      metadata: {
+        inventory_status: "preorder",
+        fulfillment: ["shipping"]
+      }
+    });
+
+    expect(getCommerceProductAvailability(seasonal)).toMatchObject({
+      label: "Seasonal harvest",
+      canAddToCart: true
+    });
+    expect(getCommerceProductAvailability(preorder)).toMatchObject({
+      label: "Preorder",
+      canAddToCart: true,
+      isPreorder: true
+    });
+    expect(getCommerceProductAvailability(preorderWithoutFlow)).toMatchObject({
+      label: "Preorder pending",
+      canAddToCart: false,
+      blocksCheckout: true
     });
   });
 });

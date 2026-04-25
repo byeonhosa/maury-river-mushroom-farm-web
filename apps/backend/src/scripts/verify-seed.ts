@@ -10,6 +10,7 @@ import pg from "pg";
 
 import {
   buildMedusaInventorySpecs,
+  buildMedusaShippingOptionData,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedRegion,
@@ -102,6 +103,20 @@ function assertArrayMetadata(
     Array.isArray(value) && JSON.stringify(value) === JSON.stringify(expected),
     `${product.name} metadata.${key} did not match the shared seed data.`
   );
+}
+
+function assertShippingOptionMetadata(
+  data: Record<string, unknown>,
+  option: (typeof medusaSeedShippingOptions)[number]
+) {
+  const expected = buildMedusaShippingOptionData(option);
+
+  for (const [key, expectedValue] of Object.entries(expected)) {
+    requireCondition(
+      JSON.stringify(data[key]) === JSON.stringify(expectedValue),
+      `${option.name} data.${key} did not match the shared seed data.`
+    );
+  }
 }
 
 async function verifySeed() {
@@ -295,14 +310,7 @@ async function verifySeed() {
         asNumber(row!.price_amount) === option.amount,
         `${option.name} price mismatch.`
       );
-      requireCondition(
-        row!.data?.fulfillment_type === option.fulfillmentType,
-        `${option.name} fulfillment type data mismatch.`
-      );
-      requireCondition(
-        row!.data?.is_parcel === option.isParcel,
-        `${option.name} parcel flag data mismatch.`
-      );
+      assertShippingOptionMetadata(row!.data ?? {}, option);
       requireCondition(
         !(option.isParcel && option.shippingProfileKey === "fresh-local"),
         `${option.name} must not attach parcel shipping to the fresh-local shipping profile.`

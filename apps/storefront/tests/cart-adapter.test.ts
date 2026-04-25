@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildMedusaCartLinePayloads,
   filterSafeShippingOptions,
+  selectCartShippingMethod,
   syncHybridCart
 } from "../lib/cart-adapter";
 import { cartStorageKey, medusaCartStorageKey } from "../lib/cart-storage";
@@ -20,6 +21,15 @@ const fresh = medusaProductToCommerceProduct({
 });
 
 const salt = medusaProductToCommerceProduct({
+  id: "prod_mushroom_salt",
+  handle: "mushroom-salt",
+  variants: [{ id: "variant_mushroom_salt" }],
+  metadata: {
+    inventory_status: "available"
+  }
+});
+
+const comingSoonSalt = medusaProductToCommerceProduct({
   id: "prod_mushroom_salt",
   handle: "mushroom-salt",
   variants: [{ id: "variant_mushroom_salt" }]
@@ -58,6 +68,14 @@ describe("Medusa cart adapter", () => {
         })
       }
     ]);
+  });
+
+  it("blocks coming-soon products from Medusa cart payloads", () => {
+    expect(() =>
+      buildMedusaCartLinePayloads([comingSoonSalt], [
+        { productSlug: "mushroom-salt", quantity: 1 }
+      ])
+    ).toThrow("Mushroom Salt is coming soon");
   });
 
   it("creates a Medusa cart with the seeded region and local line metadata", async () => {
@@ -263,5 +281,164 @@ describe("Medusa cart adapter", () => {
         shippingOptions
       )
     ).toEqual([]);
+  });
+
+  it("writes a selected safe shipping method back to a Medusa cart", async () => {
+    window.localStorage.setItem(
+      cartStorageKey,
+      JSON.stringify([{ productSlug: "mushroom-salt", quantity: 1 }])
+    );
+    window.localStorage.setItem(medusaCartStorageKey, "cart_123");
+
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input.toString();
+
+      if (url.endsWith("/store/carts/cart_123") && !init?.method) {
+        return jsonResponse({
+          cart: {
+            id: "cart_123",
+            items: [
+              {
+                id: "line_salt",
+                variant_id: "variant_mushroom_salt",
+                quantity: 1,
+                metadata: { mrmf_managed: true, mrmf_slug: "mushroom-salt" }
+              }
+            ]
+          }
+        });
+      }
+
+      if (url.includes("/store/shipping-options?cart_id=cart_123")) {
+        return jsonResponse({
+          shipping_options: [
+            {
+              id: "so_shelf",
+              name: "Shelf-stable parcel shipping",
+              data: {
+                fulfillment_type: "shipping",
+                is_parcel: true,
+                allowed_fulfillment_modes: ["shelf-stable-shipping"]
+              }
+            }
+          ]
+        });
+      }
+
+      if (url.endsWith("/store/carts/cart_123/shipping-methods")) {
+        expect(init?.method).toBe("POST");
+        expect(JSON.parse(String(init?.body))).toMatchObject({
+          option_id: "so_shelf",
+          data: {
+            fulfillment_type: "shipping",
+            mrmf_selected_fulfillment_type: "shipping",
+            shipping_address_note: "123 Pantry Lane"
+          }
+        });
+
+        return jsonResponse({
+          cart: {
+            id: "cart_123",
+            shipping_methods: [
+              {
+                id: "sm_123",
+                shipping_option_id: "so_shelf"
+              }
+            ]
+          }
+        });
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    }) as unknown as typeof fetch;
+
+    const result = await selectCartShippingMethod({
+      products: [salt],
+      selection: {
+        type: "shipping",
+        shippingOptionId: "so_shelf",
+        shippingAddress: "123 Pantry Lane"
+      },
+      options: {
+        mode: "medusa-hybrid",
+        backendUrl: "http://medusa.test",
+        publishableKey: "pk_test",
+        fetchImpl,
+        storage: window.localStorage,
+        timeoutMs: 100
+      }
+    });
+
+    expect(result.source).toBe("medusa");
+    expect(result.medusaCartId).toBe("cart_123");
+    expect(result.selection).toMatchObject({
+      source: "medusa",
+      shippingOptionName: "Shelf-stable parcel shipping"
+    });
+  });
+
+  it("recovers from a stale Medusa cart id without losing staged lines", async () => {
+    window.localStorage.setItem(
+      cartStorageKey,
+      JSON.stringify([{ productSlug: "mushroom-salt", quantity: 1 }])
+    );
+    window.localStorage.setItem(medusaCartStorageKey, "cart_stale");
+
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input.toString();
+
+      if (url.endsWith("/store/carts/cart_stale") && !init?.method) {
+        return new Response(JSON.stringify({ message: "not found" }), { status: 404 });
+      }
+
+      if (url.endsWith("/store/regions")) {
+        return jsonResponse({
+          regions: [
+            {
+              id: "reg_mrmf",
+              name: "Maury River Local Development Region",
+              currency_code: "usd"
+            }
+          ]
+        });
+      }
+
+      if (url.endsWith("/store/carts") && init?.method === "POST") {
+        return jsonResponse({
+          cart: {
+            id: "cart_recovered",
+            items: [
+              {
+                id: "line_salt",
+                variant_id: "variant_mushroom_salt",
+                quantity: 1,
+                metadata: { mrmf_managed: true, mrmf_slug: "mushroom-salt" }
+              }
+            ]
+          }
+        });
+      }
+
+      if (url.includes("/store/shipping-options?cart_id=cart_recovered")) {
+        return jsonResponse({ shipping_options: [] });
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    }) as unknown as typeof fetch;
+
+    const result = await syncHybridCart([salt], {
+      mode: "medusa-hybrid",
+      backendUrl: "http://medusa.test",
+      publishableKey: "pk_test",
+      fetchImpl,
+      storage: window.localStorage,
+      timeoutMs: 100
+    });
+
+    expect(result.source).toBe("medusa");
+    expect(result.medusaCartId).toBe("cart_recovered");
+    expect(result.recoveredFromCartId).toBe("cart_stale");
+    expect(result.items).toEqual([{ productSlug: "mushroom-salt", quantity: 1 }]);
+    expect(window.localStorage.getItem(medusaCartStorageKey)).toBe("cart_recovered");
   });
 });

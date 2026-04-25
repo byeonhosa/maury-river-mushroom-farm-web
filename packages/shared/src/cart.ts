@@ -8,6 +8,8 @@ import {
 } from "./business-rules";
 import {
   canShipCommerceProduct,
+  canAddCommerceProductToCart,
+  getCommerceProductAvailability,
   isFreshCommerceProduct,
   requiresLocalCommerceFulfillment,
   type CommerceProduct
@@ -70,6 +72,12 @@ export function buildCartLine(product: Product, quantity: number): CartLine {
 
   if (product.category === "subscriptions") {
     warnings.push("Subscription products require a confirmed pickup cadence before launch.");
+  }
+
+  const availability = getCommerceProductAvailability(product);
+
+  if (product.inventoryStatus !== "available") {
+    warnings.push(availability.message);
   }
 
   return {
@@ -166,6 +174,7 @@ export function summarizeCommerceCart(inputs: CommerceCartLineInput[]): Commerce
   const hasShippableShelfStable = products.some(canShipCommerceProduct);
   const hasLocalOnly = products.some(requiresLocalCommerceFulfillment);
   const hasQuoteOnly = products.some((product) => product.price <= 0);
+  const unavailableProducts = products.filter((product) => !canAddCommerceProductToCart(product));
   const fulfillmentSummary =
     products.length === 0
       ? {
@@ -201,6 +210,12 @@ export function summarizeCommerceCart(inputs: CommerceCartLineInput[]): Commerce
 
   if (hasQuoteOnly) {
     restrictions.push("Quote-only products cannot enter paid checkout until pricing is confirmed.");
+  }
+
+  if (unavailableProducts.length > 0) {
+    restrictions.push(
+      `${unavailableProducts.map((product) => product.name).join(", ")} cannot be checked out until availability changes.`
+    );
   }
 
   return {

@@ -37,6 +37,14 @@ export interface CommerceProduct {
   metadata: ProductMetadata;
 }
 
+export interface CommerceProductAvailability {
+  label: string;
+  message: string;
+  canAddToCart: boolean;
+  blocksCheckout: boolean;
+  isPreorder: boolean;
+}
+
 export type ProductMetadata = Pick<
   Product,
   | "species"
@@ -303,6 +311,74 @@ export function canShipCommerceProduct(product: CommerceProduct) {
 
 export function requiresLocalCommerceFulfillment(product: CommerceProduct) {
   return isFreshCommerceProduct(product) || !canShipCommerceProduct(product);
+}
+
+export function isCommerceProductPreorderEnabled(product: CommerceProduct) {
+  return (
+    product.inventoryStatus === "preorder" &&
+    (product.fulfillment.includes("local-preorder") ||
+      product.fulfillment.includes("restaurant-delivery"))
+  );
+}
+
+export function getCommerceProductAvailability(
+  product: Pick<CommerceProduct, "inventoryStatus" | "fulfillment" | "name">
+): CommerceProductAvailability {
+  switch (product.inventoryStatus) {
+    case "available":
+      return {
+        label: "Available",
+        message: "Available for the current ordering window.",
+        canAddToCart: true,
+        blocksCheckout: false,
+        isPreorder: false
+      };
+    case "seasonal":
+      return {
+        label: "Seasonal harvest",
+        message:
+          "Seasonal item. Availability depends on the current harvest and may require confirmation.",
+        canAddToCart: true,
+        blocksCheckout: false,
+        isPreorder: false
+      };
+    case "preorder": {
+      const preorderEnabled =
+        product.fulfillment.includes("local-preorder") ||
+        product.fulfillment.includes("restaurant-delivery");
+
+      return {
+        label: preorderEnabled ? "Preorder" : "Preorder pending",
+        message: preorderEnabled
+          ? "Preorder item. The farm will confirm timing before this becomes a final order."
+          : "Preorder is not configured for this item yet.",
+        canAddToCart: preorderEnabled,
+        blocksCheckout: !preorderEnabled,
+        isPreorder: preorderEnabled
+      };
+    }
+    case "sold-out":
+      return {
+        label: "Sold out",
+        message: `${product.name} is sold out and cannot be added to checkout right now.`,
+        canAddToCart: false,
+        blocksCheckout: true,
+        isPreorder: false
+      };
+    case "coming-soon":
+    default:
+      return {
+        label: "Coming soon",
+        message: `${product.name} is not available for ordering yet.`,
+        canAddToCart: false,
+        blocksCheckout: true,
+        isPreorder: false
+      };
+  }
+}
+
+export function canAddCommerceProductToCart(product: CommerceProduct) {
+  return getCommerceProductAvailability(product).canAddToCart;
 }
 
 export function classifyCommerceProductFulfillment(product: Pick<CommerceProduct, "category" | "metadata" | "shippable" | "fulfillment">): FulfillmentMode {
