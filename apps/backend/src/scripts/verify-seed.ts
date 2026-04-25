@@ -9,6 +9,7 @@ import path from "node:path";
 import pg from "pg";
 
 import {
+  buildMedusaInventorySpecs,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedRegion,
@@ -56,6 +57,15 @@ interface SeedShippingOptionRow {
   provider_id: string | null;
   price_amount: string | number | null;
   data: Record<string, unknown> | null;
+}
+
+interface SeedInventoryRow {
+  handle: string;
+  sku: string | null;
+  manage_inventory: boolean;
+  inventory_item_id: string | null;
+  requires_shipping: boolean | null;
+  stocked_quantity: string | number | null;
 }
 
 const shippingProfileTypeByFulfillmentMode = Object.fromEntries(
@@ -194,6 +204,29 @@ async function verifySeed() {
       group by so.id, so.name, sot.code, sp.type, sz.name, so.provider_id, so.data
       order by so.name
     `, [medusaSeedShippingOptions.map((option) => option.name)]);
+    const inventoryResult = await client.query<SeedInventoryRow>(`
+      select
+        p.handle,
+        pv.sku,
+        pv.manage_inventory,
+        ii.id as inventory_item_id,
+        ii.requires_shipping,
+        il.stocked_quantity
+      from product p
+      join product_variant pv on pv.product_id = p.id and pv.deleted_at is null
+      left join product_variant_inventory_item pvii
+        on pvii.variant_id = pv.id
+        and pvii.deleted_at is null
+      left join inventory_item ii
+        on ii.id = pvii.inventory_item_id
+        and ii.deleted_at is null
+      left join inventory_level il
+        on il.inventory_item_id = ii.id
+        and il.deleted_at is null
+      where p.external_id like 'mrmf:%'
+        and p.deleted_at is null
+      order by p.handle
+    `);
 
     const categoryHandles = new Set(categoryResult.rows.map((row) => row.handle));
     const collectionHandles = new Set(collectionResult.rows.map((row) => row.handle));
@@ -201,6 +234,7 @@ async function verifySeed() {
     const productRows = new Map(productResult.rows.map((row) => [row.handle, row]));
     const region = regionResult.rows[0];
     const shippingOptionRows = new Map(shippingOptionResult.rows.map((row) => [row.name, row]));
+    const inventoryRows = new Map(inventoryResult.rows.map((row) => [row.sku, row]));
     const publishableKey = publishableKeyResult.rows[0];
 
     for (const category of medusaSeedCategories) {
@@ -290,6 +324,31 @@ async function verifySeed() {
       `Expected ${products.length} Maury River products, found ${productRows.size}.`
     );
 
+    for (const spec of buildMedusaInventorySpecs()) {
+      const row = inventoryRows.get(spec.sku);
+
+      requireCondition(Boolean(row), `Missing product variant for inventory SKU ${spec.sku}.`);
+      requireCondition(
+        row!.manage_inventory === spec.manageInventory,
+        `${spec.title} manage_inventory mismatch.`
+      );
+
+      if (spec.manageInventory) {
+        requireCondition(
+          Boolean(row!.inventory_item_id),
+          `${spec.title} is missing a linked inventory item.`
+        );
+        requireCondition(
+          row!.requires_shipping === spec.requiresShipping,
+          `${spec.title} inventory requires_shipping mismatch.`
+        );
+        requireCondition(
+          asNumber(row!.stocked_quantity) === spec.stockedQuantity,
+          `${spec.title} stocked quantity mismatch.`
+        );
+      }
+    }
+
     for (const product of products) {
       const row = productRows.get(product.slug);
       const fulfillmentMode = classifyProductFulfillment(product);
@@ -360,7 +419,7 @@ async function verifySeed() {
   }
 
   console.log(
-    `Verified Maury River Medusa seed: ${products.length} products, ${medusaSeedCategories.length} categories, ${medusaSeedCollections.length} collections, ${medusaSeedShippingProfiles.length} shipping profiles, ${medusaSeedShippingOptions.length} shipping options, one local region, and a storefront publishable API key.`
+    `Verified Maury River Medusa seed: ${products.length} products, ${medusaSeedCategories.length} categories, ${medusaSeedCollections.length} collections, ${medusaSeedShippingProfiles.length} shipping profiles, ${medusaSeedShippingOptions.length} shipping options, one local region, storefront publishable API key, and ${buildMedusaInventorySpecs().filter((spec) => spec.manageInventory).length} managed inventory variants.`
   );
 }
 

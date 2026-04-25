@@ -2,6 +2,7 @@ import { products, validateProductFulfillment } from "@mrmf/shared";
 import { describe, expect, it } from "vitest";
 
 import {
+  buildMedusaInventorySpecs,
   buildMedusaProductMetadata,
   buildMedusaProductPayloads,
   medusaSeedCategories,
@@ -98,6 +99,10 @@ describe("backend seed data contract", () => {
     expect(payloads).toHaveLength(10);
     expect(payloads.every((payload) => payload.options?.[0]?.title === "Unit")).toBe(true);
     expect(payloads.every((payload) => payload.variants?.[0]?.prices?.[0]?.currency_code === "usd")).toBe(true);
+    expect(payloads.find((payload) => payload.handle === "fresh-lions-mane")?.variants?.[0]).toMatchObject({
+      sku: "MRMF-FRESH-LIONS-MANE",
+      manage_inventory: true
+    });
     expect(payloads.find((payload) => payload.handle === "fresh-lions-mane")).toMatchObject({
       shipping_profile_id: "sp_fresh",
       collection_id: "pcol_fresh"
@@ -125,5 +130,24 @@ describe("backend seed data contract", () => {
     expect(metadata.supplement_disclaimer).toContain(
       "not intended to diagnose, treat, cure, or prevent any disease"
     );
+  });
+
+  it("defines inventory specs for Medusa-managed product variants", () => {
+    const inventorySpecs = buildMedusaInventorySpecs();
+
+    expect(inventorySpecs).toHaveLength(10);
+    expect(inventorySpecs.find((spec) => spec.productSlug === "blue-oyster-mushrooms")).toMatchObject({
+      sku: "MRMF-BLUE-OYSTER-MUSHROOMS",
+      manageInventory: true,
+      stockedQuantity: 50
+    });
+    expect(inventorySpecs.find((spec) => spec.productSlug === "mushroom-salt")).toMatchObject({
+      manageInventory: true,
+      stockedQuantity: 0
+    });
+    expect(inventorySpecs.find((spec) => spec.productSlug === "chefs-weekly-mushroom-mix")).toMatchObject({
+      manageInventory: false,
+      stockedQuantity: 12
+    });
   });
 });

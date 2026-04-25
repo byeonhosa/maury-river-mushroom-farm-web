@@ -16,6 +16,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { readCartItems } from "../lib/cart-storage";
+import {
+  resolveCartLines,
+  syncHybridCart,
+  type CartBridgeResult
+} from "../lib/cart-adapter";
 import { formatCurrency } from "../lib/format";
 
 const fulfillmentLabels: Record<FulfillmentType, string> = {
@@ -36,20 +41,10 @@ const fulfillmentHelp: Record<FulfillmentType, string> = {
   "restaurant-delivery": "Coordinate chef and wholesale delivery after quote review."
 };
 
-function resolveCartLines(products: CommerceProduct[], items: CartLineInput[]) {
-  const productBySlug = new Map(products.map((product) => [product.slug, product]));
-
-  return items
-    .map((item) => {
-      const product = productBySlug.get(item.productSlug);
-
-      return product ? { product, quantity: item.quantity } : undefined;
-    })
-    .filter((line): line is { product: CommerceProduct; quantity: number } => Boolean(line));
-}
-
 export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
   const [items, setItems] = useState<CartLineInput[]>([]);
+  const [bridge, setBridge] = useState<CartBridgeResult>();
+  const [isSyncing, setIsSyncing] = useState(false);
   const [contact, setContact] = useState({
     name: "",
     email: "",
@@ -66,17 +61,37 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
   const [submitMessage, setSubmitMessage] = useState("");
 
   useEffect(() => {
-    const syncCart = () => setItems(readCartItems());
+    let mounted = true;
+    const syncCart = async () => {
+      setIsSyncing(true);
+      const localItems = readCartItems();
 
-    syncCart();
+      setItems(localItems);
+
+      try {
+        const result = await syncHybridCart(products);
+
+        if (mounted) {
+          setBridge(result);
+          setItems(result.items);
+        }
+      } finally {
+        if (mounted) {
+          setIsSyncing(false);
+        }
+      }
+    };
+
+    void syncCart();
     window.addEventListener("storage", syncCart);
     window.addEventListener("mrmf-cart-updated", syncCart);
 
     return () => {
+      mounted = false;
       window.removeEventListener("storage", syncCart);
       window.removeEventListener("mrmf-cart-updated", syncCart);
     };
-  }, []);
+  }, [products]);
 
   const cartLines = useMemo(() => resolveCartLines(products, items), [items, products]);
   const cart = useMemo(() => summarizeCommerceCart(cartLines), [cartLines]);
@@ -303,7 +318,11 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           <p className="mt-3 text-sm leading-7">
             Online card payment is disabled in this staged checkout. Stripe placeholders are
             configured through environment variables only, with no live credentials committed.
+            {bridge?.source === "medusa"
+              ? " A Medusa cart has been prepared for validation, but order completion is still blocked."
+              : " The staged browser cart remains the fallback while Medusa cart sync is unavailable."}
           </p>
+          {bridge?.error ? <p className="mt-3 text-xs leading-6">{bridge.error}</p> : null}
         </div>
 
         <div className="border border-brand-burnt bg-brand-ivory p-5">
@@ -381,6 +400,25 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           {cart.warnings.map((warning) => (
             <p key={warning}>{warning}</p>
           ))}
+        </div>
+        <div className="mt-5 border-t border-brand-mahogany/20 pt-5">
+          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+            Medusa cart bridge
+          </p>
+          <p className="mt-2 text-sm leading-7">
+            {isSyncing
+              ? "Checking Medusa cart availability..."
+              : bridge?.source === "medusa"
+                ? `Prepared cart ${bridge.medusaCartId}; payment remains disabled.`
+                : "Using the staged browser cart fallback."}
+          </p>
+          {bridge?.safeShippingOptions.length ? (
+            <ul className="mt-3 space-y-2 text-xs leading-6">
+              {bridge.safeShippingOptions.map((option) => (
+                <li key={option.id}>{option.name}</li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </aside>
     </section>

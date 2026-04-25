@@ -1,9 +1,10 @@
 import type { CartLineInput } from "@mrmf/shared";
 
 export const cartStorageKey = "mrmf-cart-v1";
+export const medusaCartStorageKey = "mrmf-medusa-cart-id-v1";
 
 function normalizeQuantity(quantity: number) {
-  return Math.max(1, Math.min(99, Math.floor(quantity)));
+  return Number.isFinite(quantity) ? Math.max(1, Math.min(99, Math.floor(quantity))) : 1;
 }
 
 function normalizeCartItems(items: CartLineInput[]) {
@@ -101,6 +102,18 @@ export function removeCartItem(productSlug: string, storage: Storage = window.lo
   writeCartItems(items, storage);
 
   return readCartItems(storage);
+}
+
+export function readMedusaCartId(storage: Storage = window.localStorage) {
+  return storage.getItem(medusaCartStorageKey) || undefined;
+}
+
+export function writeMedusaCartId(cartId: string, storage: Storage = window.localStorage) {
+  storage.setItem(medusaCartStorageKey, cartId);
+}
+
+export function clearMedusaCartId(storage: Storage = window.localStorage) {
+  storage.removeItem(medusaCartStorageKey);
 }
 
 export function notifyCartUpdated() {

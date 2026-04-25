@@ -93,6 +93,16 @@ export interface MedusaProductMappingContext {
   salesChannelId?: string;
 }
 
+export interface MedusaSeedInventorySpec {
+  productSlug: string;
+  sku: string;
+  title: string;
+  description: string;
+  manageInventory: boolean;
+  requiresShipping: boolean;
+  stockedQuantity: number;
+}
+
 export interface SeedPlan {
   categories: MedusaSeedCategory[];
   collections: MedusaSeedCollection[];
@@ -111,6 +121,14 @@ const collectionKeyByFulfillmentMode: Record<FulfillmentMode, string> = {
   "supplement-shipping": "functional-mushroom-products",
   "subscription-preorder": "subscription-boxes",
   "wholesale-preorder": "restaurant-wholesale"
+};
+
+const inventoryQuantityByStatus: Record<Product["inventoryStatus"], number> = {
+  available: 50,
+  seasonal: 24,
+  preorder: 12,
+  "coming-soon": 0,
+  "sold-out": 0
 };
 
 export const medusaSeedCategories: MedusaSeedCategory[] = productCategories.map(
@@ -377,8 +395,24 @@ export function buildMedusaProductMetadata(product: Product) {
   };
 }
 
-function buildSku(product: Product) {
+export function buildSku(product: Product) {
   return `MRMF-${product.slug.toUpperCase().replace(/-/g, "-")}`;
+}
+
+export function getSeedInventoryQuantity(product: Product) {
+  return inventoryQuantityByStatus[product.inventoryStatus];
+}
+
+export function buildMedusaInventorySpecs(): MedusaSeedInventorySpec[] {
+  return products.map((product) => ({
+    productSlug: product.slug,
+    sku: buildSku(product),
+    title: product.name,
+    description: product.shortDescription,
+    manageInventory: product.category !== "restaurant-wholesale",
+    requiresShipping: true,
+    stockedQuantity: getSeedInventoryQuantity(product)
+  }));
 }
 
 export function buildMedusaProductPayloads(

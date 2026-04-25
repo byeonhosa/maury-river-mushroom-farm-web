@@ -55,7 +55,7 @@ corepack pnpm --filter @mrmf/backend seed
 corepack pnpm --filter @mrmf/backend seed:verify
 ```
 
-The seed creates the initial product catalog plus a local development region, manual fulfillment location, pickup/local-delivery/preorder options, and parcel shipping options for eligible shelf-stable and supplement products. No parcel shipping option is attached to the fresh-local shipping profile. The seed also prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
+The seed creates the initial product catalog plus a local development region, manual fulfillment location, pickup/local-delivery/preorder options, parcel shipping options for eligible shelf-stable and supplement products, inventory items, stock levels, and product variant inventory links for managed products. No parcel shipping option is attached to the fresh-local shipping profile. The seed also prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
 
 To check the seed payload shape without writing commerce records or booting Medusa:
 
@@ -63,9 +63,9 @@ To check the seed payload shape without writing commerce records or booting Medu
 corepack pnpm --filter @mrmf/backend seed:plan
 ```
 
-The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa-hybrid`. It reads the Medusa Store API when `NEXT_PUBLIC_MEDUSA_BACKEND_URL` is available and falls back to the shared seed catalog during local development or static builds when Medusa is offline. Use `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa` to require Medusa reads, or `shared-seed` for a fully offline storefront.
+The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa-hybrid`. It reads the Medusa Store API when `NEXT_PUBLIC_MEDUSA_BACKEND_URL` and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` are configured, and falls back to the shared seed catalog during local development or static builds when Medusa is offline. Use `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa` to require Medusa reads, or `shared-seed` for a fully offline storefront.
 
-The storefront cart is staged locally in the browser, but it is built from the same product adapter used by the shop. It supports add, quantity change, remove, subtotal, fresh/local-only warnings, mixed-cart restrictions, and checkout validation. Live payment and final Medusa cart completion remain disabled until Stripe, policies, and launch fulfillment settings are approved.
+The storefront cart uses `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid` by default. It persists a staged browser cart first, then mirrors it to a Medusa Store API cart when Medusa-backed products include variant IDs and the publishable key is configured. If Medusa is offline or the key is missing, the cart remains staged-only. It supports add, quantity change, remove, subtotal, fresh/local-only warnings, mixed-cart restrictions, safe shipping option filtering, and checkout validation. Live payment and final Medusa cart completion remain disabled until Stripe, policies, and launch fulfillment settings are approved.
 
 ## Checks
 
@@ -103,6 +103,10 @@ corepack pnpm --filter @mrmf/backend seed:verify
 ```
 
 If checkout shows every fulfillment option as unavailable, confirm the cart products are still in the current product adapter source and refresh the cart by removing and re-adding the items.
+
+If the cart bridge says the staged browser cart is active, confirm the backend is running, `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000`, `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` is set to the public `pk_...` value printed by the seed, and `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid`. Products must be read from Medusa for the cart bridge to have Medusa variant IDs.
+
+If Medusa cart creation reports that a sales channel is not associated with a stock location for a variant, rerun `corepack pnpm --filter @mrmf/backend seed` and `corepack pnpm --filter @mrmf/backend seed:verify`. Managed seeded variants need inventory items, inventory levels, and variant inventory links before the Store API can add them to a cart.
 
 ## Business rules
 

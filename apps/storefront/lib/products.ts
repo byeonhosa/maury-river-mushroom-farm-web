@@ -71,6 +71,7 @@ export async function fetchMedusaStoreProducts({
 }: FetchMedusaProductsOptions) {
   const url = new URL("/store/products", backendUrl);
   url.searchParams.set("limit", "100");
+  url.searchParams.set("fields", "id,title,handle,description,thumbnail,+metadata,*images,*variants");
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
