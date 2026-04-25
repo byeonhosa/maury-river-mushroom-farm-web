@@ -2,8 +2,10 @@
 
 Concise open issues and follow-up work for the website rebuild.
 
-- Replace generated SVG logo wrappers with official designer-provided vector files when available; current SVGs are development-only and not true vector masters.
-- Replace placeholder product and farm imagery with real approved photography.
+- Replace generated SVG logo wrappers with official designer-provided vector files when available; current SVGs are development-only raster wrappers and not true vector masters.
+- Fill remaining product photo gaps: exact Blue Oyster and Golden Oyster photos, packaged mushroom salt, dried oyster mushrooms, lion's mane capsules, and future powder/grow-kit products.
+- Confirm final provenance, usage rights, and owner-approved alt text for all product and farm images.
+- Run a final production image optimization review once the launch photo set is selected.
 - Confirm final pickup locations, pickup windows, preorder cutoffs, local delivery rules, and market schedules; current values are provisional seed/config data.
 - Confirm final prices, unit sizes, inventory statuses, launch availability, and Medusa stock quantities for every product.
 - Move storefront from hybrid Medusa/fallback reads to required Medusa reads once production Store API keys and checkout settings are finalized.

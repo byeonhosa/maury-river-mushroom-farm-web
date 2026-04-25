@@ -12,38 +12,38 @@ export const productCategories: Array<{
     slug: "fresh-mushrooms",
     title: "Fresh Mushrooms",
     description:
-      "Harvest-driven gourmet mushrooms for pickup, market pickup, local delivery, and restaurant preorders."
+      "Harvest-driven gourmet mushrooms for pickup, market pickup, local delivery, and restaurant preorders.",
   },
   {
     slug: "dried-mushrooms",
     title: "Dried Mushrooms",
     description:
-      "Shelf-stable mushrooms for broths, sauces, risotto, ramen, and pantry cooking."
+      "Shelf-stable mushrooms for broths, sauces, risotto, ramen, and pantry cooking.",
   },
   {
     slug: "salts-seasonings",
     title: "Mushroom Salts & Seasonings",
     description:
-      "Savory mushroom-powered finishing salts and seasoning blends for everyday cooking."
+      "Savory mushroom-powered finishing salts and seasoning blends for everyday cooking.",
   },
   {
     slug: "supplements",
     title: "Functional Mushroom Supplements",
     description:
-      "Carefully labeled mushroom capsules and powders with cautious structure/function language."
+      "Carefully labeled mushroom capsules and powders with cautious structure/function language.",
   },
   {
     slug: "subscriptions",
     title: "CSA-Style Boxes",
     description:
-      "Recurring fresh mushroom boxes built around weekly harvest availability."
+      "Recurring fresh mushroom boxes built around weekly harvest availability.",
   },
   {
     slug: "restaurant-wholesale",
     title: "Restaurant & Wholesale",
     description:
-      "Chef-focused fresh mushrooms, weekly mixes, and direct wholesale inquiries."
-  }
+      "Chef-focused fresh mushrooms, weekly mixes, and direct wholesale inquiries.",
+  },
 ];
 
 export const products: Product[] = [
@@ -59,25 +59,37 @@ export const products: Product[] = [
       "Tender, snow-white lion's mane with a delicate seafood-like bite.",
     longDescription:
       "Fresh lion's mane is harvested in small batches for customers who want a centerpiece mushroom for searing, shredding, and crisping. It is best handled like fresh produce and kept cold until cooking.",
-    flavorProfile: "Mild, savory, lightly sweet, and reminiscent of crab or scallop when browned.",
+    flavorProfile:
+      "Mild, savory, lightly sweet, and reminiscent of crab or scallop when browned.",
     texture: "Tender and shreddable with crisp edges when pan-seared.",
     cookingMethods: ["sear", "shred", "pan-fry", "roast"],
-    pairings: ["butter", "garlic", "lemon", "parsley", "Old Bay-style seasoning"],
+    pairings: [
+      "butter",
+      "garlic",
+      "lemon",
+      "parsley",
+      "Old Bay-style seasoning",
+    ],
     storageInstructions:
       "Keep refrigerated in a breathable paper bag or vented container. Avoid sealed plastic once opened.",
     shelfLife: "Best within 5-7 days of harvest.",
-    fulfillment: ["farm-pickup", "farmers-market-pickup", "local-delivery", "local-preorder"],
+    fulfillment: [
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder",
+    ],
     shippable: false,
     inventoryStatus: "seasonal",
     images: [
       {
-        src: "/product-placeholders/fresh-lions-mane.svg",
-        alt: "Fresh lion's mane mushroom cluster"
-      }
+        src: "/images/products/lions-mane-mushrooms-01.webp",
+        alt: "Fresh lion's mane mushrooms in market baskets",
+      },
     ],
     relatedRecipes: ["lions-mane-crab-cake-style-patties"],
     relatedSpeciesPage: ["lion-s-mane"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Blue Oyster Mushrooms",
@@ -98,18 +110,23 @@ export const products: Product[] = [
     storageInstructions:
       "Refrigerate in a breathable bag and cook promptly for best texture.",
     shelfLife: "Best within 5-7 days of harvest.",
-    fulfillment: ["farm-pickup", "farmers-market-pickup", "local-delivery", "local-preorder"],
+    fulfillment: [
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder",
+    ],
     shippable: false,
     inventoryStatus: "available",
     images: [
       {
         src: "/product-placeholders/blue-oyster.svg",
-        alt: "Blue oyster mushroom cluster"
-      }
+        alt: "Blue oyster mushroom cluster",
+      },
     ],
     relatedRecipes: ["crispy-oyster-mushroom-tacos"],
     relatedSpeciesPage: ["blue-oyster"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Golden Oyster Mushrooms",
@@ -130,18 +147,23 @@ export const products: Product[] = [
     storageInstructions:
       "Keep cold in a breathable container and handle gently to protect the caps.",
     shelfLife: "Best within 3-5 days of harvest.",
-    fulfillment: ["farm-pickup", "farmers-market-pickup", "local-delivery", "local-preorder"],
+    fulfillment: [
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder",
+    ],
     shippable: false,
     inventoryStatus: "seasonal",
     images: [
       {
         src: "/product-placeholders/golden-oyster.svg",
-        alt: "Golden oyster mushroom cluster"
-      }
+        alt: "Golden oyster mushroom cluster",
+      },
     ],
     relatedRecipes: ["crispy-oyster-mushroom-tacos"],
     relatedSpeciesPage: ["golden-oyster"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Pink Oyster Mushrooms",
@@ -162,18 +184,23 @@ export const products: Product[] = [
     storageInstructions:
       "Refrigerate and cook quickly. Pink oysters have a shorter fresh shelf life than blue oysters.",
     shelfLife: "Best within 2-4 days of harvest.",
-    fulfillment: ["farm-pickup", "farmers-market-pickup", "local-delivery", "local-preorder"],
+    fulfillment: [
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder",
+    ],
     shippable: false,
     inventoryStatus: "seasonal",
     images: [
       {
-        src: "/product-placeholders/pink-oyster.svg",
-        alt: "Pink oyster mushroom cluster"
-      }
+        src: "/images/products/pink-oyster-mushrooms-02.webp",
+        alt: "Pink oyster mushrooms held after harvest",
+      },
     ],
     relatedRecipes: ["crispy-oyster-mushroom-tacos"],
     relatedSpeciesPage: ["pink-oyster"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "White Oyster Mushrooms",
@@ -194,24 +221,35 @@ export const products: Product[] = [
     storageInstructions:
       "Keep refrigerated in breathable packaging and cook while caps are firm.",
     shelfLife: "Best within 5-7 days of harvest.",
-    fulfillment: ["farm-pickup", "farmers-market-pickup", "local-delivery", "local-preorder"],
+    fulfillment: [
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder",
+    ],
     shippable: false,
     inventoryStatus: "available",
     images: [
       {
-        src: "/product-placeholders/white-oyster.svg",
-        alt: "White oyster mushroom cluster"
-      }
+        src: "/images/products/white-oyster-mushrooms-01.webp",
+        alt: "White oyster mushroom cluster",
+      },
     ],
     relatedRecipes: ["crispy-oyster-mushroom-tacos"],
     relatedSpeciesPage: ["white-oyster"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Mixed Gourmet Mushroom Box",
     slug: "mixed-gourmet-mushroom-box",
     category: "fresh-mushrooms",
-    species: ["lion-s-mane", "blue-oyster", "golden-oyster", "pink-oyster", "white-oyster"],
+    species: [
+      "lion-s-mane",
+      "blue-oyster",
+      "golden-oyster",
+      "pink-oyster",
+      "white-oyster",
+    ],
     productFormat: "fresh",
     price: 22,
     unitSize: "1 lb harvest box",
@@ -219,25 +257,40 @@ export const products: Product[] = [
       "A rotating fresh box with the best mushrooms from the current harvest.",
     longDescription:
       "The mixed gourmet box changes with harvest conditions and is designed for customers who want variety, cooking inspiration, and a clear snapshot of what is fresh this week.",
-    flavorProfile: "Varies by harvest; usually a mix of mild, savory, nutty, and seafood-like notes.",
+    flavorProfile:
+      "Varies by harvest; usually a mix of mild, savory, nutty, and seafood-like notes.",
     texture: "A mix of tender, meaty, and crispable mushrooms.",
     cookingMethods: ["saute", "roast", "sear"],
     pairings: ["butter", "olive oil", "fresh herbs", "eggs", "rice", "pasta"],
     storageInstructions:
       "Keep refrigerated and separate delicate varieties if storing longer than two days.",
     shelfLife: "Best within 3-7 days depending on the mix.",
-    fulfillment: ["farm-pickup", "farmers-market-pickup", "local-delivery", "local-preorder"],
+    fulfillment: [
+      "farm-pickup",
+      "farmers-market-pickup",
+      "local-delivery",
+      "local-preorder",
+    ],
     shippable: false,
     inventoryStatus: "preorder",
     images: [
       {
-        src: "/product-placeholders/mixed-box.svg",
-        alt: "Mixed gourmet mushroom box"
-      }
+        src: "/images/products/mixed-gourmet-mushrooms-01.webp",
+        alt: "Mixed gourmet mushrooms arranged for a harvest box",
+      },
     ],
-    relatedRecipes: ["crispy-oyster-mushroom-tacos", "lions-mane-crab-cake-style-patties"],
-    relatedSpeciesPage: ["lion-s-mane", "blue-oyster", "golden-oyster", "pink-oyster", "white-oyster"],
-    visibilityStatus: "published"
+    relatedRecipes: [
+      "crispy-oyster-mushroom-tacos",
+      "lions-mane-crab-cake-style-patties",
+    ],
+    relatedSpeciesPage: [
+      "lion-s-mane",
+      "blue-oyster",
+      "golden-oyster",
+      "pink-oyster",
+      "white-oyster",
+    ],
+    visibilityStatus: "published",
   },
   {
     name: "Lion's Mane Capsules",
@@ -264,13 +317,13 @@ export const products: Product[] = [
     images: [
       {
         src: "/product-placeholders/lions-mane-capsules.svg",
-        alt: "Lion's mane capsule bottle"
-      }
+        alt: "Lion's mane capsule bottle",
+      },
     ],
     relatedRecipes: [],
     relatedSpeciesPage: ["lion-s-mane"],
     supplementDisclaimer: SUPPLEMENT_DISCLAIMER,
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Mushroom Salt",
@@ -288,8 +341,7 @@ export const products: Product[] = [
     texture: "Fine-to-medium finishing salt.",
     cookingMethods: ["finish", "season", "roast"],
     pairings: ["potatoes", "eggs", "popcorn", "roasted vegetables", "steak"],
-    storageInstructions:
-      "Store sealed in a cool, dry pantry.",
+    storageInstructions: "Store sealed in a cool, dry pantry.",
     shelfLife: "Best within 12 months of packing.",
     fulfillment: ["shipping", "farm-pickup", "farmers-market-pickup"],
     shippable: true,
@@ -297,12 +349,12 @@ export const products: Product[] = [
     images: [
       {
         src: "/product-placeholders/mushroom-salt.svg",
-        alt: "Jar of mushroom salt"
-      }
+        alt: "Jar of mushroom salt",
+      },
     ],
     relatedRecipes: ["mushroom-salt-roasted-potatoes"],
     relatedSpeciesPage: ["blue-oyster", "white-oyster"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Dried Oyster Mushrooms",
@@ -329,18 +381,24 @@ export const products: Product[] = [
     images: [
       {
         src: "/product-placeholders/dried-oyster.svg",
-        alt: "Bag of dried oyster mushrooms"
-      }
+        alt: "Bag of dried oyster mushrooms",
+      },
     ],
     relatedRecipes: [],
     relatedSpeciesPage: ["blue-oyster", "white-oyster"],
-    visibilityStatus: "published"
+    visibilityStatus: "published",
   },
   {
     name: "Chef's Weekly Mushroom Mix",
     slug: "chefs-weekly-mushroom-mix",
     category: "restaurant-wholesale",
-    species: ["lion-s-mane", "blue-oyster", "golden-oyster", "pink-oyster", "white-oyster"],
+    species: [
+      "lion-s-mane",
+      "blue-oyster",
+      "golden-oyster",
+      "pink-oyster",
+      "white-oyster",
+    ],
     productFormat: "wholesale",
     price: 0,
     unitSize: "Custom weekly order",
@@ -351,7 +409,12 @@ export const products: Product[] = [
     flavorProfile: "Varies by weekly harvest and chef request.",
     texture: "Custom mix of tender, meaty, and crispable mushrooms.",
     cookingMethods: ["chef-preferred"],
-    pairings: ["seasonal menus", "specials", "tasting menus", "vegetable plates"],
+    pairings: [
+      "seasonal menus",
+      "specials",
+      "tasting menus",
+      "vegetable plates",
+    ],
     storageInstructions:
       "Keep refrigerated. Restaurants receive harvest and handling notes with each order.",
     shelfLife: "Best within 3-7 days depending on included varieties.",
@@ -360,14 +423,20 @@ export const products: Product[] = [
     inventoryStatus: "preorder",
     images: [
       {
-        src: "/product-placeholders/chefs-mix.svg",
-        alt: "Chef's weekly mushroom mix"
-      }
+        src: "/images/products/mixed-gourmet-mushrooms-01.webp",
+        alt: "Mixed gourmet mushrooms for a chef's weekly order",
+      },
     ],
     relatedRecipes: [],
-    relatedSpeciesPage: ["lion-s-mane", "blue-oyster", "golden-oyster", "pink-oyster", "white-oyster"],
-    visibilityStatus: "published"
-  }
+    relatedSpeciesPage: [
+      "lion-s-mane",
+      "blue-oyster",
+      "golden-oyster",
+      "pink-oyster",
+      "white-oyster",
+    ],
+    visibilityStatus: "published",
+  },
 ];
 
 export function getProductBySlug(slug: string) {
@@ -376,6 +445,7 @@ export function getProductBySlug(slug: string) {
 
 export function getProductsByCategory(category: ProductCategory) {
   return products.filter(
-    (product) => product.category === category && product.visibilityStatus === "published"
+    (product) =>
+      product.category === category && product.visibilityStatus === "published",
   );
 }

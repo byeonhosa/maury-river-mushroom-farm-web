@@ -1,6 +1,6 @@
 import {
   getCommerceProductAvailability,
-  SUPPLEMENT_DISCLAIMER
+  SUPPLEMENT_DISCLAIMER,
 } from "@mrmf/shared";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export async function generateStaticParams() {
 }
 
 export default async function ProductDetailPage({
-  params
+  params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
@@ -29,15 +29,26 @@ export default async function ProductDetailPage({
   return (
     <section className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
       <div className="relative aspect-square overflow-hidden bg-brand-ebony">
-        <Image src={product.image.src} alt={product.image.alt} fill className="object-cover" priority />
+        <Image
+          src={product.image.src}
+          alt={product.image.alt}
+          fill
+          className="object-cover"
+          priority
+          sizes="(min-width: 1024px) 42vw, 100vw"
+        />
       </div>
       <div>
         <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
           {product.fulfillmentLabel}
         </p>
-        <h1 className="mt-3 font-heading text-5xl leading-tight">{product.name}</h1>
+        <h1 className="mt-3 font-heading text-5xl leading-tight">
+          {product.name}
+        </h1>
         <p className="mt-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-burnt">
-          {product.price > 0 ? `$${product.price.toFixed(2)} / ${product.unitSize}` : product.unitSize}
+          {product.price > 0
+            ? `$${product.price.toFixed(2)} / ${product.unitSize}`
+            : product.unitSize}
         </p>
         <p className="mt-4 border border-brand-mahogany/20 bg-brand-ivory p-4 text-sm leading-7">
           <span className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
@@ -52,9 +63,12 @@ export default async function ProductDetailPage({
             ["Flavor", product.metadata.flavorProfile],
             ["Texture", product.metadata.texture],
             ["Storage", product.metadata.storageInstructions],
-            ["Shelf life", product.metadata.shelfLife]
+            ["Shelf life", product.metadata.shelfLife],
           ].map(([label, value]) => (
-            <div key={label} className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+            <div
+              key={label}
+              className="border border-brand-mahogany/20 bg-brand-ivory p-5"
+            >
               <dt className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
                 {label}
               </dt>
@@ -68,7 +82,9 @@ export default async function ProductDetailPage({
             <h2 className="font-heading text-3xl">Cook it</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7">
               {product.metadata.cookingMethods.length > 0 ? (
-                product.metadata.cookingMethods.map((method) => <li key={method}>{method}</li>)
+                product.metadata.cookingMethods.map((method) => (
+                  <li key={method}>{method}</li>
+                ))
               ) : (
                 <li>No cooking required for this format.</li>
               )}
@@ -97,7 +113,9 @@ export default async function ProductDetailPage({
           <AddToCartButton
             productSlug={product.slug}
             productName={product.name}
-            disabledReason={!availability.canAddToCart ? availability.message : undefined}
+            disabledReason={
+              !availability.canAddToCart ? availability.message : undefined
+            }
             className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory disabled:cursor-not-allowed disabled:opacity-60"
           />
           <Link
