@@ -1,17 +1,28 @@
-import { getCommerceProductAvailability, type CommerceProduct } from "@mrmf/shared";
+import {
+  getCommerceProductAvailability,
+  type CommerceProduct,
+} from "@mrmf/shared";
 import Image from "next/image";
 import Link from "next/link";
 import { AddToCartButton } from "./add-to-cart-button";
 
 export function ProductCard({ product }: { product: CommerceProduct }) {
   const price =
-    product.price > 0 ? `$${product.price.toFixed(2)} / ${product.unitSize}` : product.unitSize;
+    product.price > 0
+      ? `$${product.price.toFixed(2)} / ${product.unitSize}`
+      : product.unitSize;
   const availability = getCommerceProductAvailability(product);
 
   return (
     <article className="flex h-full flex-col overflow-hidden border border-brand-mahogany/20 bg-brand-ivory shadow-soft">
       <div className="relative aspect-[4/3] bg-brand-ebony">
-        <Image src={product.image.src} alt={product.image.alt} fill className="object-cover" />
+        <Image
+          src={product.image.src}
+          alt={product.image.alt}
+          fill
+          className="object-cover"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap gap-2">
@@ -22,11 +33,15 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
             {availability.label}
           </span>
         </div>
-        <h3 className="mt-4 font-heading text-3xl leading-tight">{product.name}</h3>
+        <h3 className="mt-4 font-heading text-3xl leading-tight">
+          {product.name}
+        </h3>
         <p className="mt-2 font-subheading text-sm font-bold uppercase tracking-[0.08em] text-brand-burnt">
           {price}
         </p>
-        <p className="mt-3 flex-1 text-sm leading-7">{product.shortDescription}</p>
+        <p className="mt-3 flex-1 text-sm leading-7">
+          {product.shortDescription}
+        </p>
         <p className="mt-3 text-xs leading-6">{availability.message}</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <Link
@@ -38,7 +53,9 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
           <AddToCartButton
             productSlug={product.slug}
             productName={product.name}
-            disabledReason={!availability.canAddToCart ? availability.message : undefined}
+            disabledReason={
+              !availability.canAddToCart ? availability.message : undefined
+            }
             className="inline-flex items-center justify-center gap-2 bg-brand-mahogany px-4 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony disabled:cursor-not-allowed disabled:opacity-60"
           />
         </div>
