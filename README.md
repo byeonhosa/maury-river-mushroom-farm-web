@@ -55,13 +55,21 @@ corepack pnpm --filter @mrmf/backend seed
 corepack pnpm --filter @mrmf/backend seed:verify
 ```
 
-The seed creates the initial product catalog plus a local development region, manual fulfillment location, pickup/local-delivery/preorder options, parcel shipping options for eligible shelf-stable and supplement products, inventory items, stock levels, and product variant inventory links for managed products. Shipping options carry metadata for fulfillment type, allowed product fulfillment modes, pickup-window requirements, and whether the method blocks fresh products. Repeated seed runs refresh this metadata on existing shipping options. No parcel shipping option is attached to the fresh-local shipping profile. The seed also prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
+The seed creates the initial product catalog plus a local development region, manual fulfillment location, pickup/local-delivery/preorder options, parcel shipping options for eligible shelf-stable and supplement products, inventory items, stock levels, and product variant inventory links for managed products. Shipping options carry metadata for fulfillment type, allowed and rejected product fulfillment modes, pickup-window requirements, and whether the method blocks fresh products. Repeated seed runs refresh this metadata and the seed-managed native shipping-option rules on existing shipping options. No parcel shipping option is attached to the fresh-local shipping profile. The backend also registers a Store API shipping-options context hook so Medusa can evaluate the seeded `mrmf_cart_fulfillment_scope` rule for fresh-only, shelf-stable-only, and restricted mixed carts. The storefront still filters options with the shared app-level rules as defense in depth. The seed also prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
 
 To check the seed payload shape without writing commerce records or booting Medusa:
 
 ```bash
 corepack pnpm --filter @mrmf/backend seed:plan
 ```
+
+To inspect raw Store API shipping options versus the app-filtered safe options after the backend is running and seeded:
+
+```bash
+corepack pnpm --filter @mrmf/backend shipping:smoke
+```
+
+The smoke script reports fresh-only, shelf-stable-only, and mixed-cart scenarios. Current shelf-stable launch products are intentionally seeded as `coming-soon` with zero stock, so the shelf-stable Store API cart case may report that cart creation is skipped until an available shelf-stable fixture or launch inventory is configured.
 
 The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa-hybrid`. It reads the Medusa Store API when `NEXT_PUBLIC_MEDUSA_BACKEND_URL` and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` are configured, and falls back to the shared seed catalog during local development or static builds when Medusa is offline. Use `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa` to require Medusa reads, or `shared-seed` for a fully offline storefront.
 
@@ -111,6 +119,8 @@ If the cart bridge says the staged browser cart is active, confirm the backend i
 If Medusa cart creation reports that a sales channel is not associated with a stock location for a variant, rerun `corepack pnpm --filter @mrmf/backend seed` and `corepack pnpm --filter @mrmf/backend seed:verify`. Managed seeded variants need inventory items, inventory levels, and variant inventory links before the Store API can add them to a cart.
 
 If checkout cannot save a fulfillment method to Medusa, confirm `seed:verify` passes and that the selected cart has at least one safe shipping option. Missing shipping options usually mean migrations or seed did not finish, the publishable key is missing, or the cart mixes local fresh products with shippable shelf-stable products.
+
+If raw Store API shipping options look unsafe, rerun `corepack pnpm --filter @mrmf/backend seed`, restart the Medusa backend so the shipping-options context hook is loaded, then run `corepack pnpm --filter @mrmf/backend shipping:smoke`. The raw Store API should no longer return parcel options for fresh-only carts once seed-managed rules and the hook are active. If raw Medusa behavior is still broad, checkout remains protected by the shared app-level safe-option filter.
 
 If a saved Medusa cart becomes stale, deleted, or unavailable, the storefront clears the stale Medusa cart ID and keeps the staged browser line items where practical. Remove and re-add items if a local browser cart was created against older product data.
 

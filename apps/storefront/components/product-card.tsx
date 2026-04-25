@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
   const availability = getCommerceProductAvailability(product);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden border border-brand-mahogany/20 bg-brand-ivory shadow-soft">
+    <article className="flex h-full flex-col overflow-hidden border border-brand-mahogany/20 bg-brand-ivory text-brand-mahogany shadow-soft">
       <div className="relative aspect-[4/3] bg-brand-ebony">
         <Image
           src={product.image.src}

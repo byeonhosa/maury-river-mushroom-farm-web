@@ -3,6 +3,7 @@ import {
   getProductBySlug,
   getCommerceProductAvailability,
   getCartSupportedFulfillmentTypes,
+  filterSafeCommerceShippingOptions,
   medusaProductToCommerceProduct,
   pickupLocations,
   summarizeCommerceCart,
@@ -122,6 +123,63 @@ describe("cart and pickup commerce rules", () => {
     expect(validation.errors).toContain(
       "Fresh and local-only products cannot use parcel shipping. Choose pickup, local delivery, or split the order."
     );
+  });
+
+  it("filters Store API shipping options through shared fulfillment metadata", () => {
+    const fresh = medusaProductToCommerceProduct({
+      id: "prod_fresh_lions_mane",
+      handle: "fresh-lions-mane"
+    });
+    const salt = medusaProductToCommerceProduct({
+      id: "prod_mushroom_salt",
+      handle: "mushroom-salt",
+      metadata: {
+        inventory_status: "available"
+      }
+    });
+    const options = [
+      {
+        id: "so_pickup",
+        name: "Farm pickup",
+        data: {
+          fulfillment_type: "farm-pickup" as const,
+          allowed_fulfillment_modes: ["fresh-local" as const],
+          mrmf_native_rule_scope: "fresh-local" as const,
+          is_parcel: false
+        }
+      },
+      {
+        id: "so_parcel",
+        name: "Shelf-stable parcel shipping",
+        data: {
+          fulfillment_type: "shipping" as const,
+          allowed_fulfillment_modes: ["shelf-stable-shipping" as const],
+          rejected_fulfillment_modes: ["fresh-local" as const],
+          mrmf_native_rule_scope: "shelf-stable-shipping" as const,
+          is_parcel: true
+        }
+      }
+    ];
+
+    expect(
+      filterSafeCommerceShippingOptions([{ product: fresh, quantity: 1 }], options).map(
+        (option) => option.id
+      )
+    ).toEqual(["so_pickup"]);
+    expect(
+      filterSafeCommerceShippingOptions([{ product: salt, quantity: 1 }], options).map(
+        (option) => option.id
+      )
+    ).toEqual(["so_parcel"]);
+    expect(
+      filterSafeCommerceShippingOptions(
+        [
+          { product: fresh, quantity: 1 },
+          { product: salt, quantity: 1 }
+        ],
+        options
+      )
+    ).toEqual([]);
   });
 
   it("requires pickup location and window for local fresh checkout", () => {

@@ -86,6 +86,12 @@ export interface MedusaSeedShippingOption {
   requiresFinalConfirmation: boolean;
 }
 
+export interface MedusaSeedShippingOptionRule {
+  attribute: string;
+  operator: "eq" | "in" | "ne" | "nin" | "gt" | "gte" | "lt" | "lte";
+  value: string | string[];
+}
+
 export interface MedusaProductMappingContext {
   categoryIdByKey: Record<ProductCategory, string | undefined>;
   collectionIdByKey: Record<string, string | undefined>;
@@ -100,6 +106,13 @@ export interface MedusaSeedInventorySpec {
   description: string;
   manageInventory: boolean;
   requiresShipping: boolean;
+  fulfillmentMode: FulfillmentMode;
+  fulfillment: FulfillmentType[];
+  productFormat: Product["productFormat"];
+  inventoryStatus: Product["inventoryStatus"];
+  shippable: boolean;
+  parcelShippingEligible: boolean;
+  localOnly: boolean;
   stockedQuantity: number;
 }
 
@@ -354,16 +367,47 @@ export const medusaSeedShippingOptions: MedusaSeedShippingOption[] = [
 ];
 
 export function buildMedusaShippingOptionData(option: MedusaSeedShippingOption) {
+  const rejectedFulfillmentModes = medusaSeedShippingProfiles
+    .map((profile) => profile.key)
+    .filter((mode) => mode !== option.shippingProfileKey);
+
   return {
     mrmf_seed_key: option.key,
     description: option.description,
     fulfillment_type: option.fulfillmentType,
     allowed_fulfillment_modes: [option.shippingProfileKey],
+    rejected_fulfillment_modes: rejectedFulfillmentModes,
+    mrmf_native_rule_scope: option.shippingProfileKey,
+    native_rules_required: true,
+    blocks_mixed_fulfillment_modes: true,
     blocks_fresh_products: option.isParcel,
     is_parcel: option.isParcel,
+    parcel_shipping_eligible_only: option.isParcel,
     requires_pickup_window: option.requiresPickupWindow,
     requires_final_confirmation: option.requiresFinalConfirmation
   };
+}
+
+export function buildMedusaShippingOptionRules(
+  option: MedusaSeedShippingOption
+): MedusaSeedShippingOptionRule[] {
+  return [
+    {
+      attribute: "is_return",
+      operator: "eq",
+      value: "false"
+    },
+    {
+      attribute: "enabled_in_store",
+      operator: "eq",
+      value: "true"
+    },
+    {
+      attribute: "mrmf_cart_fulfillment_scope",
+      operator: "eq",
+      value: option.shippingProfileKey
+    }
+  ];
 }
 
 export function buildMedusaProductMetadata(product: Product) {
@@ -391,6 +435,12 @@ export function buildMedusaProductMetadata(product: Product) {
     fulfillment_type: product.fulfillment,
     fulfillment_mode: fulfillmentMode,
     fulfillment_label: getFulfillmentLabel(product),
+    local_only: fulfillmentMode === "fresh-local",
+    parcel_shipping_eligible:
+      product.shippable &&
+      product.fulfillment.includes("shipping") &&
+      fulfillmentMode !== "fresh-local",
+    blocks_parcel_shipping: fulfillmentMode === "fresh-local",
     inventory_status: product.inventoryStatus,
     related_recipes: product.relatedRecipes,
     relatedRecipes: product.relatedRecipes,
@@ -417,15 +467,30 @@ export function getSeedInventoryQuantity(product: Product) {
 }
 
 export function buildMedusaInventorySpecs(): MedusaSeedInventorySpec[] {
-  return products.map((product) => ({
-    productSlug: product.slug,
-    sku: buildSku(product),
-    title: product.name,
-    description: product.shortDescription,
-    manageInventory: product.category !== "restaurant-wholesale",
-    requiresShipping: true,
-    stockedQuantity: getSeedInventoryQuantity(product)
-  }));
+  return products.map((product) => {
+    const fulfillmentMode = classifyProductFulfillment(product);
+    const parcelShippingEligible =
+      product.shippable &&
+      product.fulfillment.includes("shipping") &&
+      fulfillmentMode !== "fresh-local";
+
+    return {
+      productSlug: product.slug,
+      sku: buildSku(product),
+      title: product.name,
+      description: product.shortDescription,
+      manageInventory: product.category !== "restaurant-wholesale",
+      requiresShipping: true,
+      fulfillmentMode,
+      fulfillment: product.fulfillment,
+      productFormat: product.productFormat,
+      inventoryStatus: product.inventoryStatus,
+      shippable: product.shippable,
+      parcelShippingEligible,
+      localOnly: fulfillmentMode === "fresh-local",
+      stockedQuantity: getSeedInventoryQuantity(product)
+    };
+  });
 }
 
 export function buildMedusaProductPayloads(
@@ -490,6 +555,15 @@ export function buildMedusaProductPayloads(
             mrmf_slug: product.slug,
             inventory_status: product.inventoryStatus,
             fulfillment_mode: fulfillmentMode,
+            fulfillment: product.fulfillment,
+            product_format: product.productFormat,
+            shippable: product.shippable,
+            local_only: fulfillmentMode === "fresh-local",
+            parcel_shipping_eligible:
+              product.shippable &&
+              product.fulfillment.includes("shipping") &&
+              fulfillmentMode !== "fresh-local",
+            blocks_parcel_shipping: fulfillmentMode === "fresh-local",
             requires_quote: product.price <= 0
           }
         }

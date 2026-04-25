@@ -1,9 +1,7 @@
 import {
   canAddCommerceProductToCart,
-  canShipCommerceProduct,
+  filterSafeCommerceShippingOptions,
   getCommerceProductAvailability,
-  getCartSupportedFulfillmentTypes,
-  summarizeCommerceCart,
   type CartLineInput,
   type CheckoutFulfillmentInput,
   type CommerceCartLineInput,
@@ -65,6 +63,9 @@ export interface MedusaShippingOptionLike {
   data?: {
     fulfillment_type?: FulfillmentType;
     allowed_fulfillment_modes?: FulfillmentMode[];
+    rejected_fulfillment_modes?: FulfillmentMode[];
+    mrmf_native_rule_scope?: FulfillmentMode;
+    blocks_mixed_fulfillment_modes?: boolean;
     blocks_fresh_products?: boolean;
     is_parcel?: boolean;
     requires_pickup_window?: boolean;
@@ -448,48 +449,7 @@ export function filterSafeShippingOptions(
   items: CartLineInput[],
   shippingOptions: MedusaShippingOptionLike[]
 ) {
-  const summary = summarizeCommerceCart(resolveCartLines(products, items));
-  const supportedFulfillmentTypes = getCartSupportedFulfillmentTypes(summary);
-  const cartHasLocalOnly = summary.lines.some((line) => !canShipCommerceProduct(line.product));
-  const cartHasFresh = summary.lines.some((line) => line.product.localOnly);
-  const fulfillmentModes = new Set(summary.lines.map((line) => line.product.fulfillmentMode));
-
-  if (summary.fulfillmentType === "mixed") {
-    return [];
-  }
-
-  return shippingOptions.filter((option) => {
-    const fulfillmentType = option.data?.fulfillment_type;
-    const allowedFulfillmentModes = Array.isArray(option.data?.allowed_fulfillment_modes)
-      ? option.data.allowed_fulfillment_modes
-      : [];
-    const isParcel = option.data?.is_parcel === true;
-
-    if (!fulfillmentType) {
-      return false;
-    }
-
-    if (
-      allowedFulfillmentModes.length > 0 &&
-      ![...fulfillmentModes].every((mode) => allowedFulfillmentModes.includes(mode))
-    ) {
-      return false;
-    }
-
-    if (option.data?.blocks_fresh_products === true && cartHasFresh) {
-      return false;
-    }
-
-    if (isParcel && cartHasLocalOnly) {
-      return false;
-    }
-
-    if (!supportedFulfillmentTypes.includes(fulfillmentType)) {
-      return false;
-    }
-
-    return true;
-  });
+  return filterSafeCommerceShippingOptions(resolveCartLines(products, items), shippingOptions);
 }
 
 function buildShippingMethodData({

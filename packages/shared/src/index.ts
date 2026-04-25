@@ -8,5 +8,6 @@ export * from "./pickup";
 export * from "./policies";
 export * from "./products";
 export * from "./recipes";
+export * from "./shipping-options";
 export * from "./species";
 export * from "./types";

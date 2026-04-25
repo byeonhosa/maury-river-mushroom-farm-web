@@ -2,6 +2,7 @@ import type { ExecArgs } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
   batchLinksWorkflow,
+  batchShippingOptionRulesWorkflow,
   createCollectionsWorkflow,
   createApiKeysWorkflow,
   createInventoryItemsWorkflow,
@@ -27,8 +28,10 @@ import {
   buildMedusaInventorySpecs,
   buildMedusaProductPayloads,
   buildMedusaShippingOptionData,
+  buildMedusaShippingOptionRules,
   buildSeedPlan,
   type MedusaSeedInventorySpec,
+  type MedusaSeedShippingOptionRule,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedFulfillmentSets,
@@ -84,6 +87,13 @@ interface ServiceZoneRecord extends EntityRecord {
 interface ShippingOptionRecord extends EntityRecord {
   name: string;
   data?: Record<string, unknown> | null;
+  rules?: ShippingOptionRuleRecord[];
+}
+
+interface ShippingOptionRuleRecord extends EntityRecord {
+  attribute: string;
+  operator: string;
+  value?: unknown;
 }
 
 interface SalesChannelRecord extends EntityRecord {
@@ -139,6 +149,10 @@ interface FulfillmentModuleService {
     id: string,
     data: { name?: string; data?: Record<string, unknown> | null }
   ): Promise<unknown>;
+  listShippingOptionRules(
+    selector: Record<string, unknown>,
+    config?: Record<string, unknown>
+  ): Promise<ShippingOptionRuleRecord[]>;
 }
 
 const seedSalesChannelName =
@@ -365,6 +379,18 @@ function isDuplicateLinkError(error: unknown) {
   return error instanceof Error && /duplicate|already exists|violates unique/i.test(error.message);
 }
 
+function normalizeRuleValue(value: unknown) {
+  if (Array.isArray(value)) {
+    return JSON.stringify([...value].sort());
+  }
+
+  return JSON.stringify(value);
+}
+
+function ruleKey(rule: MedusaSeedShippingOptionRule | ShippingOptionRuleRecord) {
+  return `${rule.attribute}:${rule.operator}:${normalizeRuleValue(rule.value)}`;
+}
+
 async function ensureStockLocations({
   query,
   container,
@@ -578,7 +604,7 @@ async function ensureShippingOptions({
   const existing = await queryRecords<ShippingOptionRecord>(
     query,
     "shipping_option",
-    ["id", "name", "data"],
+    ["id", "name", "data", "rules.id", "rules.attribute", "rules.operator", "rules.value"],
     {
       name: names
     }
@@ -625,6 +651,56 @@ async function ensureShippingOptions({
       });
     }
   };
+  const ensureShippingOptionRules = async (records: ShippingOptionRecord[]) => {
+    const fulfillmentModule = container.resolve<FulfillmentModuleService>(Modules.FULFILLMENT);
+
+    for (const record of records) {
+      const seedOption = optionByName.get(record.name);
+
+      if (!seedOption) {
+        continue;
+      }
+
+      const desiredRules = buildMedusaShippingOptionRules(seedOption);
+      const existingRules =
+        record.rules ??
+        (await fulfillmentModule.listShippingOptionRules(
+          {
+            shipping_option_id: record.id
+          },
+          {
+            take: 100
+          }
+        ));
+      const managedAttributes = new Set(desiredRules.map((rule) => rule.attribute));
+      const desiredKeys = new Set(desiredRules.map(ruleKey));
+      const existingManagedRules = existingRules.filter((rule) =>
+        managedAttributes.has(rule.attribute)
+      );
+      const existingKeys = new Set(existingManagedRules.map(ruleKey));
+      const create = desiredRules
+        .filter((rule) => !existingKeys.has(ruleKey(rule)))
+        .map((rule) => ({
+          ...rule,
+          shipping_option_id: record.id
+        }));
+      const deleteIds = existingManagedRules
+        .filter((rule) => !desiredKeys.has(ruleKey(rule)))
+        .map((rule) => rule.id);
+
+      if (create.length === 0 && deleteIds.length === 0) {
+        continue;
+      }
+
+      await batchShippingOptionRulesWorkflow(container).run({
+        input: {
+          create,
+          update: [],
+          delete: deleteIds
+        }
+      });
+    }
+  };
 
   if (missing.length > 0) {
     const { result } = await createShippingOptionsWorkflow(container).run({
@@ -657,7 +733,8 @@ async function ensureShippingOptions({
               amount: option.amount
             }
           ],
-          data: buildMedusaShippingOptionData(option)
+          data: buildMedusaShippingOptionData(option),
+          rules: buildMedusaShippingOptionRules(option)
         };
       })
     });
@@ -668,11 +745,15 @@ async function ensureShippingOptions({
       await updateExistingShippingOptionMetadata(existing);
     }
 
-    return [...existing, ...created];
+    const records = [...existing, ...created];
+    await ensureShippingOptionRules(records);
+
+    return records;
   }
 
   if (existing.length > 0) {
     await updateExistingShippingOptionMetadata(existing);
+    await ensureShippingOptionRules(existing);
   }
 
   return existing;
@@ -815,6 +896,13 @@ function inventoryItemMetadata(spec: MedusaSeedInventorySpec) {
   return {
     mrmf_seed_key: spec.productSlug,
     mrmf_product_slug: spec.productSlug,
+    fulfillment_mode: spec.fulfillmentMode,
+    fulfillment: spec.fulfillment,
+    product_format: spec.productFormat,
+    inventory_status: spec.inventoryStatus,
+    shippable: spec.shippable,
+    parcel_shipping_eligible: spec.parcelShippingEligible,
+    local_only: spec.localOnly,
     managed_by_seed: true
   };
 }
