@@ -8,10 +8,15 @@ import {
   syncHybridCart
 } from "../lib/cart-adapter";
 import { cartStorageKey, medusaCartStorageKey } from "../lib/cart-storage";
+import {
+  applyDevAvailabilityOverride,
+  updateDevAvailabilityRecord
+} from "../lib/dev-availability-store";
 
 afterEach(() => {
   window.localStorage.clear();
   vi.unstubAllGlobals();
+  globalThis.__mrmfAvailabilityOverrides?.clear();
 });
 
 const fresh = medusaProductToCommerceProduct({
@@ -54,6 +59,8 @@ describe("Medusa cart adapter", () => {
           mrmf_managed: true,
           mrmf_slug: "fresh-lions-mane",
           fulfillment_mode: "fresh-local",
+          availability_state: "seasonal",
+          cartable: true,
           shippable: false
         })
       },
@@ -64,6 +71,8 @@ describe("Medusa cart adapter", () => {
           mrmf_managed: true,
           mrmf_slug: "mushroom-salt",
           fulfillment_mode: "shelf-stable-shipping",
+          availability_state: "available",
+          cartable: true,
           shippable: true
         })
       }
@@ -76,6 +85,26 @@ describe("Medusa cart adapter", () => {
         { productSlug: "mushroom-salt", quantity: 1 }
       ])
     ).toThrow("Mushroom Salt is coming soon");
+  });
+
+  it("applies development availability overrides before cart sync", () => {
+    updateDevAvailabilityRecord({
+      targetType: "product",
+      targetSlug: "mushroom-salt",
+      state: "sold-out",
+      publicVisibility: "shop",
+      cartable: false,
+      publicMessage: "Sold out after the last market."
+    });
+
+    const overridden = applyDevAvailabilityOverride(salt);
+
+    expect(overridden.inventoryStatus).toBe("sold-out");
+    expect(() =>
+      buildMedusaCartLinePayloads([overridden], [
+        { productSlug: "mushroom-salt", quantity: 1 }
+      ])
+    ).toThrow("Sold out after the last market.");
   });
 
   it("creates a Medusa cart with the seeded region and local line metadata", async () => {

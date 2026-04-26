@@ -43,6 +43,9 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
           {product.shortDescription}
         </p>
         <p className="mt-3 text-xs leading-6">{availability.message}</p>
+        {availability.stockNote ? (
+          <p className="mt-2 text-xs leading-6">{availability.stockNote}</p>
+        ) : null}
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <Link
             href={`/shop/${product.slug}`}
@@ -50,14 +53,30 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
           >
             Details
           </Link>
-          <AddToCartButton
-            productSlug={product.slug}
-            productName={product.name}
-            disabledReason={
-              !availability.canAddToCart ? availability.message : undefined
-            }
-            className="inline-flex items-center justify-center gap-2 bg-brand-mahogany px-4 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony disabled:cursor-not-allowed disabled:opacity-60"
-          />
+          {availability.showWholesaleCta ? (
+            <Link
+              href="/restaurants-wholesale"
+              className="inline-flex items-center justify-center bg-brand-mahogany px-4 py-3 text-center font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+            >
+              Wholesale inquiry
+            </Link>
+          ) : availability.showInquiryCta ? (
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center bg-brand-mahogany px-4 py-3 text-center font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+            >
+              Ask availability
+            </Link>
+          ) : (
+            <AddToCartButton
+              productSlug={product.slug}
+              productName={product.name}
+              disabledReason={
+                !availability.canAddToCart ? availability.message : undefined
+              }
+              className="inline-flex items-center justify-center gap-2 bg-brand-mahogany px-4 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony disabled:cursor-not-allowed disabled:opacity-60"
+            />
+          )}
         </div>
       </div>
     </article>

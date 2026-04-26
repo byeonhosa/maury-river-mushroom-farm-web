@@ -3,11 +3,13 @@ import {
   listCommerceProducts,
   medusaProductToCommerceProduct,
   productCategories,
+  shouldShowProductInShop,
   type CartLineInput,
   type CommerceProduct,
   type MedusaProductLike,
   type ProductCategory
 } from "@mrmf/shared";
+import { applyDevAvailabilityOverride } from "./dev-availability-store";
 
 export type CommerceAdapterMode = "shared-seed" | "medusa" | "medusa-hybrid";
 
@@ -55,10 +57,14 @@ function getPublishableKey() {
 }
 
 function sharedSeedCatalog(mode: CommerceAdapterMode, error?: unknown): ProductCatalogResult {
+  const products = listCommerceProducts()
+    .map(applyDevAvailabilityOverride)
+    .filter((product) => shouldShowProductInShop(product));
+
   return {
     mode,
     source: "shared-seed",
-    products: listCommerceProducts(),
+    products,
     error: error instanceof Error ? error.message : undefined
   };
 }
@@ -89,7 +95,10 @@ export async function fetchMedusaStoreProducts({
 
     const data = (await response.json()) as MedusaStoreProductsResponse;
 
-    return (data.products ?? []).map(medusaProductToCommerceProduct);
+    return (data.products ?? [])
+      .map(medusaProductToCommerceProduct)
+      .map(applyDevAvailabilityOverride)
+      .filter((product) => shouldShowProductInShop(product));
   } finally {
     clearTimeout(timeout);
   }
@@ -169,6 +178,8 @@ export function listCategorySummaries() {
   return productCategories;
 }
 
-export function resetProductCatalogCacheForTests() {
+export function resetProductCatalogCache() {
   catalogPromise = undefined;
 }
+
+export const resetProductCatalogCacheForTests = resetProductCatalogCache;

@@ -1,3 +1,4 @@
+import { shouldShowProductInShop } from "./availability";
 import type { Product, ProductCategory } from "./types";
 
 export const SUPPLEMENT_DISCLAIMER =
@@ -81,6 +82,15 @@ export const products: Product[] = [
     ],
     shippable: false,
     inventoryStatus: "seasonal",
+    availability: {
+      cartable: true,
+      availableQuantity: 24,
+      stockNote: "Small harvest batches; quantity should be confirmed before launch.",
+      pickupAvailabilityNote:
+        "Fresh lion's mane is local pickup, market pickup, local delivery, or preorder only.",
+      publicMessage:
+        "Seasonal harvest item. Add to the staged cart now, and the farm will confirm the pickup or delivery window before launch."
+    },
     images: [
       {
         src: "/images/products/lions-mane-mushrooms-01.webp",
@@ -118,6 +128,11 @@ export const products: Product[] = [
     ],
     shippable: false,
     inventoryStatus: "available",
+    availability: {
+      availableQuantity: 50,
+      stockNote: "Baseline launch fixture; confirm real harvest quantity before taking orders.",
+      pickupAvailabilityNote: "Fresh blue oysters are local-only and should stay cold after pickup."
+    },
     images: [
       {
         src: "/product-placeholders/blue-oyster.svg",
@@ -155,6 +170,13 @@ export const products: Product[] = [
     ],
     shippable: false,
     inventoryStatus: "seasonal",
+    availability: {
+      cartable: true,
+      availableQuantity: 18,
+      stockNote: "Seasonal fixture quantity; confirm before launch.",
+      publicMessage:
+        "Seasonal harvest item. Availability depends on current fruiting and may need pickup-window confirmation."
+    },
     images: [
       {
         src: "/product-placeholders/golden-oyster.svg",
@@ -192,6 +214,13 @@ export const products: Product[] = [
     ],
     shippable: false,
     inventoryStatus: "seasonal",
+    availability: {
+      cartable: true,
+      availableQuantity: 12,
+      stockNote: "Short shelf-life seasonal fixture; confirm before launch.",
+      publicMessage:
+        "Seasonal and best cooked quickly. Availability depends on the current pink oyster harvest."
+    },
     images: [
       {
         src: "/images/products/pink-oyster-mushrooms-02.webp",
@@ -228,7 +257,13 @@ export const products: Product[] = [
       "local-preorder",
     ],
     shippable: false,
-    inventoryStatus: "available",
+    inventoryStatus: "low-stock",
+    availability: {
+      availableQuantity: 8,
+      stockNote: "Low-stock launch fixture; confirm real harvest count before opening checkout.",
+      publicMessage:
+        "Low stock for the current ordering window. Fresh white oysters remain local-only."
+    },
     images: [
       {
         src: "/images/products/white-oyster-mushrooms-01.webp",
@@ -273,6 +308,13 @@ export const products: Product[] = [
     ],
     shippable: false,
     inventoryStatus: "preorder",
+    availability: {
+      availableQuantity: 12,
+      stockNote: "Preorder fixture; exact mix depends on the harvest.",
+      pickupAvailabilityNote: "The farm will confirm pickup or delivery timing before fulfillment.",
+      publicMessage:
+        "Preorder a rotating harvest box; final varieties and pickup timing are confirmed by the farm."
+    },
     images: [
       {
         src: "/images/products/mixed-gourmet-mushrooms-01.webp",
@@ -314,6 +356,13 @@ export const products: Product[] = [
     fulfillment: ["shipping", "farm-pickup", "farmers-market-pickup"],
     shippable: true,
     inventoryStatus: "coming-soon",
+    availability: {
+      availableQuantity: 0,
+      notifyMeEnabled: true,
+      stockNote: "Packaging, labeling, and legal review must be completed before launch.",
+      publicMessage:
+        "Coming soon after supplement labeling, policy language, and legal/business review are complete."
+    },
     images: [
       {
         src: "/product-placeholders/lions-mane-capsules.svg",
@@ -346,6 +395,13 @@ export const products: Product[] = [
     fulfillment: ["shipping", "farm-pickup", "farmers-market-pickup"],
     shippable: true,
     inventoryStatus: "coming-soon",
+    availability: {
+      availableQuantity: 0,
+      notifyMeEnabled: true,
+      stockNote: "Final recipe, packaging, and launch stock need confirmation.",
+      publicMessage:
+        "Coming soon as a shelf-stable pantry product once final packaging and launch stock are confirmed."
+    },
     images: [
       {
         src: "/product-placeholders/mushroom-salt.svg",
@@ -378,6 +434,13 @@ export const products: Product[] = [
     fulfillment: ["shipping", "farm-pickup", "farmers-market-pickup"],
     shippable: true,
     inventoryStatus: "coming-soon",
+    availability: {
+      availableQuantity: 0,
+      notifyMeEnabled: true,
+      stockNote: "Drying, packaging, and launch stock need confirmation.",
+      publicMessage:
+        "Coming soon as a shippable shelf-stable product after packaging and launch inventory are confirmed."
+    },
     images: [
       {
         src: "/product-placeholders/dried-oyster.svg",
@@ -420,7 +483,14 @@ export const products: Product[] = [
     shelfLife: "Best within 3-7 days depending on included varieties.",
     fulfillment: ["restaurant-delivery", "farm-pickup", "local-preorder"],
     shippable: false,
-    inventoryStatus: "preorder",
+    inventoryStatus: "wholesale-only",
+    availability: {
+      wholesaleOnly: true,
+      availableQuantity: 0,
+      stockNote: "Wholesale availability is quote-based and changes with the weekly harvest.",
+      publicMessage:
+        "Restaurant and wholesale availability is handled by inquiry so the farm can match the weekly harvest to chef needs."
+    },
     images: [
       {
         src: "/images/products/mixed-gourmet-mushrooms-01.webp",
@@ -446,6 +516,6 @@ export function getProductBySlug(slug: string) {
 export function getProductsByCategory(category: ProductCategory) {
   return products.filter(
     (product) =>
-      product.category === category && product.visibilityStatus === "published",
+      product.category === category && shouldShowProductInShop(product),
   );
 }

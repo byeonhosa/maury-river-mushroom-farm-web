@@ -259,7 +259,9 @@ export function buildMedusaCartLinePayloads(
     const availability = getCommerceProductAvailability(product);
 
     if (!canAddCommerceProductToCart(product)) {
-      throw new Error(`${product.name} is ${availability.label.toLowerCase()} and cannot be added to a Medusa cart yet.`);
+      throw new Error(
+        `${product.name} is ${availability.label.toLowerCase()}: ${availability.message}`
+      );
     }
 
     if (!product.variantId) {
@@ -276,6 +278,9 @@ export function buildMedusaCartLinePayloads(
         mrmf_slug: product.slug,
         fulfillment_mode: product.fulfillmentMode,
         inventory_status: product.inventoryStatus,
+        availability_state: product.availability.state ?? product.inventoryStatus,
+        cartable: getCommerceProductAvailability(product).canAddToCart,
+        available_quantity: product.availability.availableQuantity,
         fulfillment: product.fulfillment,
         shippable: product.shippable
       }

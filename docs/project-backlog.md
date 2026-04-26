@@ -39,15 +39,19 @@ document current as phases are completed, split, or deferred.
 - Goal: Give the owner an initial admin-friendly way to manage availability without
   editing code for every launch-window change.
 - Major tasks: Define inventory/availability records, map Medusa inventory status to
-  storefront availability, create admin or scriptable update flows, document how to
-  change coming-soon, seasonal, preorder, sold-out, and stock quantities.
+  storefront availability, expand the master mushroom/species catalog, create admin
+  or scriptable update flows, document how to change coming-soon, seasonal, preorder,
+  sold-out, hidden, wholesale-only, inquiry-only, and stock quantities.
 - Done when: The owner can update product availability and stock through a documented
-  admin/script path, storefront messaging updates correctly, and seed data remains
+  admin/script path, storefront messaging updates correctly, hidden products stay out
+  of the public shop, unavailable products cannot be carted, and seed data remains
   idempotent.
 - Suggested branch: `codex/inventory-availability-admin`
 - Dependencies or cautions: Final prices, unit sizes, launch availability, and stock
   quantities still need confirmation. Avoid creating a custom admin surface that fights
-  Medusa if Medusa admin can handle the needed workflow.
+  Medusa if Medusa admin can handle the needed workflow. The current dev-only
+  availability manager is process-local and must become authenticated/persistent before
+  production use.
 
 ## Phase 3: Notify-me / back-in-stock system
 
@@ -193,6 +197,8 @@ document current as phases are completed, split, or deferred.
 - Complete missing product photography and confirm image usage rights.
 - Confirm final pickup windows, delivery rules, preorder cutoffs, market schedules,
   prices, unit sizes, and stock quantities.
+- Replace the development-only availability manager with an authenticated Medusa Admin
+  extension or production-tracking integration before launch.
 - Obtain legal review for privacy, terms, refund, shipping/pickup, supplement, and
   health-related language.
 - Configure production email/CRM, Stripe, backups, monitoring, and deployment secrets

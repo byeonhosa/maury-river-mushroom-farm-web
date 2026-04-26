@@ -1,4 +1,8 @@
-import { getSpeciesBySlug, speciesPages } from "@mrmf/shared";
+import {
+  availabilityStateBehaviors,
+  getSpeciesBySlug,
+  speciesPages,
+} from "@mrmf/shared";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
@@ -34,11 +38,12 @@ export default async function SpeciesDetailPage({
   }
 
   const speciesImage = speciesImages[species.slug];
+  const availability = availabilityStateBehaviors[species.availabilityState];
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
       <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
-        Mushroom species
+        Mushroom species / {species.code} / {species.catalogStatus}
       </p>
       <h1 className="mt-3 font-heading text-5xl leading-tight">
         {species.name}
@@ -46,6 +51,12 @@ export default async function SpeciesDetailPage({
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
         <div>
           <p className="text-lg leading-8">{species.overview}</p>
+          <p className="mt-6 border border-brand-mahogany/20 bg-brand-ivory p-4 text-sm leading-7">
+            <span className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+              {availability.label}
+            </span>{" "}
+            {availability.defaultMessage}
+          </p>
           {species.requiresLegalReview ? (
             <p className="mt-6 border border-brand-burnt bg-brand-ivory p-4 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-burnt">
               Functional mushroom copy on this page requires legal/business

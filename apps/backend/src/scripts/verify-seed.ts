@@ -1,6 +1,7 @@
 import { loadEnv } from "@medusajs/framework/utils";
 import {
   classifyProductFulfillment,
+  getCommerceProductAvailability,
   products,
   type FulfillmentMode,
   type Product
@@ -422,12 +423,21 @@ async function verifySeed() {
           row!.metadata?.parcel_shipping_eligible === spec.parcelShippingEligible,
           `${spec.title} inventory parcel shipping metadata mismatch.`
         );
+        requireCondition(
+          row!.metadata?.availability_state === spec.availabilityState,
+          `${spec.title} inventory availability state metadata mismatch.`
+        );
+        requireCondition(
+          row!.metadata?.cartable === spec.cartable,
+          `${spec.title} inventory cartable metadata mismatch.`
+        );
       }
     }
 
     for (const product of products) {
       const row = productRows.get(product.slug);
       const fulfillmentMode = classifyProductFulfillment(product);
+      const availability = getCommerceProductAvailability(product);
 
       requireCondition(Boolean(row), `Missing Medusa product ${product.slug}.`);
       requireCondition(row!.title === product.name, `${product.name} title mismatch.`);
@@ -466,6 +476,18 @@ async function verifySeed() {
       requireCondition(
         metadata.inventory_status === product.inventoryStatus,
         `${product.name} inventory status metadata mismatch.`
+      );
+      requireCondition(
+        metadata.availability_state === availability.state,
+        `${product.name} availability state metadata mismatch.`
+      );
+      requireCondition(
+        metadata.public_visibility === availability.publicVisibility,
+        `${product.name} public visibility metadata mismatch.`
+      );
+      requireCondition(
+        metadata.cartable === availability.canAddToCart,
+        `${product.name} cartable metadata mismatch.`
       );
       requireCondition(
         metadata.visibility_status === product.visibilityStatus,

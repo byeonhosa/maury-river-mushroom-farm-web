@@ -173,7 +173,11 @@ describe("backend seed data contract", () => {
       product_format: "capsule",
       fulfillment_mode: "supplement-shipping",
       parcel_shipping_eligible: true,
-      inventory_status: "coming-soon"
+      inventory_status: "coming-soon",
+      availability_state: "coming-soon",
+      cartable: false,
+      available_quantity: 0,
+      notify_me_enabled: true
     });
     expect(metadata.species).toEqual(["lion-s-mane"]);
     expect(metadata.supplement_disclaimer).toContain(
@@ -189,6 +193,8 @@ describe("backend seed data contract", () => {
       sku: "MRMF-BLUE-OYSTER-MUSHROOMS",
       manageInventory: true,
       fulfillmentMode: "fresh-local",
+      availabilityState: "available",
+      cartable: true,
       parcelShippingEligible: false,
       localOnly: true,
       stockedQuantity: 50
@@ -201,7 +207,9 @@ describe("backend seed data contract", () => {
     });
     expect(inventorySpecs.find((spec) => spec.productSlug === "chefs-weekly-mushroom-mix")).toMatchObject({
       manageInventory: false,
-      stockedQuantity: 12
+      availabilityState: "wholesale-only",
+      cartable: false,
+      stockedQuantity: 0
     });
   });
 });

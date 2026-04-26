@@ -55,7 +55,7 @@ corepack pnpm --filter @mrmf/backend seed
 corepack pnpm --filter @mrmf/backend seed:verify
 ```
 
-The seed creates the initial product catalog plus a local development region, manual fulfillment location, pickup/local-delivery/preorder options, parcel shipping options for eligible shelf-stable and supplement products, inventory items, stock levels, and product variant inventory links for managed products. Shipping options carry metadata for fulfillment type, allowed and rejected product fulfillment modes, pickup-window requirements, and whether the method blocks fresh products. Repeated seed runs refresh this metadata and the seed-managed native shipping-option rules on existing shipping options. No parcel shipping option is attached to the fresh-local shipping profile. The backend also registers a Store API shipping-options context hook so Medusa can evaluate the seeded `mrmf_cart_fulfillment_scope` rule for fresh-only, shelf-stable-only, and restricted mixed carts. The storefront still filters options with the shared app-level rules as defense in depth. The seed also prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
+The seed creates the initial product catalog plus a local development region, manual fulfillment location, pickup/local-delivery/preorder options, parcel shipping options for eligible shelf-stable and supplement products, inventory items, stock levels, and product variant inventory links for managed products. Product, variant, and inventory records carry availability metadata for state, public visibility, cartability, quantity, stock notes, and inquiry routing. Shipping options carry metadata for fulfillment type, allowed and rejected product fulfillment modes, pickup-window requirements, and whether the method blocks fresh products. Repeated seed runs refresh this metadata and the seed-managed native shipping-option rules on existing shipping options. No parcel shipping option is attached to the fresh-local shipping profile. The backend also registers a Store API shipping-options context hook so Medusa can evaluate the seeded `mrmf_cart_fulfillment_scope` rule for fresh-only, shelf-stable-only, and restricted mixed carts. The storefront still filters options with the shared app-level rules as defense in depth. The seed also prints a local publishable Store API key beginning with `pk_`. Copy that public key into `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `.env` when you want the storefront to read products directly from the local Medusa Store API.
 
 To check the seed payload shape without writing commerce records or booting Medusa:
 
@@ -75,7 +75,17 @@ The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMER
 
 The storefront cart uses `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid` by default. It persists a staged browser cart first, then mirrors it to a Medusa Store API cart when Medusa-backed products include variant IDs and the publishable key is configured. If Medusa is offline or the key is missing, the cart remains staged-only. It supports add, quantity change, remove, subtotal, fresh/local-only warnings, mixed-cart restrictions, safe shipping option filtering, selected fulfillment-method persistence, and checkout validation. In checkout, valid Medusa shipping or pickup options are shown for the current cart and the selected method is written back to the Medusa cart when practical. Live payment and final Medusa cart completion remain disabled until Stripe, policies, and launch fulfillment settings are approved.
 
-Product availability states are enforced before cart sync. `coming-soon` and `sold-out` products are visible but blocked from cart and checkout. `seasonal` products may be carted only with harvest availability messaging. `preorder` products are cartable only when their fulfillment mode is explicitly preorder-capable.
+Product availability states are enforced before cart sync. The shared availability model separates the master catalog from current availability and supports `available`, `low-stock`, `sold-out`, `coming-soon`, `seasonal`, `preorder`, `hidden`, `wholesale-only`, and `inquiry-only`. `hidden` products stay out of the public shop, `wholesale-only` and `inquiry-only` products route to inquiry CTAs, and unavailable products are blocked from cart and checkout. `seasonal` products are cartable only when explicitly configured, and `preorder` products are cartable only when their fulfillment mode is preorder-capable. See `docs/content/inventory-availability-model.md`.
+
+The master mushroom species catalog includes the farm's current and planned species codes: `BO`, `GO`, `PO`, `WO`, `EO`, `KB`, `KT`, `LM`, `PP`, `CNT`, `STK`, `MTK`, `TT`, `RSH`, `CDY`, and `ENK`. Species can be educational/catalog entries even when no customer-facing product is currently available.
+
+Development-only availability admin scaffold:
+
+```bash
+corepack pnpm --filter @mrmf/storefront dev
+```
+
+Then visit `http://localhost:3000/internal/availability`. This route is disabled in production and can be disabled locally with `MRMF_ENABLE_DEV_AVAILABILITY_ADMIN=false`. It previews process-local availability overrides for owner review; persistent production availability management should move into an authenticated Medusa Admin or production-tracking integration later.
 
 ## Checks
 

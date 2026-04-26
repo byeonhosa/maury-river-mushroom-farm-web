@@ -55,6 +55,10 @@ export default async function ProductDetailPage({
             {availability.label}
           </span>{" "}
           {availability.message}
+          {availability.stockNote ? ` ${availability.stockNote}` : ""}
+          {availability.pickupAvailabilityNote
+            ? ` ${availability.pickupAvailabilityNote}`
+            : ""}
         </p>
         <p className="mt-6 text-lg leading-8">{product.longDescription}</p>
 
@@ -110,14 +114,30 @@ export default async function ProductDetailPage({
         ) : null}
 
         <div className="mt-8 flex flex-wrap gap-3">
-          <AddToCartButton
-            productSlug={product.slug}
-            productName={product.name}
-            disabledReason={
-              !availability.canAddToCart ? availability.message : undefined
-            }
-            className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory disabled:cursor-not-allowed disabled:opacity-60"
-          />
+          {availability.showWholesaleCta ? (
+            <Link
+              href="/restaurants-wholesale"
+              className="bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+            >
+              Start wholesale inquiry
+            </Link>
+          ) : availability.showInquiryCta ? (
+            <Link
+              href="/contact"
+              className="bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+            >
+              Ask about availability
+            </Link>
+          ) : (
+            <AddToCartButton
+              productSlug={product.slug}
+              productName={product.name}
+              disabledReason={
+                !availability.canAddToCart ? availability.message : undefined
+              }
+              className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory disabled:cursor-not-allowed disabled:opacity-60"
+            />
+          )}
           <Link
             href="/cart"
             className="border border-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em]"
