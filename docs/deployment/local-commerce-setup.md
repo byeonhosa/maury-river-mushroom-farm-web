@@ -70,7 +70,7 @@ Preview the seed plan without writing product records or booting Medusa:
 corepack pnpm --filter @mrmf/backend seed:plan
 ```
 
-The seed creates product categories, collections, shipping profiles, a local development region, a manual fulfillment stock location, one fulfillment set, one US development service zone, provisional pickup/local-delivery/preorder shipping options, safe parcel shipping options for shelf-stable and supplement products, a storefront sales channel, the initial 10 products, inventory items, inventory levels, and product variant inventory links for managed products. It is idempotent: repeated runs update existing seeded products, shipping-option safety metadata, seed-managed shipping-option rules, and inventory records rather than creating duplicates and reuse seeded region/shipping records by name. Product, variant, and inventory metadata preserve mushroom-specific fields for species, product format, flavor, texture, cooking, storage, shelf life, fulfillment, related recipes, related species pages, supplement disclaimer, inventory status, visibility status, local-only status, and parcel eligibility.
+The seed creates product categories, collections, shipping profiles, a local development region, a manual fulfillment stock location, one fulfillment set, one US development service zone, provisional pickup/local-delivery/preorder shipping options, safe parcel shipping options for shelf-stable and supplement products, a storefront sales channel, the initial 10 products, inventory items, inventory levels, and product variant inventory links for managed products. It is idempotent: repeated runs update existing seeded products, shipping-option safety metadata, seed-managed shipping-option rules, and inventory records rather than creating duplicates and reuse seeded region/shipping records by name. Product, variant, and inventory metadata preserve mushroom-specific fields for species, product format, flavor, texture, cooking, storage, shelf life, fulfillment, related recipes, related species pages, supplement disclaimer, inventory status, availability state, public visibility, cartability, quantity, stock notes, inquiry routing, local-only status, and parcel eligibility.
 
 `seed:verify` connects to PostgreSQL through `DATABASE_URL` and checks that the expected products, categories, collections, variants, prices, metadata, shipping profile links, region, service zone, shipping options, native shipping-option rules, managed inventory items, inventory levels, and variant inventory links exist in the database. It also verifies shipping-option metadata for fulfillment type, allowed/rejected product fulfillment modes, pickup-window requirements, fresh-product blocking, and that no parcel shipping option is attached to the fresh-local shipping profile.
 
@@ -134,11 +134,32 @@ The script prints the raw Medusa shipping options and app-filtered safe options 
 
 Availability behavior:
 
-- `coming-soon`: visible for education and launch planning, but not cartable.
-- `sold-out`: visible with sold-out messaging, but not cartable.
-- `seasonal`: cartable with harvest-dependent availability messaging.
+- `available`: visible and cartable when fulfillment rules allow.
+- `low-stock`: visible and cartable with a low-stock warning.
+- `sold-out`: visible but not cartable; Phase 3 should add notify-me capture.
+- `coming-soon`: visible but not cartable; use availability inquiry until notify-me exists.
+- `seasonal`: visible; cartable only when explicitly configured for the current harvest.
 - `preorder`: cartable only when the product uses an explicit preorder fulfillment mode.
-- zero stock: review before launch; seeded zero-stock coming-soon and sold-out products are blocked by availability status.
+- `hidden`: excluded from the public shop and catalog, but can remain in seed/admin data.
+- `wholesale-only`: visible with a restaurant/wholesale inquiry path, not ordinary checkout.
+- `inquiry-only`: visible with a contact/availability inquiry path, not ordinary checkout.
+- zero stock: blocked unless a future workflow explicitly models a safe preorder.
+
+The master mushroom species catalog lives in `packages/shared/src/species.ts` and can include species that are not currently products. See `docs/content/inventory-availability-model.md` for the full state table and launch-stock workflow.
+
+Development-only availability admin scaffold:
+
+```bash
+corepack pnpm --filter @mrmf/storefront dev
+```
+
+Open `http://localhost:3000/internal/availability`. The route lists products and species, then lets the current storefront process preview availability overrides for state, visibility, cartability, quantity, stock notes, expected availability, pickup notes, wholesale-only, inquiry-only, and public messages. It is disabled in production and can be disabled locally with:
+
+```bash
+MRMF_ENABLE_DEV_AVAILABILITY_ADMIN=false
+```
+
+These overrides are process-local. Rerun `seed`, `seed:verify`, and storefront checks after changing canonical seed data.
 
 Cart recovery stores the Medusa cart ID and selected fulfillment method in browser storage. If the Medusa cart is stale, deleted, expired, or unavailable, the adapter clears the stale cart ID and keeps the customer-visible staged line items where practical. The next sync creates a new Medusa cart when the Store API is available.
 
@@ -162,6 +183,7 @@ Cart adapter modes:
 10. Visit `/checkout`, choose a pickup method, and confirm the page reports that the fulfillment method was saved to the Medusa cart while payment remains staged.
 11. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded as coming soon with zero provisional stock until launch availability is confirmed, so this mixed-cart check may require temporarily using another available shelf-stable fixture in development.
 12. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
+13. Visit `/internal/availability` in development and confirm products and the species master catalog load.
 
 ## Troubleshooting
 
@@ -180,6 +202,7 @@ Cart adapter modes:
 - `seed:verify` reports missing region or shipping options: rerun `db:migrate`, rerun `seed`, then rerun `seed:verify`. The seed records are keyed by stable names.
 - Checkout shows fulfillment options as unavailable: remove and re-add the cart items so local browser cart state matches the current product adapter data.
 - Products with zero stock: confirm whether the product should be `available`, `seasonal`, `preorder`, `coming-soon`, or `sold-out` in `packages/shared/src/products.ts`, then rerun the seed.
+- Availability admin route returns 404: confirm the storefront is running in development mode and `MRMF_ENABLE_DEV_AVAILABILITY_ADMIN` is not set to `false`. The route is intentionally disabled in production.
 - Coming-soon or preorder confusion: coming-soon products are blocked from cart; preorder products must use a preorder-capable fulfillment mode before checkout can continue.
 - Medusa peer dependency warnings during install are currently upstream/non-blocking for this phase.
 

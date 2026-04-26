@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
+    "./availability": "./src/availability.ts",
     "./brand": "./src/brand.ts",
     "./business-rules": "./src/business-rules.ts",
     "./cart": "./src/cart.ts",

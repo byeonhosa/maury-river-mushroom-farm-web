@@ -1,11 +1,15 @@
 import {
   canAddCommerceProductToCart,
+  availabilityStates,
   getProductBySlug,
   getCommerceProductAvailability,
   getCartSupportedFulfillmentTypes,
   filterSafeCommerceShippingOptions,
   medusaProductToCommerceProduct,
   pickupLocations,
+  resolveProductAvailability,
+  shouldShowProductInShop,
+  speciesPages,
   summarizeCommerceCart,
   summarizeCart,
   validateCheckout,
@@ -331,6 +335,77 @@ describe("cart and pickup commerce rules", () => {
     );
   });
 
+  it("defines the full master mushroom species catalog without making every species cartable", () => {
+    expect(speciesPages.map((species) => species.code)).toEqual([
+      "LM",
+      "BO",
+      "GO",
+      "PO",
+      "WO",
+      "EO",
+      "KB",
+      "KT",
+      "PP",
+      "CNT",
+      "STK",
+      "MTK",
+      "TT",
+      "RSH",
+      "CDY",
+      "ENK"
+    ]);
+    expect(speciesPages.filter((species) => species.requiresLegalReview).map((species) => species.code)).toEqual([
+      "LM",
+      "TT",
+      "RSH",
+      "CDY"
+    ]);
+    expect(speciesPages.filter((species) => species.availabilityState === "coming-soon").length).toBeGreaterThan(8);
+  });
+
+  it("documents all availability states and their safe storefront behavior", () => {
+    expect(availabilityStates).toEqual([
+      "available",
+      "low-stock",
+      "sold-out",
+      "coming-soon",
+      "seasonal",
+      "preorder",
+      "hidden",
+      "wholesale-only",
+      "inquiry-only"
+    ]);
+
+    const base = {
+      name: "Catalog Placeholder",
+      fulfillment: ["farm-pickup" as const],
+      category: "fresh-mushrooms" as const,
+      visibilityStatus: "published" as const
+    };
+
+    expect(
+      resolveProductAvailability({
+        ...base,
+        inventoryStatus: "hidden",
+        availability: { state: "hidden" }
+      })
+    ).toMatchObject({ showInShop: false, showInCatalog: false, canAddToCart: false });
+    expect(
+      resolveProductAvailability({
+        ...base,
+        inventoryStatus: "available",
+        availability: { state: "available", availableQuantity: 0 }
+      })
+    ).toMatchObject({ showInShop: true, canAddToCart: false });
+    expect(
+      resolveProductAvailability({
+        ...base,
+        inventoryStatus: "low-stock",
+        availability: { state: "low-stock", availableQuantity: 3 }
+      })
+    ).toMatchObject({ label: "Low stock", canAddToCart: true });
+  });
+
   it("allows seasonal products with harvest messaging and preorder products only through preorder fulfillment", () => {
     const seasonal = medusaProductToCommerceProduct({
       id: "prod_fresh_lions_mane",
@@ -363,5 +438,45 @@ describe("cart and pickup commerce rules", () => {
       canAddToCart: false,
       blocksCheckout: true
     });
+  });
+
+  it("routes wholesale-only and inquiry-only products to CTAs instead of cart", () => {
+    const wholesale = medusaProductToCommerceProduct({
+      id: "prod_chef_mix",
+      handle: "chefs-weekly-mushroom-mix"
+    });
+    const inquiryOnly = medusaProductToCommerceProduct({
+      id: "prod_inquiry",
+      handle: "blue-oyster-mushrooms",
+      metadata: {
+        availability_state: "inquiry-only",
+        inquiry_only: true
+      }
+    });
+
+    expect(getCommerceProductAvailability(wholesale)).toMatchObject({
+      label: "Wholesale only",
+      canAddToCart: false,
+      showWholesaleCta: true
+    });
+    expect(getCommerceProductAvailability(inquiryOnly)).toMatchObject({
+      label: "Inquiry only",
+      canAddToCart: false,
+      showInquiryCta: true
+    });
+  });
+
+  it("excludes hidden products from public shop filtering", () => {
+    const hidden = medusaProductToCommerceProduct({
+      id: "prod_hidden",
+      handle: "blue-oyster-mushrooms",
+      metadata: {
+        availability_state: "hidden",
+        public_visibility: "hidden"
+      }
+    });
+
+    expect(shouldShowProductInShop(hidden)).toBe(false);
+    expect(canAddCommerceProductToCart(hidden)).toBe(false);
   });
 });

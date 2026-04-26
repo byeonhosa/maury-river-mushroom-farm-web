@@ -1,4 +1,9 @@
 import {
+  resolveProductAvailability,
+  shouldShowProductInShop,
+  type ResolvedProductAvailability
+} from "./availability";
+import {
   canShipProduct,
   classifyProductFulfillment,
   getFulfillmentLabel,
@@ -13,6 +18,7 @@ import type {
   Product,
   ProductCategory,
   ProductFormat,
+  ProductAvailabilityConfig,
   VisibilityStatus
 } from "./types";
 
@@ -34,16 +40,11 @@ export interface CommerceProduct {
   shippable: boolean;
   localOnly: boolean;
   inventoryStatus: Product["inventoryStatus"];
+  availability: ProductAvailabilityConfig;
   metadata: ProductMetadata;
 }
 
-export interface CommerceProductAvailability {
-  label: string;
-  message: string;
-  canAddToCart: boolean;
-  blocksCheckout: boolean;
-  isPreorder: boolean;
-}
+export type CommerceProductAvailability = ResolvedProductAvailability;
 
 export type ProductMetadata = Pick<
   Product,
@@ -94,6 +95,17 @@ export interface MedusaProductLike {
     fulfillment_label?: string;
     shippable?: boolean;
     inventory_status?: Product["inventoryStatus"];
+    availability_state?: Product["inventoryStatus"];
+    public_visibility?: ProductAvailabilityConfig["publicVisibility"];
+    cartable?: boolean;
+    available_quantity?: number | string;
+    stock_note?: string;
+    expected_availability_date?: string;
+    pickup_availability_note?: string;
+    public_availability_message?: string;
+    notify_me_enabled?: boolean;
+    wholesale_only?: boolean;
+    inquiry_only?: boolean;
     short_description?: string;
     product_format?: ProductFormat;
     flavor_profile?: string;
@@ -105,6 +117,7 @@ export interface MedusaProductLike {
     supplement_disclaimer?: string;
     visibility_status?: VisibilityStatus;
     fresh_shipping_approval?: FreshShippingApproval;
+    availability?: ProductAvailabilityConfig;
     storefront_metadata?: Partial<ProductMetadata>;
   };
 }
@@ -128,6 +141,10 @@ function stringValue(value: unknown, fallback: string) {
 }
 
 function booleanValue(value: unknown, fallback: boolean) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function optionalBooleanValue(value: unknown, fallback?: boolean) {
   return typeof value === "boolean" ? value : fallback;
 }
 
@@ -186,10 +203,14 @@ function normalizeProductCategory(value: unknown, fallback: ProductCategory): Pr
 function normalizeInventoryStatus(value: unknown, fallback: InventoryStatus): InventoryStatus {
   const allowed: InventoryStatus[] = [
     "available",
+    "low-stock",
     "seasonal",
     "preorder",
     "sold-out",
-    "coming-soon"
+    "coming-soon",
+    "hidden",
+    "wholesale-only",
+    "inquiry-only"
   ];
 
   return allowed.includes(value as InventoryStatus) ? (value as InventoryStatus) : fallback;
@@ -214,6 +235,85 @@ function normalizeFulfillmentTypes(value: unknown, fallback: FulfillmentType[]):
   return Array.isArray(value)
     ? value.filter((item): item is FulfillmentType => allowed.includes(item as FulfillmentType))
     : fallback;
+}
+
+function normalizePublicVisibility(
+  value: unknown,
+  fallback: ProductAvailabilityConfig["publicVisibility"]
+): ProductAvailabilityConfig["publicVisibility"] {
+  const allowed: Array<NonNullable<ProductAvailabilityConfig["publicVisibility"]>> = [
+    "shop",
+    "catalog",
+    "hidden"
+  ];
+
+  return allowed.includes(value as NonNullable<ProductAvailabilityConfig["publicVisibility"]>)
+    ? (value as ProductAvailabilityConfig["publicVisibility"])
+    : fallback;
+}
+
+function normalizeNullableString(value: unknown, fallback?: string) {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+
+function normalizeAvailabilityConfig(
+  metadata: MedusaProductLike["metadata"] = {},
+  fallback: ProductAvailabilityConfig
+): ProductAvailabilityConfig {
+  const metadataAvailability = metadata.availability ?? {};
+  const state = normalizeInventoryStatus(
+    metadata.availability_state ?? metadataAvailability.state ?? metadata.inventory_status,
+    fallback.state ?? "coming-soon"
+  );
+  const sameStateAsFallback = state === fallback.state;
+  const stateFallback = sameStateAsFallback ? fallback : {};
+  const hasExplicitQuantity =
+    metadata.available_quantity !== undefined ||
+    metadataAvailability.availableQuantity !== undefined;
+
+  return {
+    state,
+    publicVisibility: normalizePublicVisibility(
+      metadata.public_visibility ?? metadataAvailability.publicVisibility,
+      fallback.publicVisibility
+    ),
+    cartable: optionalBooleanValue(metadata.cartable ?? metadataAvailability.cartable, fallback.cartable),
+    availableQuantity:
+      hasExplicitQuantity
+        ? numberValue(
+            metadata.available_quantity ?? metadataAvailability.availableQuantity,
+            stateFallback.availableQuantity ?? 0
+          )
+        : stateFallback.availableQuantity,
+    stockNote: normalizeNullableString(
+      metadata.stock_note ?? metadataAvailability.stockNote,
+      stateFallback.stockNote
+    ),
+    expectedAvailabilityDate: normalizeNullableString(
+      metadata.expected_availability_date ?? metadataAvailability.expectedAvailabilityDate,
+      stateFallback.expectedAvailabilityDate
+    ),
+    pickupAvailabilityNote: normalizeNullableString(
+      metadata.pickup_availability_note ?? metadataAvailability.pickupAvailabilityNote,
+      stateFallback.pickupAvailabilityNote
+    ),
+    publicMessage: normalizeNullableString(
+      metadata.public_availability_message ?? metadataAvailability.publicMessage,
+      stateFallback.publicMessage
+    ),
+    notifyMeEnabled: optionalBooleanValue(
+      metadata.notify_me_enabled ?? metadataAvailability.notifyMeEnabled,
+      stateFallback.notifyMeEnabled
+    ),
+    wholesaleOnly: optionalBooleanValue(
+      metadata.wholesale_only ?? metadataAvailability.wholesaleOnly,
+      stateFallback.wholesaleOnly
+    ),
+    inquiryOnly: optionalBooleanValue(
+      metadata.inquiry_only ?? metadataAvailability.inquiryOnly,
+      stateFallback.inquiryOnly
+    )
+  };
 }
 
 function normalizeProductMetadata(
@@ -322,59 +422,26 @@ export function isCommerceProductPreorderEnabled(product: CommerceProduct) {
 }
 
 export function getCommerceProductAvailability(
-  product: Pick<CommerceProduct, "inventoryStatus" | "fulfillment" | "name">
-): CommerceProductAvailability {
-  switch (product.inventoryStatus) {
-    case "available":
-      return {
-        label: "Available",
-        message: "Available for the current ordering window.",
-        canAddToCart: true,
-        blocksCheckout: false,
-        isPreorder: false
-      };
-    case "seasonal":
-      return {
-        label: "Seasonal harvest",
-        message:
-          "Seasonal item. Availability depends on the current harvest and may require confirmation.",
-        canAddToCart: true,
-        blocksCheckout: false,
-        isPreorder: false
-      };
-    case "preorder": {
-      const preorderEnabled =
-        product.fulfillment.includes("local-preorder") ||
-        product.fulfillment.includes("restaurant-delivery");
-
-      return {
-        label: preorderEnabled ? "Preorder" : "Preorder pending",
-        message: preorderEnabled
-          ? "Preorder item. The farm will confirm timing before this becomes a final order."
-          : "Preorder is not configured for this item yet.",
-        canAddToCart: preorderEnabled,
-        blocksCheckout: !preorderEnabled,
-        isPreorder: preorderEnabled
-      };
-    }
-    case "sold-out":
-      return {
-        label: "Sold out",
-        message: `${product.name} is sold out and cannot be added to checkout right now.`,
-        canAddToCart: false,
-        blocksCheckout: true,
-        isPreorder: false
-      };
-    case "coming-soon":
-    default:
-      return {
-        label: "Coming soon",
-        message: `${product.name} is not available for ordering yet.`,
-        canAddToCart: false,
-        blocksCheckout: true,
-        isPreorder: false
-      };
+  product: {
+    name: string;
+    inventoryStatus: InventoryStatus;
+    fulfillment: FulfillmentType[];
+    category?: ProductCategory;
+    price?: number;
+    availability?: ProductAvailabilityConfig;
+    visibilityStatus?: VisibilityStatus;
+    metadata?: Pick<ProductMetadata, "visibilityStatus">;
   }
+): CommerceProductAvailability {
+  return resolveProductAvailability({
+    name: product.name,
+    inventoryStatus: product.inventoryStatus,
+    fulfillment: product.fulfillment,
+    category: product.category,
+    price: product.price,
+    visibilityStatus: product.visibilityStatus ?? product.metadata?.visibilityStatus,
+    availability: product.availability
+  });
 }
 
 export function canAddCommerceProductToCart(product: CommerceProduct) {
@@ -418,7 +485,25 @@ export function getProductMetadata(product: Product): ProductMetadata {
   };
 }
 
+export function getProductAvailabilityConfig(product: Product): ProductAvailabilityConfig {
+  return {
+    state: product.availability?.state ?? product.inventoryStatus,
+    publicVisibility: product.availability?.publicVisibility ?? "shop",
+    cartable: product.availability?.cartable,
+    availableQuantity: product.availability?.availableQuantity,
+    stockNote: product.availability?.stockNote,
+    expectedAvailabilityDate: product.availability?.expectedAvailabilityDate,
+    pickupAvailabilityNote: product.availability?.pickupAvailabilityNote,
+    publicMessage: product.availability?.publicMessage,
+    notifyMeEnabled: product.availability?.notifyMeEnabled,
+    wholesaleOnly: product.availability?.wholesaleOnly,
+    inquiryOnly: product.availability?.inquiryOnly
+  };
+}
+
 export function toCommerceProduct(product: Product): CommerceProduct {
+  const availability = getProductAvailabilityConfig(product);
+
   return {
     source: "shared-seed",
     id: product.slug,
@@ -436,20 +521,21 @@ export function toCommerceProduct(product: Product): CommerceProduct {
     shippable: canShipProduct(product),
     localOnly: requiresLocalFulfillment(product),
     inventoryStatus: product.inventoryStatus,
+    availability,
     metadata: getProductMetadata(product)
   };
 }
 
 export function listCommerceProducts() {
   return products
-    .filter((product) => product.visibilityStatus === "published")
+    .filter((product) => shouldShowProductInShop(product))
     .map(toCommerceProduct);
 }
 
 export function getCommerceProductBySlug(slug: string) {
   const product = getProductBySlug(slug);
 
-  return product ? toCommerceProduct(product) : undefined;
+  return product && shouldShowProductInShop(product) ? toCommerceProduct(product) : undefined;
 }
 
 export function listCommerceProductsByCategory(category: ProductCategory) {
@@ -481,6 +567,12 @@ export function medusaProductToCommerceProduct(product: MedusaProductLike): Comm
         shippable: false,
         localOnly: true,
         inventoryStatus: "coming-soon" as InventoryStatus,
+        availability: {
+          state: "coming-soon" as const,
+          publicVisibility: "hidden" as const,
+          cartable: false,
+          publicMessage: "Catalog item pending owner review before publication."
+        },
         metadata: {
           species: [],
           productFormat: "fresh" as ProductFormat,
@@ -499,6 +591,7 @@ export function medusaProductToCommerceProduct(product: MedusaProductLike): Comm
   const normalizedMetadata = normalizeProductMetadata(metadata, fallback.metadata);
   const category = normalizeProductCategory(metadata.category, fallback.category);
   const fulfillment = normalizeFulfillmentTypes(metadata.fulfillment, fallback.fulfillment);
+  const availability = normalizeAvailabilityConfig(metadata, fallback.availability);
   const requestedShippable = booleanValue(metadata.shippable, fulfillment.includes("shipping"));
   const isFresh =
     normalizedMetadata.productFormat === "fresh" || category === "fresh-mushrooms";
@@ -534,7 +627,11 @@ export function medusaProductToCommerceProduct(product: MedusaProductLike): Comm
     fulfillmentLabel: explicitFulfillmentLabel || fulfillmentLabels[fulfillmentMode],
     shippable,
     localOnly: isFresh || !shippable,
-    inventoryStatus: normalizeInventoryStatus(metadata.inventory_status, fallback.inventoryStatus),
+    inventoryStatus: normalizeInventoryStatus(
+      metadata.availability_state ?? metadata.inventory_status,
+      fallback.inventoryStatus
+    ),
+    availability,
     metadata: normalizedMetadata
   };
 }

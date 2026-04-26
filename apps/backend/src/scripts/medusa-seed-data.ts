@@ -1,6 +1,8 @@
 import type { CreateProductWorkflowInputDTO } from "@medusajs/framework/types";
 import {
   classifyProductFulfillment,
+  getCommerceProductAvailability,
+  getProductAvailabilityConfig,
   getProductMetadata,
   getFulfillmentLabel,
   pickupLocations,
@@ -110,6 +112,11 @@ export interface MedusaSeedInventorySpec {
   fulfillment: FulfillmentType[];
   productFormat: Product["productFormat"];
   inventoryStatus: Product["inventoryStatus"];
+  availabilityState: Product["inventoryStatus"];
+  publicVisibility: NonNullable<Product["availability"]>["publicVisibility"];
+  cartable: boolean;
+  availableQuantity?: number;
+  stockNote?: string;
   shippable: boolean;
   parcelShippingEligible: boolean;
   localOnly: boolean;
@@ -138,10 +145,14 @@ const collectionKeyByFulfillmentMode: Record<FulfillmentMode, string> = {
 
 const inventoryQuantityByStatus: Record<Product["inventoryStatus"], number> = {
   available: 50,
+  "low-stock": 8,
   seasonal: 24,
   preorder: 12,
   "coming-soon": 0,
-  "sold-out": 0
+  "sold-out": 0,
+  hidden: 0,
+  "wholesale-only": 0,
+  "inquiry-only": 0
 };
 
 export const medusaSeedCategories: MedusaSeedCategory[] = productCategories.map(
@@ -412,6 +423,8 @@ export function buildMedusaShippingOptionRules(
 
 export function buildMedusaProductMetadata(product: Product) {
   const fulfillmentMode = classifyProductFulfillment(product);
+  const availability = getCommerceProductAvailability(product);
+  const availabilityConfig = getProductAvailabilityConfig(product);
 
   return {
     mrmf_slug: product.slug,
@@ -442,6 +455,18 @@ export function buildMedusaProductMetadata(product: Product) {
       fulfillmentMode !== "fresh-local",
     blocks_parcel_shipping: fulfillmentMode === "fresh-local",
     inventory_status: product.inventoryStatus,
+    availability_state: availability.state,
+    public_visibility: availability.publicVisibility,
+    cartable: availability.canAddToCart,
+    available_quantity: availability.availableQuantity,
+    stock_note: availability.stockNote,
+    expected_availability_date: availability.expectedAvailabilityDate,
+    pickup_availability_note: availability.pickupAvailabilityNote,
+    public_availability_message: availability.message,
+    notify_me_enabled: availability.showNotifyMeLater,
+    wholesale_only: availability.showWholesaleCta,
+    inquiry_only: availability.showInquiryCta,
+    availability: availabilityConfig,
     related_recipes: product.relatedRecipes,
     relatedRecipes: product.relatedRecipes,
     related_species_page: product.relatedSpeciesPage,
@@ -463,7 +488,7 @@ export function buildSku(product: Product) {
 }
 
 export function getSeedInventoryQuantity(product: Product) {
-  return inventoryQuantityByStatus[product.inventoryStatus];
+  return product.availability?.availableQuantity ?? inventoryQuantityByStatus[product.inventoryStatus];
 }
 
 export function buildMedusaInventorySpecs(): MedusaSeedInventorySpec[] {
@@ -473,6 +498,7 @@ export function buildMedusaInventorySpecs(): MedusaSeedInventorySpec[] {
       product.shippable &&
       product.fulfillment.includes("shipping") &&
       fulfillmentMode !== "fresh-local";
+    const availability = getCommerceProductAvailability(product);
 
     return {
       productSlug: product.slug,
@@ -485,6 +511,11 @@ export function buildMedusaInventorySpecs(): MedusaSeedInventorySpec[] {
       fulfillment: product.fulfillment,
       productFormat: product.productFormat,
       inventoryStatus: product.inventoryStatus,
+      availabilityState: availability.state,
+      publicVisibility: availability.publicVisibility,
+      cartable: availability.canAddToCart,
+      availableQuantity: availability.availableQuantity,
+      stockNote: availability.stockNote,
       shippable: product.shippable,
       parcelShippingEligible,
       localOnly: fulfillmentMode === "fresh-local",
@@ -504,6 +535,7 @@ export function buildMedusaProductPayloads(
 
   return products.map((product) => {
     const fulfillmentMode = classifyProductFulfillment(product);
+    const availability = getCommerceProductAvailability(product);
     const collectionKey = collectionKeyByFulfillmentMode[fulfillmentMode];
     const shippingProfileId = context.shippingProfileIdByKey[fulfillmentMode];
     const categoryId = context.categoryIdByKey[product.category];
@@ -517,7 +549,10 @@ export function buildMedusaProductPayloads(
       subtitle: getFulfillmentLabel(product),
       handle: product.slug,
       description: product.longDescription,
-      status: product.visibilityStatus === "published" ? "published" : "draft",
+      status:
+        product.visibilityStatus === "published" && availability.showInCatalog
+          ? "published"
+          : "draft",
       thumbnail: product.images[0]?.src,
       images: product.images.map((image) => ({
         url: image.src,
@@ -539,8 +574,7 @@ export function buildMedusaProductPayloads(
         {
           title: product.unitSize,
           sku: buildSku(product),
-          allow_backorder:
-            product.inventoryStatus === "preorder" || product.category === "restaurant-wholesale",
+          allow_backorder: availability.isPreorder,
           manage_inventory: product.category !== "restaurant-wholesale",
           options: {
             Unit: product.unitSize
@@ -554,6 +588,11 @@ export function buildMedusaProductPayloads(
           metadata: {
             mrmf_slug: product.slug,
             inventory_status: product.inventoryStatus,
+            availability_state: availability.state,
+            public_visibility: availability.publicVisibility,
+            cartable: availability.canAddToCart,
+            available_quantity: availability.availableQuantity,
+            stock_note: availability.stockNote,
             fulfillment_mode: fulfillmentMode,
             fulfillment: product.fulfillment,
             product_format: product.productFormat,

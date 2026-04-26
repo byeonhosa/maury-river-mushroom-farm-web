@@ -33,12 +33,34 @@ export type FulfillmentMode =
 
 export type InventoryStatus =
   | "available"
+  | "low-stock"
   | "seasonal"
   | "preorder"
   | "sold-out"
-  | "coming-soon";
+  | "coming-soon"
+  | "hidden"
+  | "wholesale-only"
+  | "inquiry-only";
+
+export type AvailabilityState = InventoryStatus;
+
+export type PublicAvailabilityVisibility = "shop" | "catalog" | "hidden";
 
 export type VisibilityStatus = "published" | "draft" | "archived";
+
+export interface ProductAvailabilityConfig {
+  state?: AvailabilityState;
+  publicVisibility?: PublicAvailabilityVisibility;
+  cartable?: boolean;
+  availableQuantity?: number;
+  stockNote?: string;
+  expectedAvailabilityDate?: string;
+  pickupAvailabilityNote?: string;
+  publicMessage?: string;
+  notifyMeEnabled?: boolean;
+  wholesaleOnly?: boolean;
+  inquiryOnly?: boolean;
+}
 
 export interface ProductImage {
   src: string;
@@ -71,6 +93,7 @@ export interface Product {
   shippable: boolean;
   freshShippingApproval?: FreshShippingApproval;
   inventoryStatus: InventoryStatus;
+  availability?: ProductAvailabilityConfig;
   images: ProductImage[];
   relatedRecipes: string[];
   relatedSpeciesPage: string[];
@@ -104,7 +127,10 @@ export interface CartLineInput {
 
 export interface SpeciesPage {
   name: string;
+  code: string;
   slug: string;
+  catalogStatus: "active" | "planned" | "research";
+  availabilityState: AvailabilityState;
   overview: string;
   flavor: string;
   texture: string;

@@ -80,6 +80,10 @@ export function buildCartLine(product: Product, quantity: number): CartLine {
     warnings.push(availability.message);
   }
 
+  if (availability.stockNote) {
+    warnings.push(availability.stockNote);
+  }
+
   return {
     product,
     quantity: normalizedQuantity,
@@ -154,6 +158,16 @@ export function buildCommerceCartLine(
 
   if (product.category === "subscriptions") {
     warnings.push("Subscription products require a confirmed pickup cadence before launch.");
+  }
+
+  const availability = getCommerceProductAvailability(product);
+
+  if (availability.state !== "available") {
+    warnings.push(availability.message);
+  }
+
+  if (availability.stockNote) {
+    warnings.push(availability.stockNote);
   }
 
   return {
