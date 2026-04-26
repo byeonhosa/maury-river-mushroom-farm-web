@@ -10,13 +10,15 @@
     "./cart": "./src/cart.ts",
     "./checkout": "./src/checkout.ts",
     "./commerce": "./src/commerce.ts",
+    "./email": "./src/email.ts",
     "./forms": "./src/forms.ts",
     "./notifications": "./src/notifications.ts",
     "./pickup": "./src/pickup.ts",
     "./policies": "./src/policies.ts",
     "./products": "./src/products.ts",
     "./recipes": "./src/recipes.ts",
-    "./species": "./src/species.ts"
+    "./species": "./src/species.ts",
+    "./tax": "./src/tax.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

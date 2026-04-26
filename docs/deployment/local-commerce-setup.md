@@ -50,6 +50,19 @@ PowerShell:
 Copy-Item .env apps\backend\.env
 ```
 
+The storefront's DB-backed notification and test checkout API routes also need
+`DATABASE_URL`. Keep an ignored local env file in sync there too:
+
+```bash
+cp .env apps/storefront/.env.local
+```
+
+PowerShell:
+
+```powershell
+Copy-Item .env apps\storefront\.env.local
+```
+
 Start the backend:
 
 ```bash
@@ -124,6 +137,29 @@ The cart persists locally in the browser and supports add, quantity change, remo
 
 Checkout collects customer contact information, explicit fulfillment method, pickup window where applicable, order summary, and policy acknowledgement. It shows only methods valid for the current cart: farm pickup, farmers-market pickup, local delivery, local preorder, parcel shipping for eligible shelf-stable or supplement products, and chef/wholesale coordination. When a Medusa cart is active, the selected method is written to `/store/carts/:id/shipping-methods` with metadata describing the staged checkout selection. When Medusa is offline, the same selection is stored locally as a staged fallback. Checkout validates the same shared rules as the cart but does not submit a live order or collect live payment yet. The checkout payment step is explicitly staged/test-only even when the Medusa cart bridge is active.
 
+Phase 5 adds explicit checkout modes and safe test checkout records:
+
+```bash
+CHECKOUT_MODE=development
+ENABLE_TEST_PAYMENTS=false
+ENABLE_LIVE_PAYMENTS=false
+STRIPE_SECRET_KEY_TEST=
+STRIPE_WEBHOOK_SECRET_TEST=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST=
+TAX_MODE=placeholder
+EMAIL_PROVIDER=console
+```
+
+`development`, `staging`, and correctly configured `test-payment-enabled` mode can create a clearly marked Postgres test checkout record through `/api/checkout/test-complete`. `production-disabled` blocks record creation, and `live-payment-enabled` is reserved for a future owner-approved launch task and is treated as disabled in this build. Test checkout records are not Medusa orders, do not charge cards, and do not send production email. The console email provider logs customer and farm/admin confirmation drafts only.
+
+Run the checkout smoke script to confirm live payments remain disabled and tax/email scaffolding is in placeholder mode:
+
+```bash
+corepack pnpm --filter @mrmf/backend checkout:smoke
+```
+
+Full Phase 5 notes live in `docs/deployment/test-checkout-and-payments.md`.
+
 Store API smoke: run this after the backend is restarted on the current code and seed has completed:
 
 ```bash
@@ -178,15 +214,17 @@ Cart adapter modes:
 5. Run `corepack pnpm --filter @mrmf/backend notifications:schema`.
 6. Start Medusa with `corepack pnpm --filter @mrmf/backend dev`, or restart it if it was already running before code changes.
 7. Run `corepack pnpm --filter @mrmf/backend shipping:smoke`.
-8. Run `corepack pnpm --filter @mrmf/backend notifications:preview`.
-9. Start the storefront with `corepack pnpm --filter @mrmf/storefront dev`.
-10. Visit `http://localhost:3000/shop` and confirm the catalog source line says `medusa` when the Store API is reachable or `shared-seed via medusa-hybrid` when it has fallen back.
-11. Add Blue Oyster Mushrooms to the cart and confirm `/cart` reports a Medusa-backed cart when Medusa products and the publishable key are active.
-12. Visit `/checkout`, choose a pickup method, and confirm the page reports that the fulfillment method was saved to the Medusa cart while payment remains staged.
-13. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded as coming soon with zero provisional stock until launch availability is confirmed, so this mixed-cart check may require temporarily using another available shelf-stable fixture in development.
-14. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
-15. Visit `/internal/availability` in development and confirm products and the species master catalog load.
-16. Visit `/internal/notifications` in development and confirm the notification request list loads. Submit a notify-me form for a coming-soon product such as Mushroom Salt, then confirm the request appears in the internal list.
+8. Run `corepack pnpm --filter @mrmf/backend checkout:smoke`.
+9. Run `corepack pnpm --filter @mrmf/backend notifications:preview`.
+10. Start the storefront with `corepack pnpm --filter @mrmf/storefront dev`.
+11. Visit `http://localhost:3000/shop` and confirm the catalog source line says `medusa` when the Store API is reachable or `shared-seed via medusa-hybrid` when it has fallen back.
+12. Add Blue Oyster Mushrooms to the cart and confirm `/cart` reports a Medusa-backed cart when Medusa products and the publishable key are active.
+13. Visit `/checkout`, choose a pickup method, and confirm the page reports that the fulfillment method was saved to the Medusa cart while payment remains staged.
+14. With a valid local cart, customer info, fulfillment selection, and policy acknowledgement, create a test checkout record and confirm the page links to `/checkout/test-confirmation/:recordId`.
+15. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded as coming soon with zero provisional stock until launch availability is confirmed, so this mixed-cart check may require temporarily using another available shelf-stable fixture in development.
+16. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
+17. Visit `/internal/availability` in development and confirm products and the species master catalog load.
+18. Visit `/internal/notifications` in development and confirm the notification request list loads. Submit a notify-me form for a coming-soon product such as Mushroom Salt, then confirm the request appears in the internal list.
 
 ## Troubleshooting
 
@@ -211,6 +249,10 @@ Cart adapter modes:
 - Notification signup says the customer is already on the list: this is expected duplicate handling for the same active email, target, and notification type. The existing request was refreshed instead of duplicated.
 - Notification preview shows zero requests: submit a notify-me form first or check the optional `NOTIFICATION_PREVIEW_TARGET_TYPE`, `NOTIFICATION_PREVIEW_TARGET_SLUG`, and `NOTIFICATION_PREVIEW_AVAILABILITY_STATE` filters.
 - Email provider errors: Phase 3 supports only `EMAIL_PROVIDER=console`. Do not configure a live provider until unsubscribe, suppression, privacy-policy, and owner approval work is complete.
+- Test checkout record creation fails: confirm `DATABASE_URL` is available to the storefront process, `CHECKOUT_MODE` is not `production-disabled`, `ENABLE_LIVE_PAYMENTS=false`, and Postgres is running.
+- Stripe test mode says keys are missing: use only test-mode placeholders beginning with `sk_test_` and `pk_test_`. Live key prefixes are intentionally rejected in Phase 5.
+- Checkout confirmation page returns 404: create a test checkout record first. Confirmation pages are generated from stored test records and are not generic paid order pages.
+- Tax looks like `$0.00`: this is intentional placeholder behavior. Final Virginia/local tax treatment requires legal/accounting review before launch.
 - Medusa peer dependency warnings during install are currently upstream/non-blocking for this phase.
 
 ## Payment And Email Placeholders
@@ -218,9 +260,13 @@ Cart adapter modes:
 Stripe is not live. Keep these empty or development-only until checkout is explicitly approved:
 
 ```bash
-STRIPE_API_KEY=
-STRIPE_WEBHOOK_SECRET=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+CHECKOUT_MODE=development
+ENABLE_TEST_PAYMENTS=false
+ENABLE_LIVE_PAYMENTS=false
+STRIPE_SECRET_KEY_TEST=
+STRIPE_WEBHOOK_SECRET_TEST=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST=
+TAX_MODE=placeholder
 ```
 
 Email/CRM integration is not configured. Forms validate server-side and can later route through an environment-selected provider:

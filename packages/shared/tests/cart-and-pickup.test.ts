@@ -1,6 +1,9 @@
 import {
   canAddCommerceProductToCart,
   availabilityStates,
+  buildCheckoutEmailDrafts,
+  calculateCheckoutTaxEstimate,
+  canShowCheckoutConfirmation,
   getProductBySlug,
   getCommerceProductAvailability,
   getCartSupportedFulfillmentTypes,
@@ -8,6 +11,7 @@ import {
   medusaProductToCommerceProduct,
   pickupLocations,
   resolveProductAvailability,
+  resolveCheckoutModeConfig,
   shouldShowProductInShop,
   speciesPages,
   summarizeCommerceCart,
@@ -478,5 +482,91 @@ describe("cart and pickup commerce rules", () => {
 
     expect(shouldShowProductInShop(hidden)).toBe(false);
     expect(canAddCommerceProductToCart(hidden)).toBe(false);
+  });
+
+  it("keeps live checkout disabled and fails safely when Stripe test env is missing", () => {
+    const defaultMode = resolveCheckoutModeConfig({ NODE_ENV: "development" });
+
+    expect(defaultMode.effectiveMode).toBe("development");
+    expect(defaultMode.livePaymentsEnabled).toBe(false);
+    expect(defaultMode.allowTestCheckoutRecords).toBe(true);
+    expect(canShowCheckoutConfirmation(defaultMode)).toBe(true);
+
+    const missingStripe = resolveCheckoutModeConfig({
+      NODE_ENV: "development",
+      CHECKOUT_MODE: "test-payment-enabled",
+      ENABLE_TEST_PAYMENTS: "true"
+    });
+
+    expect(missingStripe.testPaymentsEnabled).toBe(false);
+    expect(missingStripe.paymentStatus).toBe("stripe-test-env-missing");
+    expect(missingStripe.errors.join(" ")).toContain("Stripe test payments were requested");
+
+    const liveRequested = resolveCheckoutModeConfig({
+      NODE_ENV: "production",
+      CHECKOUT_MODE: "live-payment-enabled",
+      ENABLE_LIVE_PAYMENTS: "true"
+    });
+
+    expect(liveRequested.effectiveMode).toBe("production-disabled");
+    expect(liveRequested.livePaymentsEnabled).toBe(false);
+    expect(liveRequested.allowTestCheckoutRecords).toBe(false);
+    expect(canShowCheckoutConfirmation(liveRequested)).toBe(false);
+  });
+
+  it("allows Stripe test readiness only with explicit test key prefixes", () => {
+    const mode = resolveCheckoutModeConfig({
+      NODE_ENV: "development",
+      CHECKOUT_MODE: "test-payment-enabled",
+      ENABLE_TEST_PAYMENTS: "true",
+      STRIPE_SECRET_KEY_TEST: "sk_test_example",
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST: "pk_test_example"
+    });
+
+    expect(mode.testPaymentsEnabled).toBe(true);
+    expect(mode.paymentStatus).toBe("stripe-test-ready");
+    expect(mode.livePaymentsEnabled).toBe(false);
+
+    const liveSecret = resolveCheckoutModeConfig({
+      NODE_ENV: "development",
+      CHECKOUT_MODE: "test-payment-enabled",
+      ENABLE_TEST_PAYMENTS: "true",
+      STRIPE_SECRET_KEY_TEST: "sk_live_never",
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST: "pk_test_example"
+    });
+
+    expect(liveSecret.testPaymentsEnabled).toBe(false);
+    expect(liveSecret.errors.join(" ")).toContain("test-mode key prefixes");
+  });
+
+  it("calculates tax as an explicit placeholder and drafts test checkout emails", () => {
+    const mode = resolveCheckoutModeConfig({ NODE_ENV: "development" });
+    const tax = calculateCheckoutTaxEstimate({ subtotal: 1400 });
+    const drafts = buildCheckoutEmailDrafts({
+      checkoutMode: mode,
+      tax,
+      record: {
+        id: "testchk_123",
+        checkoutMode: mode.effectiveMode,
+        paymentStatus: mode.paymentStatus,
+        cartSource: "staged",
+        customerEmail: "customer@example.com",
+        customerName: "Test Customer",
+        subtotal: 1400,
+        estimatedTax: tax.estimatedTax,
+        totalDueInTest: 1400 + tax.estimatedTax,
+        fulfillmentType: "farm-pickup",
+        lineCount: 1,
+        createdAt: "2026-04-26T12:00:00.000Z"
+      }
+    });
+
+    expect(tax.estimatedTax).toBe(0);
+    expect(tax.requiresReview).toBe(true);
+    expect(tax.note).toContain("Virginia and local tax rules");
+    expect(drafts.customer.bodyText).toContain("not a paid order");
+    expect(drafts.admin.bodyText).toContain("Do not fulfill this as a paid production order");
+    expect(drafts.customer.bodyText.toLowerCase()).not.toContain("cure");
+    expect(drafts.customer.bodyText.toLowerCase()).not.toContain("treat disease");
   });
 });
