@@ -13,7 +13,7 @@ const navItems = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-brand-mahogany/20 bg-brand-ivory/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-brand-mahogany/15 bg-brand-cream/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3" aria-label="The Maury River Mushroom Farm home">
           <Image
@@ -29,9 +29,9 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 font-subheading text-sm font-bold uppercase tracking-[0.08em] lg:flex">
+        <nav className="hidden items-center gap-5 font-subheading text-sm font-bold uppercase tracking-[0.08em] text-brand-mahogany lg:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="transition hover:text-brand-ebony">
+            <Link key={item.href} href={item.href} className="transition hover:underline hover:underline-offset-4">
               {item.label}
             </Link>
           ))}
@@ -40,14 +40,14 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/cart"
-            className="inline-flex h-11 items-center gap-2 bg-brand-mahogany px-4 font-subheading text-sm font-bold uppercase tracking-[0.08em] text-brand-ivory transition hover:bg-brand-ebony"
+            className="mrmf-button-primary h-11 px-4"
           >
             <ShoppingBasket className="h-4 w-4" aria-hidden="true" />
             Cart
           </Link>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center border border-brand-mahogany/30 text-brand-mahogany lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center border border-brand-mahogany/30 bg-white text-brand-mahogany lg:hidden"
             aria-label="Menu"
             title="Menu"
           >

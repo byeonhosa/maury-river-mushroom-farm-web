@@ -75,13 +75,18 @@ document current as phases are completed, split, or deferred.
 - Major tasks: Refine homepage composition, category pages, product detail layout,
   farm/market/restaurant pages, responsive spacing, image crops, card density, alt
   text, typography, focus states, and accessibility.
+- Current implementation note: `codex/visual-refresh` rebalances the storefront toward
+  a warm light canvas, centralizes card/button/input/badge primitives, brightens product
+  and content cards, and keeps dark brand colors for deliberate emphasis instead of the
+  default field.
 - Done when: Key routes feel cohesive on mobile and desktop, real photos are used only
   where appropriate, no brand contrast rules are violated, and accessibility checks are
   addressed.
-- Suggested branch: `codex/visual-design-refresh`
+- Suggested branch: `codex/visual-refresh`
 - Dependencies or cautions: Exact Blue Oyster, Golden Oyster, packaged product photos,
   official designer SVGs, final provenance, and owner-approved alt text remain needed.
-  Generated SVGs are raster wrappers, not production vector masters.
+  Generated SVGs are raster wrappers, not production vector masters. A formal designer
+  and accessibility review should still happen before launch.
 
 ## Phase 5: Stripe test mode, tax, and order-email scaffolding
 

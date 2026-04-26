@@ -33,8 +33,8 @@ export default async function ProductDetailPage({
   );
 
   return (
-    <section className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-      <div className="relative aspect-square overflow-hidden bg-brand-ebony">
+    <section className="mrmf-shell grid gap-10 py-12 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="mrmf-card relative aspect-square overflow-hidden">
         <Image
           src={product.image.src}
           alt={product.image.alt}
@@ -45,19 +45,19 @@ export default async function ProductDetailPage({
         />
       </div>
       <div>
-        <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
+        <p className="mrmf-eyebrow">
           {product.fulfillmentLabel}
         </p>
         <h1 className="mt-3 font-heading text-5xl leading-tight">
           {product.name}
         </h1>
-        <p className="mt-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-burnt">
+        <p className="mt-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany">
           {product.price > 0
             ? `$${product.price.toFixed(2)} / ${product.unitSize}`
             : product.unitSize}
         </p>
-        <p className="mt-4 border border-brand-mahogany/20 bg-brand-ivory p-4 text-sm leading-7">
-          <span className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+        <p className="mrmf-panel mt-4 p-4 text-sm leading-7">
+          <span className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             {availability.label}
           </span>{" "}
           {availability.message}
@@ -77,9 +77,9 @@ export default async function ProductDetailPage({
           ].map(([label, value]) => (
             <div
               key={label}
-              className="border border-brand-mahogany/20 bg-brand-ivory p-5"
+              className="mrmf-card p-5"
             >
-              <dt className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+              <dt className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
                 {label}
               </dt>
               <dd className="mt-2 text-sm leading-7">{value}</dd>
@@ -111,8 +111,8 @@ export default async function ProductDetailPage({
         </div>
 
         {product.metadata.supplementDisclaimer ? (
-          <div className="mt-8 border border-brand-burnt bg-brand-ivory p-5 text-sm leading-7">
-            <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-burnt">
+          <div className="mrmf-card mt-8 border-brand-burnt p-5 text-sm leading-7">
+            <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
               Requires legal/business review
             </p>
             <p className="mt-2">{SUPPLEMENT_DISCLAIMER}</p>
@@ -123,14 +123,14 @@ export default async function ProductDetailPage({
           {availability.showWholesaleCta ? (
             <Link
               href="/restaurants-wholesale"
-              className="bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+              className="mrmf-button-primary"
             >
               Start wholesale inquiry
             </Link>
           ) : availability.showInquiryCta ? (
             <Link
               href="/contact"
-              className="bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory"
+              className="mrmf-button-primary"
             >
               Ask about availability
             </Link>
@@ -141,18 +141,18 @@ export default async function ProductDetailPage({
               disabledReason={
                 !availability.canAddToCart ? availability.message : undefined
               }
-              className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory disabled:cursor-not-allowed disabled:opacity-60"
+              className="mrmf-button-primary"
             />
           )}
           <Link
             href="/cart"
-            className="border border-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em]"
+            className="mrmf-button-secondary"
           >
             View cart
           </Link>
           <Link
             href="/contact"
-            className="border border-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em]"
+            className="mrmf-button-secondary"
           >
             Ask about availability
           </Link>

@@ -14,9 +14,9 @@ export default async function SupplementsPage() {
           reviewed before launch. No product should claim to diagnose, treat, cure, prevent, or mitigate disease.
         </p>
       </PageHero>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 border border-brand-burnt bg-brand-ivory p-5 text-sm leading-7">
-          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-burnt">
+      <section className="mrmf-shell mrmf-section">
+        <div className="mrmf-card mb-8 border-brand-burnt p-5 text-sm leading-7">
+          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             Requires legal/business review
           </p>
           <p className="mt-2">{SUPPLEMENT_DISCLAIMER}</p>

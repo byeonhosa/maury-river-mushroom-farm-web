@@ -1,10 +1,9 @@
 import { listProducts } from "../lib/products";
 
 const inputClass =
-  "w-full border border-brand-mahogany/30 bg-brand-ivory px-4 py-3 text-brand-mahogany placeholder:text-brand-mahogany/60";
-const labelClass = "font-subheading text-xs font-extrabold uppercase tracking-[0.14em]";
-const buttonClass =
-  "inline-flex bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony";
+  "mrmf-input";
+const labelClass = "mrmf-label";
+const buttonClass = "mrmf-button-primary justify-self-start";
 
 export function ContactForm() {
   return (

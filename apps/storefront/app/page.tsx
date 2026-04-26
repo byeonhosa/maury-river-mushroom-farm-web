@@ -20,13 +20,13 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="bg-brand-ivory">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-20">
+      <section className="border-b border-brand-mahogany/15 bg-brand-cream">
+        <div className="mrmf-shell grid items-center gap-10 py-12 lg:grid-cols-[1.04fr_0.96fr] lg:py-20">
           <div>
-            <p className="font-subheading text-sm font-extrabold uppercase tracking-[0.18em] text-brand-ebony">
+            <p className="mrmf-eyebrow text-sm">
               Gourmet mushrooms grown near the Maury River
             </p>
-            <h1 className="mt-4 max-w-4xl font-heading text-5xl leading-[0.95] text-brand-mahogany sm:text-7xl">
+            <h1 className="mt-4 max-w-4xl font-heading text-5xl leading-[0.98] text-brand-mahogany sm:text-7xl">
               Fresh harvest flavor for home cooks and chefs.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8">
@@ -37,20 +37,20 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+                className="mrmf-button-primary"
               >
                 Shop mushrooms{" "}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link
                 href="/markets-pickup"
-                className="inline-flex items-center gap-2 border border-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany transition hover:border-brand-ebony hover:text-brand-ebony"
+                className="mrmf-button-secondary"
               >
                 Pickup details <MapPin className="h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
           </div>
-          <div className="relative min-h-[420px] overflow-hidden bg-brand-ebony p-8 text-brand-ivory shadow-soft">
+          <div className="mrmf-card relative min-h-[430px] overflow-hidden p-3">
             <Image
               src="/images/farm/lions-mane-growing-block-01.webp"
               alt="Lion's mane mushrooms fruiting from a grow block"
@@ -59,31 +59,30 @@ export default async function HomePage() {
               priority
               sizes="(min-width: 1024px) 45vw, 100vw"
             />
-            <div className="absolute inset-0 bg-brand-ebony/60" />
-            <div className="relative z-10 flex h-full min-h-[320px] flex-col justify-between">
+            <div className="absolute inset-x-3 bottom-3 bg-brand-mahogany/92 p-5 text-brand-ivory">
+              <p className="font-heading text-3xl leading-tight">
+                Fresh, dried, seasoned, and functional mushroom products.
+              </p>
+              <p className="mt-3 text-sm leading-7">
+                Fresh products stay local by default. Shelf-stable goods can be
+                prepared for shipping when configured.
+              </p>
+            </div>
+            <div className="absolute left-5 top-5">
               <Image
                 src="/brand/MRMF_PrimaryLogo_Ivory.png"
                 alt="The Maury River Mushroom Farm"
                 width={260}
                 height={260}
-                className="h-40 w-40 object-contain"
+                className="h-32 w-32 object-contain"
                 priority
               />
-              <div>
-                <p className="font-heading text-4xl leading-tight">
-                  Fresh, dried, seasoned, and functional mushroom products.
-                </p>
-                <p className="mt-4 text-sm leading-7">
-                  Fresh products stay local by default. Shelf-stable goods can
-                  be prepared for shipping when configured.
-                </p>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <section className="mrmf-shell mrmf-section">
         <SectionHeading
           eyebrow="Shop by need"
           title="Find the right mushroom for the meal."
@@ -93,12 +92,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-brand-mahogany py-14 text-brand-ivory">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="border-y border-brand-mahogany/15 bg-brand-parchment py-14 text-brand-mahogany">
+        <div className="mrmf-shell">
           <SectionHeading
             eyebrow="Fresh this week"
             title="Harvest availability changes with the grow room."
-            dark
           >
             <p>
               Fresh mushrooms are treated like produce: harvested in small
@@ -112,7 +110,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+      <section className="mrmf-shell grid gap-8 py-14 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <SectionHeading
             eyebrow="How to buy"
@@ -140,7 +138,7 @@ export default async function HomePage() {
           ].map(([title, body]) => (
             <div
               key={title}
-              className="border border-brand-mahogany/20 bg-brand-ivory p-5"
+              className="mrmf-card p-5"
             >
               <p className="font-heading text-2xl">{title}</p>
               <p className="mt-2 text-sm leading-7">{body}</p>
@@ -149,18 +147,17 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-brand-ebony py-14 text-brand-ivory">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+      <section className="border-y border-brand-mahogany/15 bg-brand-cream py-14 text-brand-mahogany">
+        <div className="mrmf-shell grid gap-8 lg:grid-cols-2">
           <div>
             <SectionHeading
               eyebrow="Mushroom education"
               title={featuredSpecies.name}
-              dark
             >
               <p>{featuredSpecies.overview}</p>
             </SectionHeading>
             <dl className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div>
+              <div className="mrmf-card p-5">
                 <dt className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em]">
                   Flavor
                 </dt>
@@ -168,7 +165,7 @@ export default async function HomePage() {
                   {featuredSpecies.flavor}
                 </dd>
               </div>
-              <div>
+              <div className="mrmf-card p-5">
                 <dt className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em]">
                   Texture
                 </dt>
@@ -180,14 +177,14 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-4">
             {featuredSpecies.cookingTips.map((tip) => (
-              <div key={tip} className="border border-brand-ivory/30 p-5">
+              <div key={tip} className="mrmf-card p-5">
                 <Leaf className="h-5 w-5" aria-hidden="true" />
                 <p className="mt-3 text-sm leading-7">{tip}</p>
               </div>
             ))}
             <Link
               href={`/mushrooms/${featuredSpecies.slug}`}
-              className="inline-flex items-center gap-2 justify-self-start bg-brand-ivory px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany"
+              className="mrmf-button-primary justify-self-start"
             >
               Learn about lion's mane{" "}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -196,7 +193,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <section className="mrmf-shell mrmf-section">
         <SectionHeading
           eyebrow="Cook the harvest"
           title="Recipes that make mushrooms less mysterious."
@@ -206,9 +203,9 @@ export default async function HomePage() {
             <Link
               key={recipe.slug}
               href={`/recipes-cooking/${recipe.slug}`}
-              className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft"
+              className="mrmf-card p-6 transition hover:-translate-y-1 hover:shadow-lifted"
             >
-              <Clock className="h-5 w-5 text-brand-ebony" aria-hidden="true" />
+              <Clock className="h-5 w-5 text-brand-mahogany" aria-hidden="true" />
               <h3 className="mt-4 font-heading text-3xl leading-tight">
                 {recipe.title}
               </h3>
@@ -218,8 +215,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-brand-burnt py-14 text-brand-ivory">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:px-8">
+      <section className="bg-brand-ebony py-14 text-brand-ivory">
+        <div className="mrmf-shell grid gap-8 lg:grid-cols-[1fr_0.9fr]">
           <div>
             <SectionHeading
               eyebrow="For restaurants"
@@ -233,7 +230,7 @@ export default async function HomePage() {
             </SectionHeading>
             <Link
               href="/restaurants-wholesale"
-              className="mt-7 inline-flex items-center gap-2 bg-brand-ivory px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany"
+              className="mrmf-button-light mt-7"
             >
               Start a wholesale inquiry{" "}
               <ChefHat className="h-4 w-4" aria-hidden="true" />
@@ -247,7 +244,7 @@ export default async function HomePage() {
               className="object-cover"
               sizes="(min-width: 1024px) 40vw, 100vw"
             />
-            <div className="absolute inset-0 bg-brand-burnt/70" />
+            <div className="absolute inset-0 bg-brand-ebony/70" />
             <div className="relative">
               <p className="font-heading text-4xl">Farm story</p>
               <p className="mt-4 text-sm leading-7">
@@ -261,10 +258,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-6 bg-brand-ivory p-6 shadow-soft md:grid-cols-[0.75fr_1.25fr] md:p-8">
+      <section className="mrmf-shell mrmf-section">
+        <div className="mrmf-panel grid gap-6 p-6 md:grid-cols-[0.75fr_1.25fr] md:p-8">
           <div>
-            <Mail className="h-6 w-6 text-brand-ebony" aria-hidden="true" />
+            <Mail className="h-6 w-6 text-brand-mahogany" aria-hidden="true" />
             <h2 className="mt-4 font-heading text-4xl leading-tight">
               Get harvest notes.
             </h2>

@@ -11,9 +11,9 @@ export default function HealthFunctionalMushroomsPage() {
           and general structure/function positioning only after review.
         </p>
       </PageHero>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="border border-brand-burnt bg-brand-ivory p-5 text-sm leading-7">
-          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-burnt">
+      <section className="mrmf-shell mrmf-section">
+        <div className="mrmf-card border-brand-burnt p-5 text-sm leading-7">
+          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             Legal/business review required
           </p>
           <p className="mt-2">{SUPPLEMENT_DISCLAIMER}</p>
@@ -22,7 +22,7 @@ export default function HealthFunctionalMushroomsPage() {
           {speciesPages
             .filter((species) => species.functionalNote)
             .map((species) => (
-              <Link key={species.slug} href={`/mushrooms/${species.slug}`} className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+              <Link key={species.slug} href={`/mushrooms/${species.slug}`} className="mrmf-card p-6 transition hover:-translate-y-1 hover:shadow-lifted">
                 <h2 className="font-heading text-3xl">{species.name}</h2>
                 <p className="mt-3 text-sm leading-7">{species.functionalNote}</p>
               </Link>

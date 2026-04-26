@@ -4,7 +4,14 @@
 
 :root {
   color: #642d10;
-  background: #f1cd94;
+  background: #fff8ec;
+  --mrmf-mahogany: #642d10;
+  --mrmf-burnt: #8b4324;
+  --mrmf-ebony: #59644a;
+  --mrmf-ivory: #f1cd94;
+  --mrmf-cream: #fff8ec;
+  --mrmf-parchment: #f8e5c4;
+  --mrmf-linen: #fffdf8;
 }
 
 * {
@@ -18,9 +25,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(89, 100, 74, 0.12), transparent 30rem),
-    linear-gradient(180deg, #f1cd94 0%, #f8e5c4 42%, #f1cd94 100%);
+  background: linear-gradient(180deg, #fffdf8 0%, #fff8ec 40%, #f8e5c4 100%);
   color: #642d10;
   font-family: var(--font-body), Georgia, serif;
 }
@@ -37,6 +42,23 @@ textarea {
   font: inherit;
 }
 
+button,
+a,
+input,
+select,
+textarea {
+  outline-color: #59644a;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #59644a;
+  outline-offset: 4px;
+}
+
 ::selection {
   background: #642d10;
   color: #f1cd94;
@@ -45,4 +67,66 @@ textarea {
 .brand-focus {
   outline: 3px solid #59644a;
   outline-offset: 4px;
+}
+
+@layer components {
+  .mrmf-shell {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .mrmf-section {
+    @apply py-12 sm:py-16;
+  }
+
+  .mrmf-card {
+    @apply border border-brand-mahogany/15 bg-white text-brand-mahogany shadow-card;
+  }
+
+  .mrmf-card-warm {
+    @apply border border-brand-mahogany/15 bg-brand-cream text-brand-mahogany shadow-card;
+  }
+
+  .mrmf-panel {
+    @apply border border-brand-mahogany/15 bg-brand-parchment text-brand-mahogany shadow-card;
+  }
+
+  .mrmf-eyebrow {
+    @apply font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-mahogany;
+  }
+
+  .mrmf-button-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 bg-brand-mahogany px-5 py-3 text-center font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .mrmf-button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 border border-brand-mahogany bg-white px-5 py-3 text-center font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany transition hover:bg-brand-mahogany hover:text-brand-ivory disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .mrmf-button-light {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 bg-brand-ivory px-5 py-3 text-center font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany transition hover:bg-brand-cream disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .mrmf-input {
+    @apply w-full border border-brand-mahogany/30 bg-white px-4 py-3 text-brand-mahogany placeholder:text-brand-mahogany/60;
+  }
+
+  .mrmf-label {
+    @apply font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-mahogany;
+  }
+
+  .mrmf-badge-mahogany {
+    @apply inline-flex items-center bg-brand-mahogany px-3 py-1 font-subheading text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ivory;
+  }
+
+  .mrmf-badge-ebony {
+    @apply inline-flex items-center bg-brand-ebony px-3 py-1 font-subheading text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ivory;
+  }
+
+  .mrmf-badge-burnt {
+    @apply inline-flex items-center bg-brand-burnt px-3 py-1 font-subheading text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ivory;
+  }
+
+  .mrmf-badge-light {
+    @apply inline-flex items-center border border-brand-mahogany/25 bg-brand-ivory px-3 py-1 font-subheading text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-mahogany;
+  }
 }

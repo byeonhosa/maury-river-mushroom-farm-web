@@ -19,16 +19,16 @@ export function CategoryCardGrid() {
         <Link
           key={category.slug}
           href={categoryHref[category.slug]}
-          className="group border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft transition hover:-translate-y-1 hover:border-brand-ebony"
+          className="mrmf-card group p-6 transition hover:-translate-y-1 hover:shadow-lifted"
         >
-          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
+          <p className="mrmf-eyebrow">
             {category.slug.replaceAll("-", " ")}
           </p>
           <h3 className="mt-3 font-heading text-3xl leading-tight text-brand-mahogany">
             {category.title}
           </h3>
           <p className="mt-3 text-sm leading-7">{category.description}</p>
-          <span className="mt-5 inline-flex font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-burnt group-hover:text-brand-ebony">
+          <span className="mt-5 inline-flex font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-mahogany underline underline-offset-4">
             Explore
           </span>
         </Link>
