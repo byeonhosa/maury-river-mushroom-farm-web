@@ -22,6 +22,7 @@ const backendUrl =
   "http://localhost:9000";
 const regionName =
   process.env.NEXT_PUBLIC_MEDUSA_REGION_NAME ?? "Maury River Local Development Region";
+const requestTimeoutMs = Number(process.env.MRMF_SHIPPING_SMOKE_TIMEOUT_MS ?? 30000);
 
 interface MedusaRegionResponse {
   regions?: Array<{
@@ -98,20 +99,34 @@ async function medusaRequest<TResponse>(
   init: RequestInit = {}
 ) {
   const url = new URL(pathName, backendUrl);
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      "x-publishable-api-key": publishableKey,
-      ...init.headers
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => controller.abort(), requestTimeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        "content-type": "application/json",
+        "x-publishable-api-key": publishableKey,
+        ...init.headers
+      },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`${response.status} ${url.pathname}: ${await response.text()}`);
     }
-  });
 
-  if (!response.ok) {
-    throw new Error(`${response.status} ${url.pathname}: ${await response.text()}`);
+    return (await response.json()) as TResponse;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`Timed out after ${requestTimeoutMs}ms requesting ${url.pathname}.`);
+    }
+
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeout);
   }
-
-  return (await response.json()) as TResponse;
 }
 
 function describeOption(option: SmokeShippingOption) {

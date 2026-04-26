@@ -20,6 +20,7 @@ corepack prepare pnpm@9.15.4 --activate
 corepack pnpm install
 cp .env.example .env
 cp .env apps/backend/.env
+cp .env apps/storefront/.env.local
 docker compose up -d postgres redis
 ```
 
@@ -30,6 +31,7 @@ corepack prepare pnpm@9.15.4 --activate
 corepack pnpm install
 Copy-Item .env.example .env
 Copy-Item .env apps\backend\.env
+Copy-Item .env apps\storefront\.env.local
 docker compose up -d postgres redis
 ```
 
@@ -74,6 +76,21 @@ The smoke script reports fresh-only, shelf-stable-only, and mixed-cart scenarios
 The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa-hybrid`. It reads the Medusa Store API when `NEXT_PUBLIC_MEDUSA_BACKEND_URL` and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` are configured, and falls back to the shared seed catalog during local development or static builds when Medusa is offline. Use `NEXT_PUBLIC_COMMERCE_ADAPTER=medusa` to require Medusa reads, or `shared-seed` for a fully offline storefront.
 
 The storefront cart uses `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid` by default. It persists a staged browser cart first, then mirrors it to a Medusa Store API cart when Medusa-backed products include variant IDs and the publishable key is configured. If Medusa is offline or the key is missing, the cart remains staged-only. It supports add, quantity change, remove, subtotal, fresh/local-only warnings, mixed-cart restrictions, safe shipping option filtering, selected fulfillment-method persistence, and checkout validation. In checkout, valid Medusa shipping or pickup options are shown for the current cart and the selected method is written back to the Medusa cart when practical. Live payment and final Medusa cart completion remain disabled until Stripe, policies, and launch fulfillment settings are approved.
+
+Checkout mode is guarded by explicit environment variables:
+
+```bash
+CHECKOUT_MODE=development
+ENABLE_TEST_PAYMENTS=false
+ENABLE_LIVE_PAYMENTS=false
+STRIPE_SECRET_KEY_TEST=
+STRIPE_WEBHOOK_SECRET_TEST=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST=
+TAX_MODE=placeholder
+EMAIL_PROVIDER=console
+```
+
+Phase 5 can create clearly marked Postgres test checkout records through `/api/checkout/test-complete` and preview customer/farm confirmation emails with the console email provider. It does not charge cards, complete Medusa orders, send production email, or make final tax conclusions. Run `corepack pnpm --filter @mrmf/backend checkout:smoke` to inspect checkout mode, tax placeholder, and draft email behavior. See `docs/deployment/test-checkout-and-payments.md`.
 
 Product availability states are enforced before cart sync. The shared availability model separates the master catalog from current availability and supports `available`, `low-stock`, `sold-out`, `coming-soon`, `seasonal`, `preorder`, `hidden`, `wholesale-only`, and `inquiry-only`. `hidden` products stay out of the public shop, `wholesale-only` and `inquiry-only` products route to inquiry CTAs, and unavailable products are blocked from cart and checkout. `seasonal` products are cartable only when explicitly configured, and `preorder` products are cartable only when their fulfillment mode is preorder-capable. See `docs/content/inventory-availability-model.md`.
 
@@ -148,6 +165,8 @@ If a product appears but cannot be added to the cart, check its inventory status
 If notify-me forms return a database error, confirm `DATABASE_URL` is set in the storefront environment, Postgres is running, and `corepack pnpm --filter @mrmf/backend notifications:schema` has completed. Duplicate signup messages are expected when the same email joins the same product/species/list more than once.
 
 If `/internal/notifications` returns 404, confirm the storefront is running in development mode and `MRMF_ENABLE_DEV_AVAILABILITY_ADMIN` is not `false`. If the page loads but shows a database error, run the notification schema command above.
+
+If test checkout record creation fails, confirm `DATABASE_URL` is set for the storefront process. For local development, copy the root `.env` to `apps/storefront/.env.local`, restart the storefront, confirm Postgres is running, set `CHECKOUT_MODE` to `development`, `staging`, or `test-payment-enabled`, and keep `ENABLE_LIVE_PAYMENTS=false`. If Stripe test payments are requested, both test key placeholders must use `sk_test_` and `pk_test_` prefixes. Live key prefixes are intentionally rejected.
 
 ## Business rules
 

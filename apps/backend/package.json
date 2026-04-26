@@ -15,6 +15,7 @@
     "seed:plan": "ts-node ./src/scripts/seed-plan.ts",
     "seed:verify": "ts-node ./src/scripts/verify-seed.ts",
     "shipping:smoke": "ts-node ./src/scripts/store-api-shipping-smoke.ts",
+    "checkout:smoke": "ts-node ./src/scripts/checkout-mode-smoke.ts",
     "notifications:schema": "ts-node ./src/scripts/notification-schema.ts",
     "notifications:preview": "ts-node ./src/scripts/notification-preview.ts"
   },

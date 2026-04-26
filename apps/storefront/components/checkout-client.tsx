@@ -7,10 +7,12 @@ import {
   getCommerceProductAvailability,
   getProductNotificationCta,
   pickupLocations,
+  calculateCheckoutTaxEstimate,
   requiresPickupDetails,
   summarizeCommerceCart,
   validateCheckout,
   type CartLineInput,
+  type CheckoutModeConfig,
   type CommerceProduct,
   type FulfillmentType
 } from "@mrmf/shared";
@@ -112,7 +114,13 @@ function medusaMethodOptions(
   });
 }
 
-export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
+export function CheckoutClient({
+  checkoutMode,
+  products
+}: {
+  checkoutMode: CheckoutModeConfig;
+  products: CommerceProduct[];
+}) {
   const [items, setItems] = useState<CartLineInput[]>([]);
   const [bridge, setBridge] = useState<CartBridgeResult>();
   const [isSyncing, setIsSyncing] = useState(false);
@@ -133,6 +141,8 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
   const [preorderNotes, setPreorderNotes] = useState("");
   const [policyAccepted, setPolicyAccepted] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [confirmationUrl, setConfirmationUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -252,6 +262,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
     ? getPickupWindowsForLocation(pickupLocationSlug)
     : [];
   const selectedMethod = methodOptions.find((option) => option.id === selectedMethodId);
+  const taxEstimate = calculateCheckoutTaxEstimate(cart);
 
   useEffect(() => {
     let cancelled = false;
@@ -336,15 +347,95 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
     <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr]">
       <form
         className="space-y-6"
-        onSubmit={(event) => {
+        onSubmit={async (event) => {
           event.preventDefault();
-          setSubmitMessage(
-            validation.canProceed
-              ? "Checkout is staged and ready for the next backend handoff. Live payment remains disabled."
-              : "Resolve the checkout items marked below before this can become a live order."
-          );
+          setConfirmationUrl("");
+
+          if (!validation.canProceed) {
+            setSubmitMessage(
+              "Resolve the checkout items marked below before a test checkout record can be created."
+            );
+            return;
+          }
+
+          setIsSubmitting(true);
+          setSubmitMessage("Creating a safe test checkout record...");
+
+          try {
+            const response = await fetch("/api/checkout/test-complete", {
+              method: "POST",
+              headers: {
+                "content-type": "application/json"
+              },
+              body: JSON.stringify({
+                cartItems: items,
+                contact,
+                fulfillment: {
+                  type: fulfillmentType,
+                  pickupLocationSlug,
+                  pickupWindowLabel,
+                  localDeliveryNotes,
+                  shippingAddress,
+                  preorderNotes
+                },
+                policyAccepted,
+                medusaCartId: bridge?.medusaCartId,
+                cartSource: bridge?.source ?? "staged"
+              })
+            });
+            const data = (await response.json()) as {
+              message?: string;
+              error?: string;
+              confirmationUrl?: string;
+            };
+
+            if (!response.ok) {
+              throw new Error(data.error ?? "Test checkout could not be completed safely.");
+            }
+
+            setSubmitMessage(
+              data.message ??
+                "Test checkout record created. No card was charged and no live order was placed."
+            );
+            setConfirmationUrl(data.confirmationUrl ?? "");
+          } catch (error) {
+            setSubmitMessage(
+              error instanceof Error
+                ? error.message
+                : "Test checkout could not be completed safely."
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
         }}
       >
+        <div className="mrmf-card border-brand-burnt p-6">
+          <p className="mrmf-eyebrow">Checkout mode</p>
+          <h2 className="font-heading text-4xl">{checkoutMode.displayLabel}</h2>
+          <p className="mt-3 text-sm leading-7">{checkoutMode.customerMessage}</p>
+          <div className="mt-4 grid gap-3 text-xs leading-6 sm:grid-cols-2">
+            <p className="mrmf-badge-light">
+              Payment status: {checkoutMode.paymentStatus.replaceAll("-", " ")}
+            </p>
+            <p className="mrmf-badge-light">
+              Live payments: {checkoutMode.livePaymentsEnabled ? "enabled" : "disabled"}
+            </p>
+            <p className="mrmf-badge-light">
+              Stripe test keys: {checkoutMode.testPaymentsEnabled ? "ready" : "not active"}
+            </p>
+            <p className="mrmf-badge-light">
+              Test records: {checkoutMode.allowTestCheckoutRecords ? "allowed" : "blocked"}
+            </p>
+          </div>
+          {[...checkoutMode.errors, ...checkoutMode.warnings].length > 0 ? (
+            <ul className="mt-4 space-y-2 text-sm leading-7">
+              {[...checkoutMode.errors, ...checkoutMode.warnings].map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+
         <div className="mrmf-card p-6">
           <h2 className="font-heading text-4xl">Customer information</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -530,12 +621,27 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           </div>
           <p className="mt-3 text-sm leading-7">
             Online card payment is disabled in this staged checkout. Stripe placeholders are
-            configured through environment variables only, with no live credentials committed.
+            configured through explicit test-mode environment variables only, with no live
+            credentials committed.
             {bridge?.source === "medusa"
               ? " A Medusa cart has been prepared for validation, but order completion is still blocked."
               : " The staged browser cart remains the fallback while Medusa cart sync is unavailable."}
           </p>
+          <p className="mt-3 text-sm leading-7">
+            {checkoutMode.testPaymentsEnabled
+              ? "Stripe test-mode readiness is present, but this phase still creates a marked test checkout record instead of charging a card."
+              : "Stripe test payments are not active. Missing or non-test keys fail safely and keep checkout in staged record mode."}
+          </p>
           {bridge?.error ? <p className="mt-3 text-xs leading-6">{bridge.error}</p> : null}
+        </div>
+
+        <div className="mrmf-card p-6">
+          <h2 className="font-heading text-4xl">Tax review</h2>
+          <p className="mt-3 text-sm leading-7">{taxEstimate.note}</p>
+          <div className="mt-4 flex items-center justify-between font-subheading text-sm font-extrabold uppercase tracking-[0.12em]">
+            <span>{taxEstimate.label}</span>
+            <span>{formatCurrency(taxEstimate.estimatedTax)}</span>
+          </div>
         </div>
 
         <div className="mrmf-card border-brand-burnt p-5">
@@ -575,11 +681,17 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           </ul>
           <button
             type="submit"
-            className="mrmf-button-primary mt-5 w-full"
+            disabled={isSubmitting || !checkoutMode.allowTestCheckoutRecords}
+            className="mrmf-button-primary mt-5 w-full disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Review staged order
+            {isSubmitting ? "Creating test record..." : "Create test checkout record"}
           </button>
           {submitMessage ? <p className="mt-3 text-sm leading-7">{submitMessage}</p> : null}
+          {confirmationUrl ? (
+            <Link href={confirmationUrl} className="mrmf-button-secondary mt-4 w-full">
+              View test confirmation
+            </Link>
+          ) : null}
         </div>
       </form>
 
@@ -620,6 +732,14 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
         <div className="mt-5 flex items-center justify-between font-subheading text-sm font-extrabold uppercase tracking-[0.12em]">
           <span>Subtotal</span>
           <span>{formatCurrency(cart.subtotal)}</span>
+        </div>
+        <div className="mt-3 flex items-center justify-between font-subheading text-sm font-extrabold uppercase tracking-[0.12em]">
+          <span>Tax placeholder</span>
+          <span>{formatCurrency(taxEstimate.estimatedTax)}</span>
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t border-brand-mahogany/20 pt-4 font-subheading text-sm font-extrabold uppercase tracking-[0.12em]">
+          <span>Test total</span>
+          <span>{formatCurrency(cart.subtotal + taxEstimate.estimatedTax)}</span>
         </div>
         <div className="mt-5 space-y-3 text-sm leading-7">
           {cart.warnings.map((warning) => (

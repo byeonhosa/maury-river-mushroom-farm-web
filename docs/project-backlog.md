@@ -95,12 +95,19 @@ document current as phases are completed, split, or deferred.
 - Major tasks: Configure Stripe test placeholders, tax assumptions, payment intent or
   Medusa payment provider scaffolding, staged order email templates, webhook skeletons,
   and policy acknowledgement flow.
+- Current implementation note: `codex/stripe-test-checkout` adds explicit checkout
+  modes, rejects live-payment requests, accepts only Stripe test-key prefixes for
+  test readiness, creates Postgres-backed test checkout records, previews customer and
+  farm/admin confirmation emails with the console provider, and keeps tax as a
+  documented placeholder.
 - Done when: Test-mode payment flow can be exercised without live credentials, order
   email scaffolding is documented, checkout still cannot create a real paid order, and
   secrets remain outside Git.
-- Suggested branch: `codex/stripe-tax-order-email-test`
+- Suggested branch: `codex/stripe-test-checkout`
 - Dependencies or cautions: Requires final tax/shipping assumptions and legal review of
-  checkout policies. Do not commit keys or enable live Stripe.
+  checkout policies. Do not commit keys or enable live Stripe. The current scaffold
+  does not create Medusa orders, Stripe Checkout Sessions, webhooks, refunds, or
+  production receipts.
 
 ## Phase 6: DigitalOcean staging deployment
 
@@ -210,6 +217,9 @@ document current as phases are completed, split, or deferred.
   health-related language.
 - Configure production email/CRM, Stripe, backups, monitoring, and deployment secrets
   outside Git.
+- Replace Phase 5 test checkout records with owner-approved Medusa order completion,
+  Stripe test/live payment provider wiring, webhook handling, final tax rules, refund
+  flow, and production receipt emails before launch.
 - Replace Phase 3 notification email preview scaffolding with approved production email
   provider, tested unsubscribe/suppression handling, privacy-policy updates, and durable
   rate limiting before launch.
