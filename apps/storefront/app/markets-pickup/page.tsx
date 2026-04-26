@@ -1,6 +1,7 @@
-import { pickupLocations } from "@mrmf/shared";
+import { getWeeklyAvailabilityNotificationCta, pickupLocations } from "@mrmf/shared";
 import Image from "next/image";
 import { AvailabilityInquiryForm } from "../../components/forms";
+import { NotificationSignupForm } from "../../components/notification-signup-form";
 import { PageHero } from "../../components/page-hero";
 
 export default function MarketsPickupPage() {
@@ -57,6 +58,12 @@ export default function MarketsPickupPage() {
           </p>
           <div className="mt-6">
             <AvailabilityInquiryForm />
+          </div>
+          <div className="mt-6">
+            <NotificationSignupForm
+              cta={getWeeklyAvailabilityNotificationCta("/markets-pickup")}
+              compact
+            />
           </div>
         </div>
       </section>

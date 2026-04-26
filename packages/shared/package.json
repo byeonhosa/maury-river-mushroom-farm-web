@@ -11,6 +11,7 @@
     "./checkout": "./src/checkout.ts",
     "./commerce": "./src/commerce.ts",
     "./forms": "./src/forms.ts",
+    "./notifications": "./src/notifications.ts",
     "./pickup": "./src/pickup.ts",
     "./policies": "./src/policies.ts",
     "./products": "./src/products.ts",

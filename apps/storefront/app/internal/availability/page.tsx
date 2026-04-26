@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { AvailabilityManager } from "../../../components/availability-manager";
 import {
@@ -26,6 +27,9 @@ export default function InternalAvailabilityPage() {
         storefront process preview availability overrides. It is disabled in production and is a
         scaffold for a future authenticated Medusa Admin workflow.
       </p>
+      <Link href="/internal/notifications" className="mt-4 inline-block underline">
+        View availability notification requests
+      </Link>
       <div className="mt-8">
         <AvailabilityManager initialRecords={listDevAvailabilityRecords()} />
       </div>

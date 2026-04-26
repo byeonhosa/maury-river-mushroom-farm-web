@@ -1,10 +1,12 @@
 import {
   availabilityStateBehaviors,
+  getSpeciesNotificationCta,
   getSpeciesBySlug,
   speciesPages,
 } from "@mrmf/shared";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { NotificationSignupForm } from "../../../components/notification-signup-form";
 
 const speciesImages: Partial<Record<string, { src: string; alt: string }>> = {
   "lion-s-mane": {
@@ -39,6 +41,10 @@ export default async function SpeciesDetailPage({
 
   const speciesImage = speciesImages[species.slug];
   const availability = availabilityStateBehaviors[species.availabilityState];
+  const notificationCta = getSpeciesNotificationCta(
+    species,
+    `/mushrooms/${species.slug}`,
+  );
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -62,6 +68,11 @@ export default async function SpeciesDetailPage({
               Functional mushroom copy on this page requires legal/business
               review.
             </p>
+          ) : null}
+          {notificationCta ? (
+            <div className="mt-6">
+              <NotificationSignupForm cta={notificationCta} />
+            </div>
           ) : null}
         </div>
         {speciesImage ? (

@@ -1,11 +1,13 @@
 import {
   getCommerceProductAvailability,
+  getProductNotificationCta,
   SUPPLEMENT_DISCLAIMER,
 } from "@mrmf/shared";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "../../../components/add-to-cart-button";
+import { NotificationSignupForm } from "../../../components/notification-signup-form";
 import { getProduct, listProducts } from "../../../lib/products";
 
 export async function generateStaticParams() {
@@ -25,6 +27,10 @@ export default async function ProductDetailPage({
   }
 
   const availability = getCommerceProductAvailability(product);
+  const notificationCta = getProductNotificationCta(
+    product,
+    `/shop/${product.slug}`,
+  );
 
   return (
     <section className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
@@ -151,6 +157,12 @@ export default async function ProductDetailPage({
             Ask about availability
           </Link>
         </div>
+
+        {notificationCta ? (
+          <div className="mt-8">
+            <NotificationSignupForm cta={notificationCta} />
+          </div>
+        ) : null}
       </div>
     </section>
   );

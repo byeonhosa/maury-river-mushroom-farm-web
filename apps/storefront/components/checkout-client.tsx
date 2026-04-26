@@ -3,7 +3,9 @@
 import {
   getCartSupportedFulfillmentTypes,
   getPickupWindowsForLocation,
+  canAddCommerceProductToCart,
   getCommerceProductAvailability,
+  getProductNotificationCta,
   pickupLocations,
   requiresPickupDetails,
   summarizeCommerceCart,
@@ -25,6 +27,7 @@ import {
   type CartBridgeResult
 } from "../lib/cart-adapter";
 import { formatCurrency } from "../lib/format";
+import { NotificationSignupForm } from "./notification-signup-form";
 
 const fulfillmentLabels: Record<FulfillmentType, string> = {
   "farm-pickup": "Farm pickup",
@@ -599,6 +602,15 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
                   <p className="mt-1 text-xs leading-6">
                     {getCommerceProductAvailability(line.product).message}
                   </p>
+                  {!canAddCommerceProductToCart(line.product) ? (
+                    <div className="mt-3">
+                      {(() => {
+                        const cta = getProductNotificationCta(line.product, "/checkout");
+
+                        return cta ? <NotificationSignupForm cta={cta} compact /> : null;
+                      })()}
+                    </div>
+                  ) : null}
                 </div>
                 <p>{formatCurrency(line.subtotal)}</p>
               </div>

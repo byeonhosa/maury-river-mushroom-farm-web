@@ -1,10 +1,11 @@
 import { ArrowRight, ChefHat, Clock, Leaf, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { recipes, speciesPages } from "@mrmf/shared";
+import { getWeeklyAvailabilityNotificationCta, recipes, speciesPages } from "@mrmf/shared";
 import { CategoryCardGrid } from "../components/category-card-grid";
 import { LocalFulfillmentCallout } from "../components/local-fulfillment-callout";
 import { NewsletterForm } from "../components/forms";
+import { NotificationSignupForm } from "../components/notification-signup-form";
 import { ProductGrid } from "../components/product-grid";
 import { SectionHeading } from "../components/section-heading";
 import { listProductsByCategory } from "../lib/products";
@@ -273,7 +274,13 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="self-end">
-            <NewsletterForm />
+            <div className="grid gap-4">
+              <NotificationSignupForm
+                cta={getWeeklyAvailabilityNotificationCta("/")}
+                compact
+              />
+              <NewsletterForm />
+            </div>
           </div>
         </div>
       </section>
