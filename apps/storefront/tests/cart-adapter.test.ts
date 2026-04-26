@@ -254,12 +254,21 @@ describe("Medusa cart adapter", () => {
       {
         id: "so_pickup",
         name: "Farm pickup",
-        data: { fulfillment_type: "farm-pickup" as const, is_parcel: false }
+        data: {
+          fulfillment_type: "farm-pickup" as const,
+          is_parcel: false,
+          mrmf_native_rule_scope: "fresh-local" as const
+        }
       },
       {
         id: "so_parcel",
         name: "Shelf-stable parcel shipping",
-        data: { fulfillment_type: "shipping" as const, is_parcel: true }
+        data: {
+          fulfillment_type: "shipping" as const,
+          is_parcel: true,
+          mrmf_native_rule_scope: "shelf-stable-shipping" as const,
+          rejected_fulfillment_modes: ["fresh-local" as const]
+        }
       }
     ];
 
@@ -278,6 +287,48 @@ describe("Medusa cart adapter", () => {
           { productSlug: "fresh-lions-mane", quantity: 1 },
           { productSlug: "mushroom-salt", quantity: 1 }
         ],
+        shippingOptions
+      )
+    ).toEqual([]);
+  });
+
+  it("honors seeded native rule metadata and unavailable product restrictions", () => {
+    const shippingOptions = [
+      {
+        id: "so_shelf",
+        name: "Shelf-stable parcel shipping",
+        data: {
+          fulfillment_type: "shipping" as const,
+          is_parcel: true,
+          allowed_fulfillment_modes: ["shelf-stable-shipping" as const],
+          rejected_fulfillment_modes: ["fresh-local" as const],
+          mrmf_native_rule_scope: "shelf-stable-shipping" as const
+        }
+      },
+      {
+        id: "so_fresh",
+        name: "Farm pickup",
+        data: {
+          fulfillment_type: "farm-pickup" as const,
+          is_parcel: false,
+          allowed_fulfillment_modes: ["fresh-local" as const],
+          mrmf_native_rule_scope: "fresh-local" as const
+        }
+      }
+    ];
+
+    expect(
+      filterSafeShippingOptions(
+        [salt],
+        [{ productSlug: "mushroom-salt", quantity: 1 }],
+        shippingOptions
+      ).map((option) => option.id)
+    ).toEqual(["so_shelf"]);
+
+    expect(
+      filterSafeShippingOptions(
+        [comingSoonSalt],
+        [{ productSlug: "mushroom-salt", quantity: 1 }],
         shippingOptions
       )
     ).toEqual([]);

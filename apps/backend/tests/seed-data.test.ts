@@ -6,6 +6,7 @@ import {
   buildMedusaProductMetadata,
   buildMedusaProductPayloads,
   buildMedusaShippingOptionData,
+  buildMedusaShippingOptionRules,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedRegion,
@@ -78,9 +79,35 @@ describe("backend seed data contract", () => {
     expect(buildMedusaShippingOptionData(shelfStableParcel!)).toMatchObject({
       fulfillment_type: "shipping",
       allowed_fulfillment_modes: ["shelf-stable-shipping"],
+      rejected_fulfillment_modes: [
+        "fresh-local",
+        "supplement-shipping",
+        "subscription-preorder",
+        "wholesale-preorder"
+      ],
+      mrmf_native_rule_scope: "shelf-stable-shipping",
+      native_rules_required: true,
+      blocks_mixed_fulfillment_modes: true,
       blocks_fresh_products: true,
       is_parcel: true
     });
+    expect(buildMedusaShippingOptionRules(shelfStableParcel!)).toEqual([
+      {
+        attribute: "is_return",
+        operator: "eq",
+        value: "false"
+      },
+      {
+        attribute: "enabled_in_store",
+        operator: "eq",
+        value: "true"
+      },
+      {
+        attribute: "mrmf_cart_fulfillment_scope",
+        operator: "eq",
+        value: "shelf-stable-shipping"
+      }
+    ]);
     expect(buildMedusaShippingOptionData(farmPickup!)).toMatchObject({
       fulfillment_type: "farm-pickup",
       allowed_fulfillment_modes: ["fresh-local"],
@@ -145,6 +172,7 @@ describe("backend seed data contract", () => {
       mrmf_slug: "lions-mane-capsules",
       product_format: "capsule",
       fulfillment_mode: "supplement-shipping",
+      parcel_shipping_eligible: true,
       inventory_status: "coming-soon"
     });
     expect(metadata.species).toEqual(["lion-s-mane"]);
@@ -160,10 +188,15 @@ describe("backend seed data contract", () => {
     expect(inventorySpecs.find((spec) => spec.productSlug === "blue-oyster-mushrooms")).toMatchObject({
       sku: "MRMF-BLUE-OYSTER-MUSHROOMS",
       manageInventory: true,
+      fulfillmentMode: "fresh-local",
+      parcelShippingEligible: false,
+      localOnly: true,
       stockedQuantity: 50
     });
     expect(inventorySpecs.find((spec) => spec.productSlug === "mushroom-salt")).toMatchObject({
       manageInventory: true,
+      fulfillmentMode: "shelf-stable-shipping",
+      parcelShippingEligible: true,
       stockedQuantity: 0
     });
     expect(inventorySpecs.find((spec) => spec.productSlug === "chefs-weekly-mushroom-mix")).toMatchObject({

@@ -22,13 +22,17 @@ document current as phases are completed, split, or deferred.
   data/configuration while preserving storefront safety filters.
 - Major tasks: Review shipping profiles, fulfillment sets, service zones, shipping
   options, product metadata, cart option filtering, and mixed-cart behavior. Refine
-  native Medusa rules so raw Store API options are safer for fresh carts.
+  native Medusa rules so raw Store API options are safer for fresh carts, and keep a
+  Store API smoke script that reports raw Medusa options versus app-filtered options.
 - Done when: Fresh products cannot receive parcel shipping through seeded backend
   configuration, shelf-stable products still have parcel options, mixed carts are
-  clearly blocked or split, and tests cover the backend and storefront rules.
+  clearly blocked or split, Store API shipping smoke is documented, and tests cover
+  the backend and storefront rules.
 - Suggested branch: `codex/native-shipping-rules`
 - Dependencies or cautions: Requires seeded Medusa/Postgres working locally. Fresh
-  mushroom shipping still needs explicit owner approval and a cold-chain plan.
+  mushroom shipping still needs explicit owner approval and a cold-chain plan. Current
+  shelf-stable products remain coming-soon/zero-stock until launch availability is
+  confirmed, so shelf-stable Store API cart smoke may need a future available fixture.
 
 ## Phase 2: Inventory and availability admin foundation
 

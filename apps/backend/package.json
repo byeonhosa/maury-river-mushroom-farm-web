@@ -13,7 +13,8 @@
     "db:setup": "medusa db:setup",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "seed:plan": "ts-node ./src/scripts/seed-plan.ts",
-    "seed:verify": "ts-node ./src/scripts/verify-seed.ts"
+    "seed:verify": "ts-node ./src/scripts/verify-seed.ts",
+    "shipping:smoke": "ts-node ./src/scripts/store-api-shipping-smoke.ts"
   },
   "dependencies": {
     "@medusajs/framework": "^2.8.7",

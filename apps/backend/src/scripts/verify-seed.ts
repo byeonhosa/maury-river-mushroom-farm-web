@@ -11,6 +11,7 @@ import pg from "pg";
 import {
   buildMedusaInventorySpecs,
   buildMedusaShippingOptionData,
+  buildMedusaShippingOptionRules,
   medusaSeedCategories,
   medusaSeedCollections,
   medusaSeedRegion,
@@ -51,6 +52,7 @@ interface SeedRegionRow {
 }
 
 interface SeedShippingOptionRow {
+  id: string;
   name: string;
   code: string;
   shipping_profile_type: string | null;
@@ -60,12 +62,20 @@ interface SeedShippingOptionRow {
   data: Record<string, unknown> | null;
 }
 
+interface SeedShippingOptionRuleRow {
+  shipping_option_name: string;
+  attribute: string;
+  operator: string;
+  value: unknown;
+}
+
 interface SeedInventoryRow {
   handle: string;
   sku: string | null;
   manage_inventory: boolean;
   inventory_item_id: string | null;
   requires_shipping: boolean | null;
+  metadata: Record<string, unknown> | null;
   stocked_quantity: string | number | null;
 }
 
@@ -115,6 +125,32 @@ function assertShippingOptionMetadata(
     requireCondition(
       JSON.stringify(data[key]) === JSON.stringify(expectedValue),
       `${option.name} data.${key} did not match the shared seed data.`
+    );
+  }
+}
+
+function normalizeRuleValue(value: unknown) {
+  if (Array.isArray(value)) {
+    return JSON.stringify([...value].sort());
+  }
+
+  return JSON.stringify(value);
+}
+
+function assertShippingOptionRules(
+  rows: SeedShippingOptionRuleRow[],
+  option: (typeof medusaSeedShippingOptions)[number]
+) {
+  const ruleKeys = new Set(
+    rows.map((row) => `${row.attribute}:${row.operator}:${normalizeRuleValue(row.value)}`)
+  );
+
+  for (const rule of buildMedusaShippingOptionRules(option)) {
+    const key = `${rule.attribute}:${rule.operator}:${normalizeRuleValue(rule.value)}`;
+
+    requireCondition(
+      ruleKeys.has(key),
+      `${option.name} is missing native shipping option rule ${rule.attribute}.`
     );
   }
 }
@@ -201,6 +237,7 @@ async function verifySeed() {
     `);
     const shippingOptionResult = await client.query<SeedShippingOptionRow>(`
       select
+        so.id,
         so.name,
         sot.code,
         sp.type as shipping_profile_type,
@@ -219,6 +256,20 @@ async function verifySeed() {
       group by so.id, so.name, sot.code, sp.type, sz.name, so.provider_id, so.data
       order by so.name
     `, [medusaSeedShippingOptions.map((option) => option.name)]);
+    const shippingOptionRuleResult = await client.query<SeedShippingOptionRuleRow>(`
+      select
+        so.name as shipping_option_name,
+        sor.attribute,
+        sor.operator,
+        sor.value
+      from shipping_option so
+      join shipping_option_rule sor
+        on sor.shipping_option_id = so.id
+        and sor.deleted_at is null
+      where so.deleted_at is null
+        and so.name = any($1)
+      order by so.name, sor.attribute
+    `, [medusaSeedShippingOptions.map((option) => option.name)]);
     const inventoryResult = await client.query<SeedInventoryRow>(`
       select
         p.handle,
@@ -226,6 +277,7 @@ async function verifySeed() {
         pv.manage_inventory,
         ii.id as inventory_item_id,
         ii.requires_shipping,
+        ii.metadata,
         il.stocked_quantity
       from product p
       join product_variant pv on pv.product_id = p.id and pv.deleted_at is null
@@ -249,6 +301,13 @@ async function verifySeed() {
     const productRows = new Map(productResult.rows.map((row) => [row.handle, row]));
     const region = regionResult.rows[0];
     const shippingOptionRows = new Map(shippingOptionResult.rows.map((row) => [row.name, row]));
+    const shippingOptionRuleRows = shippingOptionRuleResult.rows.reduce<
+      Record<string, SeedShippingOptionRuleRow[]>
+    >((map, row) => {
+      map[row.shipping_option_name] = [...(map[row.shipping_option_name] ?? []), row];
+
+      return map;
+    }, {});
     const inventoryRows = new Map(inventoryResult.rows.map((row) => [row.sku, row]));
     const publishableKey = publishableKeyResult.rows[0];
 
@@ -311,6 +370,7 @@ async function verifySeed() {
         `${option.name} price mismatch.`
       );
       assertShippingOptionMetadata(row!.data ?? {}, option);
+      assertShippingOptionRules(shippingOptionRuleRows[option.name] ?? [], option);
       requireCondition(
         !(option.isParcel && option.shippingProfileKey === "fresh-local"),
         `${option.name} must not attach parcel shipping to the fresh-local shipping profile.`
@@ -353,6 +413,14 @@ async function verifySeed() {
         requireCondition(
           asNumber(row!.stocked_quantity) === spec.stockedQuantity,
           `${spec.title} stocked quantity mismatch.`
+        );
+        requireCondition(
+          row!.metadata?.fulfillment_mode === spec.fulfillmentMode,
+          `${spec.title} inventory fulfillment mode metadata mismatch.`
+        );
+        requireCondition(
+          row!.metadata?.parcel_shipping_eligible === spec.parcelShippingEligible,
+          `${spec.title} inventory parcel shipping metadata mismatch.`
         );
       }
     }
