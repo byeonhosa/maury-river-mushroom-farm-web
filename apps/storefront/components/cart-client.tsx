@@ -96,9 +96,9 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
   }
 
   return (
-    <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.35fr_0.65fr] lg:px-8">
-      <div className="overflow-hidden border border-brand-mahogany/20 bg-brand-ivory shadow-soft">
-        <div className="grid grid-cols-[1fr_6rem_7rem] gap-4 border-b border-brand-mahogany/20 p-4 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-ebony md:grid-cols-[1fr_9rem_8rem_8rem_3rem]">
+    <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[1.35fr_0.65fr]">
+      <div className="mrmf-card overflow-hidden">
+        <div className="grid grid-cols-[1fr_6rem_7rem] gap-4 border-b border-brand-mahogany/20 bg-brand-parchment p-4 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-mahogany md:grid-cols-[1fr_9rem_8rem_8rem_3rem]">
           <span>Product</span>
           <span>Qty</span>
           <span className="hidden md:block">Unit</span>
@@ -108,7 +108,7 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
 
         {cart.lines.length === 0 ? (
           <div className="p-6">
-            <ShoppingBasket className="h-6 w-6 text-brand-ebony" aria-hidden="true" />
+            <ShoppingBasket className="h-6 w-6 text-brand-mahogany" aria-hidden="true" />
             <h2 className="mt-4 font-heading text-4xl">Your cart is ready for the harvest.</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7">
               Add fresh mushrooms, pantry products, or inquiry items from the shop. The cart will
@@ -116,7 +116,7 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
             </p>
             <Link
               href="/shop"
-              className="mt-5 inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+              className="mrmf-button-primary mt-5"
             >
               Shop products <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
@@ -125,11 +125,11 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
           cart.lines.map((line) => (
             <article
               key={line.product.slug}
-              className="grid grid-cols-[1fr_6rem_7rem] gap-4 border-b border-brand-mahogany/20 p-4 last:border-b-0 md:grid-cols-[1fr_9rem_8rem_8rem_3rem]"
+              className="grid grid-cols-[1fr_6rem_7rem] gap-4 border-b border-brand-mahogany/15 p-4 last:border-b-0 md:grid-cols-[1fr_9rem_8rem_8rem_3rem]"
             >
               <div>
                 <h2 className="font-heading text-3xl leading-tight">{line.product.name}</h2>
-                <p className="mt-2 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-ebony">
+                <p className="mt-2 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-mahogany">
                   {line.fulfillmentLabel}
                 </p>
                 {line.warnings.map((warning) => (
@@ -192,8 +192,8 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
       </div>
 
       <aside className="space-y-5">
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
-          <ShoppingBasket className="h-5 w-5 text-brand-ebony" aria-hidden="true" />
+        <div className="mrmf-card p-6">
+          <ShoppingBasket className="h-5 w-5 text-brand-mahogany" aria-hidden="true" />
           <h2 className="mt-4 font-heading text-4xl">Order summary</h2>
           <div className="mt-5 flex items-center justify-between border-t border-brand-mahogany/20 pt-4">
             <span className="font-subheading text-sm font-extrabold uppercase tracking-[0.12em]">
@@ -204,22 +204,22 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
           {cart.lines.length > 0 ? (
             <Link
               href="/checkout"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+              className="mrmf-button-primary mt-6 w-full"
             >
               Review checkout <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           ) : (
             <Link
               href="/shop"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 border border-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] transition hover:bg-brand-mahogany hover:text-brand-ivory"
+              className="mrmf-button-secondary mt-6 w-full"
             >
               Continue shopping <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           )}
         </div>
 
-        <div className="border border-brand-burnt bg-brand-ivory p-5">
-          <div className="flex items-center gap-2 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-burnt">
+        <div className="mrmf-card border-brand-burnt p-5">
+          <div className="flex items-center gap-2 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             Fulfillment notices
           </div>
@@ -233,8 +233,8 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
           </ul>
         </div>
 
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
-          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+        <div className="mrmf-card p-5">
+          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             Cart bridge
           </p>
           <p className="mt-3 text-sm leading-7">
@@ -247,7 +247,7 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
           {bridge?.error ? <p className="mt-2 text-xs leading-6">{bridge.error}</p> : null}
           {bridge?.safeShippingOptions.length ? (
             <div className="mt-3">
-              <p className="font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-ebony">
+              <p className="font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-mahogany">
                 Safe Medusa options
               </p>
               <ul className="mt-2 space-y-1 text-xs leading-6">

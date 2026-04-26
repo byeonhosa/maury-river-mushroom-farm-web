@@ -17,23 +17,23 @@ export default function MarketsPickupPage() {
           fulfillment from shelf-stable shipping.
         </p>
       </PageHero>
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+      <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5">
           {pickupLocations.map((location) => (
             <div
               key={location.slug}
-              className="border border-brand-mahogany/20 bg-brand-ivory p-5"
+              className="mrmf-card p-5"
             >
               <h2 className="font-heading text-3xl">{location.name}</h2>
               <p className="mt-2 text-sm leading-7">{location.description}</p>
-              <p className="mt-3 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+              <p className="mt-3 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
                 {location.windows[0]?.label}: {location.windows[0]?.weekday},{" "}
                 {location.windows[0]?.startTime}-{location.windows[0]?.endTime}
               </p>
               <p className="mt-2 text-xs leading-6">{location.addressNote}</p>
             </div>
           ))}
-          <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
+          <div className="mrmf-card p-5">
             <h2 className="font-heading text-3xl">Shelf-stable shipping</h2>
             <p className="mt-2 text-sm leading-7">
               Dried, seasoning, and supplement products can use shipping once
@@ -41,7 +41,7 @@ export default function MarketsPickupPage() {
             </p>
           </div>
         </div>
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+        <div className="mrmf-card p-6">
           <div className="relative mb-6 h-64 overflow-hidden bg-brand-ebony">
             <Image
               src="/images/products/lions-mane-mushrooms-01.webp"

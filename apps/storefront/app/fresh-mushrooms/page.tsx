@@ -14,7 +14,7 @@ export default async function FreshMushroomsPage() {
           shippable unless the owner explicitly approves a future cold-chain process.
         </p>
       </PageHero>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mrmf-shell mrmf-section">
         <LocalFulfillmentCallout />
         <div className="mt-8">
           <ProductGrid products={products} />

@@ -23,11 +23,13 @@ export default async function ShopPage() {
           the fresh-local and shelf-stable shipping rules tested in the shared package.
         </p>
       </PageHero>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mrmf-shell mrmf-section">
         <LocalFulfillmentCallout />
-        <p className="mt-5 border border-brand-mahogany/20 bg-brand-ivory p-4 text-sm leading-7">
-          Catalog source: {catalog.source} via {catalog.mode}. {fulfillmentSummary.warnings[0]}
-          {catalog.error ? ` Fallback reason: ${catalog.error}` : ""}
+        <p className="mrmf-card mt-5 p-4 text-sm leading-7">
+          Fresh harvest products stay local by default, while dried, seasoning,
+          and supplement products can be prepared for shipping when enabled.
+          {" "}
+          {fulfillmentSummary.warnings[0]}
         </p>
         <div className="mt-5 max-w-3xl">
           <NotificationSignupForm

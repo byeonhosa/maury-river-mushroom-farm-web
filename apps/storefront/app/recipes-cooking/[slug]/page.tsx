@@ -20,12 +20,12 @@ export default async function RecipeDetailPage({
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-      <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
+      <p className="mrmf-eyebrow">
         Recipe
       </p>
       <h1 className="mt-3 font-heading text-5xl leading-tight">{recipe.title}</h1>
       <p className="mt-5 text-lg leading-8">{recipe.summary}</p>
-      <div className="mt-6 grid gap-3 border-y border-brand-mahogany/20 py-5 font-subheading text-sm font-bold uppercase tracking-[0.1em] sm:grid-cols-3">
+      <div className="mrmf-panel mt-6 grid gap-3 p-5 font-subheading text-sm font-bold uppercase tracking-[0.1em] sm:grid-cols-3">
         <p>Prep: {recipe.prepTime}</p>
         <p>Cook: {recipe.cookTime}</p>
         <p>Serves: {recipe.servings}</p>
@@ -49,10 +49,10 @@ export default async function RecipeDetailPage({
         </ol>
       </section>
 
-      <p className="mt-8 border border-brand-mahogany/20 bg-brand-ivory p-5 text-sm leading-7">
+      <p className="mrmf-card mt-8 p-5 text-sm leading-7">
         {recipe.storageNote}
       </p>
-      <Link href="/recipes-cooking" className="mt-8 inline-flex bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory">
+      <Link href="/recipes-cooking" className="mrmf-button-primary mt-8">
         Back to recipes
       </Link>
     </article>

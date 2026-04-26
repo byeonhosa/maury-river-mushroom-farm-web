@@ -68,7 +68,7 @@ export default async function InternalNotificationsPage({
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
+      <p className="mrmf-eyebrow">
         Internal development admin
       </p>
       <h1 className="mt-3 font-heading text-5xl leading-tight">
@@ -88,13 +88,13 @@ export default async function InternalNotificationsPage({
         </Link>
       </div>
 
-      <form className="mt-8 grid gap-4 border border-brand-mahogany/20 bg-brand-ivory p-5 sm:grid-cols-3">
+      <form className="mrmf-card mt-8 grid gap-4 p-5 sm:grid-cols-3">
         <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
           Status
           <select
             name="status"
             defaultValue={status ?? ""}
-            className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+            className="mrmf-input font-body text-sm normal-case tracking-normal"
           >
             <option value="">all</option>
             {notificationStatuses.map((candidate) => (
@@ -109,7 +109,7 @@ export default async function InternalNotificationsPage({
           <select
             name="targetType"
             defaultValue={targetType ?? ""}
-            className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+            className="mrmf-input font-body text-sm normal-case tracking-normal"
           >
             <option value="">all</option>
             {notificationTargetTypes.map((candidate) => (
@@ -124,26 +124,26 @@ export default async function InternalNotificationsPage({
           <input
             name="targetSlug"
             defaultValue={targetSlug ?? ""}
-            className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+            className="mrmf-input font-body text-sm normal-case tracking-normal"
           />
         </label>
         <button
           type="submit"
-          className="bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory sm:col-span-3 sm:justify-self-start"
+          className="mrmf-button-primary sm:col-span-3 sm:justify-self-start"
         >
           Filter requests
         </button>
       </form>
 
       {error ? (
-        <p className="mt-6 border border-brand-burnt bg-brand-ivory p-4 text-sm leading-7 text-brand-burnt">
+        <p className="mrmf-card mt-6 border-brand-burnt p-4 text-sm leading-7">
           {error}
         </p>
       ) : null}
 
-      <div className="mt-8 overflow-x-auto border border-brand-mahogany/20 bg-brand-ivory">
+      <div className="mrmf-card mt-8 overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-brand-mahogany/20 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-ebony">
+          <thead className="border-b border-brand-mahogany/20 bg-brand-parchment font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-mahogany">
             <tr>
               <th className="p-3">Email</th>
               <th className="p-3">Target</th>
@@ -181,7 +181,7 @@ export default async function InternalNotificationsPage({
         </table>
       </div>
 
-      <section className="mt-8 border border-brand-mahogany/20 bg-brand-ivory p-5">
+      <section className="mrmf-card mt-8 p-5">
         <h2 className="font-heading text-4xl">Notification preview</h2>
         <p className="mt-3 text-sm leading-7">
           {activePreview.length} active request

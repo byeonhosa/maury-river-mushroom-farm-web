@@ -333,7 +333,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
   ]);
 
   return (
-    <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+    <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr]">
       <form
         className="space-y-6"
         onSubmit={(event) => {
@@ -345,13 +345,13 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           );
         }}
       >
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+        <div className="mrmf-card p-6">
           <h2 className="font-heading text-4xl">Customer information</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
               Name
               <input
-                className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input font-body text-sm normal-case tracking-normal"
                 value={contact.name}
                 onChange={(event) => setContact({ ...contact, name: event.currentTarget.value })}
               />
@@ -359,7 +359,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
               Email
               <input
-                className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input font-body text-sm normal-case tracking-normal"
                 type="email"
                 value={contact.email}
                 onChange={(event) => setContact({ ...contact, email: event.currentTarget.value })}
@@ -368,7 +368,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
               Phone
               <input
-                className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input font-body text-sm normal-case tracking-normal"
                 value={contact.phone}
                 onChange={(event) => setContact({ ...contact, phone: event.currentTarget.value })}
               />
@@ -376,7 +376,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em] sm:col-span-2">
               Notes
               <textarea
-                className="min-h-24 border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input min-h-24 font-body text-sm normal-case tracking-normal"
                 value={contact.notes}
                 onChange={(event) => setContact({ ...contact, notes: event.currentTarget.value })}
               />
@@ -384,9 +384,9 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           </div>
         </div>
 
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+        <div className="mrmf-card p-6">
           <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-brand-ebony" aria-hidden="true" />
+            <MapPin className="h-5 w-5 text-brand-mahogany" aria-hidden="true" />
             <h2 className="font-heading text-4xl">Fulfillment selection</h2>
           </div>
           {methodOptions.length > 0 ? (
@@ -394,7 +394,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
               {methodOptions.map((option) => (
                 <label
                   key={option.id}
-                  className="block border border-brand-mahogany/20 bg-white p-4"
+                  className="block border border-brand-mahogany/20 bg-white p-4 transition hover:border-brand-mahogany"
                 >
                   <span className="flex items-start gap-3">
                     <input
@@ -424,7 +424,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
                       <span className="block font-heading text-2xl">{option.label}</span>
                       <span className="mt-1 block text-sm leading-7">{option.description}</span>
                       {option.amount && option.amount > 0 ? (
-                        <span className="mt-1 block font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-ebony">
+                        <span className="mt-1 block font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-mahogany">
                           {formatCurrency(option.amount)}
                         </span>
                       ) : null}
@@ -452,7 +452,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
               <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
                 Pickup location
                 <select
-                  className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                  className="mrmf-input font-body text-sm normal-case tracking-normal"
                   value={pickupLocationSlug}
                   onChange={(event) => {
                     const nextLocation = pickupLocations.find(
@@ -475,7 +475,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
               <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
                 Pickup window
                 <select
-                  className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                  className="mrmf-input font-body text-sm normal-case tracking-normal"
                   value={pickupWindowLabel}
                   onChange={(event) => setPickupWindowLabel(event.currentTarget.value)}
                 >
@@ -493,7 +493,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <label className="mt-5 grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
               Local delivery notes
               <textarea
-                className="min-h-24 border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input min-h-24 font-body text-sm normal-case tracking-normal"
                 value={localDeliveryNotes}
                 onChange={(event) => setLocalDeliveryNotes(event.currentTarget.value)}
               />
@@ -504,7 +504,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <label className="mt-5 grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
               Shipping address
               <textarea
-                className="min-h-24 border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input min-h-24 font-body text-sm normal-case tracking-normal"
                 value={shippingAddress}
                 onChange={(event) => setShippingAddress(event.currentTarget.value)}
               />
@@ -515,7 +515,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
             <label className="mt-5 grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
               Preorder timing notes
               <textarea
-                className="min-h-24 border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+                className="mrmf-input min-h-24 font-body text-sm normal-case tracking-normal"
                 value={preorderNotes}
                 onChange={(event) => setPreorderNotes(event.currentTarget.value)}
               />
@@ -523,9 +523,9 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           ) : null}
         </div>
 
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+        <div className="mrmf-card p-6">
           <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-brand-ebony" aria-hidden="true" />
+            <CreditCard className="h-5 w-5 text-brand-mahogany" aria-hidden="true" />
             <h2 className="font-heading text-4xl">Payment</h2>
           </div>
           <p className="mt-3 text-sm leading-7">
@@ -538,8 +538,8 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           {bridge?.error ? <p className="mt-3 text-xs leading-6">{bridge.error}</p> : null}
         </div>
 
-        <div className="border border-brand-burnt bg-brand-ivory p-5">
-          <div className="flex items-center gap-2 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-burnt">
+        <div className="mrmf-card border-brand-burnt p-5">
+          <div className="flex items-center gap-2 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             <ShieldCheck className="h-4 w-4" aria-hidden="true" />
             Policy acknowledgement
           </div>
@@ -561,8 +561,8 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           </label>
         </div>
 
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-5">
-          <div className="flex items-center gap-2 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-burnt">
+        <div className="mrmf-card p-5">
+          <div className="flex items-center gap-2 font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             Checkout validation
           </div>
@@ -575,7 +575,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           </ul>
           <button
             type="submit"
-            className="mt-5 inline-flex w-full justify-center bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony"
+            className="mrmf-button-primary mt-5 w-full"
           >
             Review staged order
           </button>
@@ -583,7 +583,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
         </div>
       </form>
 
-      <aside className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft lg:self-start">
+      <aside className="mrmf-card p-6 lg:self-start">
         <h2 className="font-heading text-4xl">Order summary</h2>
         <div className="mt-5 space-y-4">
           {cart.lines.length === 0 ? (
@@ -596,7 +596,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
               >
                 <div>
                   <p className="font-heading text-2xl">{line.product.name}</p>
-                  <p className="font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-ebony">
+                  <p className="font-subheading text-xs font-bold uppercase tracking-[0.12em] text-brand-mahogany">
                     {line.quantity} x {line.fulfillmentLabel}
                   </p>
                   <p className="mt-1 text-xs leading-6">
@@ -627,7 +627,7 @@ export function CheckoutClient({ products }: { products: CommerceProduct[] }) {
           ))}
         </div>
         <div className="mt-5 border-t border-brand-mahogany/20 pt-5">
-          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-ebony">
+          <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
             Medusa cart bridge
           </p>
           <p className="mt-2 text-sm leading-7">

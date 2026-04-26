@@ -16,7 +16,7 @@ export default function InternalAvailabilityPage() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.16em] text-brand-ebony">
+      <p className="mrmf-eyebrow">
         Internal development admin
       </p>
       <h1 className="mt-3 font-heading text-5xl leading-tight">

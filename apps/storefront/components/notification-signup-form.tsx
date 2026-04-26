@@ -62,7 +62,7 @@ export function NotificationSignupForm({
       className={`text-brand-mahogany ${
         compact
           ? "p-0"
-          : "border border-brand-mahogany/20 bg-brand-ivory p-5 shadow-soft"
+          : "mrmf-card p-5"
       }`}
       onSubmit={(event) => {
         event.preventDefault();
@@ -71,9 +71,9 @@ export function NotificationSignupForm({
     >
       <div className="flex items-start gap-3">
         {status === "success" ? (
-          <CheckCircle2 className="mt-1 h-5 w-5 text-brand-ebony" aria-hidden="true" />
+          <CheckCircle2 className="mt-1 h-5 w-5 text-brand-mahogany" aria-hidden="true" />
         ) : (
-          <Bell className="mt-1 h-5 w-5 text-brand-ebony" aria-hidden="true" />
+          <Bell className="mt-1 h-5 w-5 text-brand-mahogany" aria-hidden="true" />
         )}
         <div>
           <h2 className={compact ? "font-heading text-2xl" : "font-heading text-3xl"}>
@@ -90,14 +90,14 @@ export function NotificationSignupForm({
             name="email"
             type="email"
             required
-            className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+            className="mrmf-input font-body text-sm normal-case tracking-normal"
           />
         </label>
         <label className="grid gap-2 font-subheading text-xs font-bold uppercase tracking-[0.12em]">
           Name
           <input
             name="name"
-            className="border border-brand-mahogany/30 bg-white px-3 py-3 font-body text-sm normal-case tracking-normal"
+            className="mrmf-input font-body text-sm normal-case tracking-normal"
           />
         </label>
       </div>
@@ -118,7 +118,7 @@ export function NotificationSignupForm({
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="mt-4 inline-flex items-center gap-2 bg-brand-mahogany px-5 py-3 font-subheading text-sm font-bold uppercase tracking-[0.1em] text-brand-ivory transition hover:bg-brand-ebony disabled:cursor-not-allowed disabled:opacity-60"
+        className="mrmf-button-primary mt-4"
       >
         <Bell className="h-4 w-4" aria-hidden="true" />
         {status === "submitting" ? "Joining list" : "Notify me"}

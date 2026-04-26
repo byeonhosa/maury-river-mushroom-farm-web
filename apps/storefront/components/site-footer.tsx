@@ -10,7 +10,7 @@ const footerLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-brand-mahogany text-brand-ivory">
+    <footer className="border-t border-brand-ivory/20 bg-brand-mahogany text-brand-ivory">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr] lg:px-8">
         <div>
           <p className="font-heading text-3xl">The Maury River Mushroom Farm</p>

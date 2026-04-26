@@ -13,7 +13,7 @@ export default async function MushroomSaltsPage() {
           popcorn, vegetables, and proteins even between fresh harvests.
         </p>
       </PageHero>
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mrmf-shell mrmf-section">
         <ProductGrid products={products} />
       </section>
     </>

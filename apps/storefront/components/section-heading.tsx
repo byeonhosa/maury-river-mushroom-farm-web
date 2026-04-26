@@ -13,8 +13,8 @@ export function SectionHeading({
     <div className="max-w-3xl">
       {eyebrow ? (
         <p
-          className={`font-subheading text-xs font-extrabold uppercase tracking-[0.18em] ${
-            dark ? "text-brand-ivory" : "text-brand-ebony"
+          className={`font-subheading text-xs font-extrabold uppercase tracking-[0.16em] ${
+            dark ? "text-brand-ivory" : "text-brand-mahogany"
           }`}
         >
           {eyebrow}
@@ -28,7 +28,7 @@ export function SectionHeading({
         {title}
       </h2>
       {children ? (
-        <div className={`mt-4 text-base leading-8 ${dark ? "text-brand-ivory" : ""}`}>
+        <div className={`mt-4 text-base leading-8 ${dark ? "text-brand-ivory" : "text-brand-mahogany"}`}>
           {children}
         </div>
       ) : null}

@@ -10,7 +10,7 @@ export default function ContactPage() {
         </p>
       </PageHero>
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+        <div className="mrmf-card p-6">
           <ContactForm />
         </div>
       </section>

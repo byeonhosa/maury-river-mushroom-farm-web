@@ -15,7 +15,7 @@ export default function RestaurantsWholesalePage() {
           tasting menus, and recurring orders.
         </p>
       </PageHero>
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+      <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5">
           {[
             [
@@ -37,14 +37,14 @@ export default function RestaurantsWholesalePage() {
           ].map(([title, body]) => (
             <div
               key={title}
-              className="border border-brand-mahogany/20 bg-brand-ivory p-5"
+              className="mrmf-card p-5"
             >
               <h2 className="font-heading text-3xl">{title}</h2>
               <p className="mt-2 text-sm leading-7">{body}</p>
             </div>
           ))}
         </div>
-        <div className="border border-brand-mahogany/20 bg-brand-ivory p-6 shadow-soft">
+        <div className="mrmf-card p-6">
           <div className="relative mb-6 h-64 overflow-hidden bg-brand-ebony">
             <Image
               src="/images/products/mixed-gourmet-mushrooms-01.webp"
