@@ -87,6 +87,15 @@ corepack pnpm --filter @mrmf/storefront dev
 
 Then visit `http://localhost:3000/internal/availability`. This route is disabled in production and can be disabled locally with `MRMF_ENABLE_DEV_AVAILABILITY_ADMIN=false`. It previews process-local availability overrides for owner review; persistent production availability management should move into an authenticated Medusa Admin or production-tracking integration later.
 
+Customer availability notifications:
+
+```bash
+corepack pnpm --filter @mrmf/backend notifications:schema
+corepack pnpm --filter @mrmf/backend notifications:preview
+```
+
+The notification schema stores consent-based notify-me, back-in-stock, seasonal, preorder, weekly availability, and wholesale-follow-up requests in PostgreSQL through `DATABASE_URL`. Storefront forms post to `/api/notifications`, update duplicate active requests instead of creating unlimited duplicates, and use a honeypot plus a conservative local rate-limit scaffold. The development admin list is available at `http://localhost:3000/internal/notifications` when the storefront is running outside production. Email sending remains preview-only with `EMAIL_PROVIDER=console`; do not configure live email credentials until privacy, unsubscribe, suppression, and owner approval are complete. See `docs/content/customer-notifications.md`.
+
 ## Checks
 
 ```bash
@@ -135,6 +144,10 @@ If raw Store API shipping options look unsafe, rerun `corepack pnpm --filter @mr
 If a saved Medusa cart becomes stale, deleted, or unavailable, the storefront clears the stale Medusa cart ID and keeps the staged browser line items where practical. Remove and re-add items if a local browser cart was created against older product data.
 
 If a product appears but cannot be added to the cart, check its inventory status. `coming-soon` and `sold-out` products are intentionally blocked, zero-stock products should be reviewed before launch, and preorder products need an explicit preorder fulfillment mode.
+
+If notify-me forms return a database error, confirm `DATABASE_URL` is set in the storefront environment, Postgres is running, and `corepack pnpm --filter @mrmf/backend notifications:schema` has completed. Duplicate signup messages are expected when the same email joins the same product/species/list more than once.
+
+If `/internal/notifications` returns 404, confirm the storefront is running in development mode and `MRMF_ENABLE_DEV_AVAILABILITY_ADMIN` is not `false`. If the page loads but shows a database error, run the notification schema command above.
 
 ## Business rules
 

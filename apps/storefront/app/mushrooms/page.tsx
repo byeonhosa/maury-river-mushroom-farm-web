@@ -1,6 +1,11 @@
-import { availabilityStateBehaviors, speciesPages } from "@mrmf/shared";
+import {
+  availabilityStateBehaviors,
+  getWeeklyAvailabilityNotificationCta,
+  speciesPages,
+} from "@mrmf/shared";
 import Link from "next/link";
 
+import { NotificationSignupForm } from "../../components/notification-signup-form";
 import { PageHero } from "../../components/page-hero";
 
 export default function MushroomCatalogPage() {
@@ -40,6 +45,11 @@ export default function MushroomCatalogPage() {
               </Link>
             );
           })}
+        </div>
+        <div className="mt-8 max-w-3xl">
+          <NotificationSignupForm
+            cta={getWeeklyAvailabilityNotificationCta("/mushrooms")}
+          />
         </div>
       </section>
     </>

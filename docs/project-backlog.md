@@ -56,15 +56,17 @@ document current as phases are completed, split, or deferred.
 ## Phase 3: Notify-me / back-in-stock system
 
 - Goal: Capture demand for sold-out, seasonal, coming-soon, and preorder products.
-- Major tasks: Add notify-me forms, server-side validation, storage model, owner export
-  or email routing, customer confirmation copy, spam protection plan, and opt-in policy
-  handling.
+- Major tasks: Add notify-me forms, server-side validation, a durable storage model,
+  development admin visibility, notification preview scripts, safe draft templates, spam
+  protection scaffolding, and opt-in/unsubscribe foundations.
 - Done when: Customers can request notifications from relevant product states, requests
-  are stored or routed safely, duplicate handling is documented, and privacy language is
-  updated for legal review.
+  are stored in Postgres, duplicate handling is documented, previews can be generated
+  without sending real email, and privacy/unsubscribe work is tracked for legal review.
 - Suggested branch: `codex/notify-me-back-in-stock`
-- Dependencies or cautions: Needs email/CRM direction or a safe interim storage/export
-  path. Do not imply product availability dates that the farm has not confirmed.
+- Dependencies or cautions: Production email/CRM provider selection, durable rate
+  limiting, suppression/bounce handling, privacy-policy updates, and owner approval are
+  still required before sending real customer emails. Do not imply product availability
+  dates that the farm has not confirmed.
 
 ## Phase 4: Visual design refresh
 
@@ -203,5 +205,8 @@ document current as phases are completed, split, or deferred.
   health-related language.
 - Configure production email/CRM, Stripe, backups, monitoring, and deployment secrets
   outside Git.
+- Replace Phase 3 notification email preview scaffolding with approved production email
+  provider, tested unsubscribe/suppression handling, privacy-policy updates, and durable
+  rate limiting before launch.
 - Review Medusa peer dependency warnings only when they block real work; current
   warnings are documented as upstream/non-blocking.

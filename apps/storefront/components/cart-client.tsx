@@ -1,6 +1,12 @@
 "use client";
 
-import { summarizeCommerceCart, type CartLineInput, type CommerceProduct } from "@mrmf/shared";
+import {
+  canAddCommerceProductToCart,
+  getProductNotificationCta,
+  summarizeCommerceCart,
+  type CartLineInput,
+  type CommerceProduct
+} from "@mrmf/shared";
 import { AlertTriangle, ArrowRight, Minus, Plus, ShoppingBasket, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -16,6 +22,7 @@ import {
   type CartBridgeResult
 } from "../lib/cart-adapter";
 import { formatCurrency } from "../lib/format";
+import { NotificationSignupForm } from "./notification-signup-form";
 
 export function CartClient({ products }: { products: CommerceProduct[] }) {
   const [items, setItems] = useState<CartLineInput[]>([]);
@@ -130,6 +137,15 @@ export function CartClient({ products }: { products: CommerceProduct[] }) {
                     {warning}
                   </p>
                 ))}
+                {!canAddCommerceProductToCart(line.product) ? (
+                  <div className="mt-4">
+                    {(() => {
+                      const cta = getProductNotificationCta(line.product, "/cart");
+
+                      return cta ? <NotificationSignupForm cta={cta} compact /> : null;
+                    })()}
+                  </div>
+                ) : null}
               </div>
               <div className="flex h-10 items-center border border-brand-mahogany/30 bg-white">
                 <button

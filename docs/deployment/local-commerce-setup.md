@@ -175,15 +175,18 @@ Cart adapter modes:
 2. Run `corepack pnpm --filter @mrmf/backend db:migrate`.
 3. Run `corepack pnpm --filter @mrmf/backend seed`.
 4. Run `corepack pnpm --filter @mrmf/backend seed:verify`.
-5. Start Medusa with `corepack pnpm --filter @mrmf/backend dev`, or restart it if it was already running before code changes.
-6. Run `corepack pnpm --filter @mrmf/backend shipping:smoke`.
-7. Start the storefront with `corepack pnpm --filter @mrmf/storefront dev`.
-8. Visit `http://localhost:3000/shop` and confirm the catalog source line says `medusa` when the Store API is reachable or `shared-seed via medusa-hybrid` when it has fallen back.
-9. Add Blue Oyster Mushrooms to the cart and confirm `/cart` reports a Medusa-backed cart when Medusa products and the publishable key are active.
-10. Visit `/checkout`, choose a pickup method, and confirm the page reports that the fulfillment method was saved to the Medusa cart while payment remains staged.
-11. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded as coming soon with zero provisional stock until launch availability is confirmed, so this mixed-cart check may require temporarily using another available shelf-stable fixture in development.
-12. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
-13. Visit `/internal/availability` in development and confirm products and the species master catalog load.
+5. Run `corepack pnpm --filter @mrmf/backend notifications:schema`.
+6. Start Medusa with `corepack pnpm --filter @mrmf/backend dev`, or restart it if it was already running before code changes.
+7. Run `corepack pnpm --filter @mrmf/backend shipping:smoke`.
+8. Run `corepack pnpm --filter @mrmf/backend notifications:preview`.
+9. Start the storefront with `corepack pnpm --filter @mrmf/storefront dev`.
+10. Visit `http://localhost:3000/shop` and confirm the catalog source line says `medusa` when the Store API is reachable or `shared-seed via medusa-hybrid` when it has fallen back.
+11. Add Blue Oyster Mushrooms to the cart and confirm `/cart` reports a Medusa-backed cart when Medusa products and the publishable key are active.
+12. Visit `/checkout`, choose a pickup method, and confirm the page reports that the fulfillment method was saved to the Medusa cart while payment remains staged.
+13. Add Fresh Lion's Mane and Mushroom Salt to the cart, then confirm `/cart` shows the mixed-cart warning and does not expose parcel shipping as a safe option. Mushroom Salt is intentionally seeded as coming soon with zero provisional stock until launch availability is confirmed, so this mixed-cart check may require temporarily using another available shelf-stable fixture in development.
+14. Visit `/checkout` and confirm mixed carts are blocked until the local and shippable items are split.
+15. Visit `/internal/availability` in development and confirm products and the species master catalog load.
+16. Visit `/internal/notifications` in development and confirm the notification request list loads. Submit a notify-me form for a coming-soon product such as Mushroom Salt, then confirm the request appears in the internal list.
 
 ## Troubleshooting
 
@@ -204,6 +207,10 @@ Cart adapter modes:
 - Products with zero stock: confirm whether the product should be `available`, `seasonal`, `preorder`, `coming-soon`, or `sold-out` in `packages/shared/src/products.ts`, then rerun the seed.
 - Availability admin route returns 404: confirm the storefront is running in development mode and `MRMF_ENABLE_DEV_AVAILABILITY_ADMIN` is not set to `false`. The route is intentionally disabled in production.
 - Coming-soon or preorder confusion: coming-soon products are blocked from cart; preorder products must use a preorder-capable fulfillment mode before checkout can continue.
+- Notification signup returns a database error: confirm Postgres is running, `DATABASE_URL` is set for the storefront process, and `corepack pnpm --filter @mrmf/backend notifications:schema` has completed.
+- Notification signup says the customer is already on the list: this is expected duplicate handling for the same active email, target, and notification type. The existing request was refreshed instead of duplicated.
+- Notification preview shows zero requests: submit a notify-me form first or check the optional `NOTIFICATION_PREVIEW_TARGET_TYPE`, `NOTIFICATION_PREVIEW_TARGET_SLUG`, and `NOTIFICATION_PREVIEW_AVAILABILITY_STATE` filters.
+- Email provider errors: Phase 3 supports only `EMAIL_PROVIDER=console`. Do not configure a live provider until unsubscribe, suppression, privacy-policy, and owner approval work is complete.
 - Medusa peer dependency warnings during install are currently upstream/non-blocking for this phase.
 
 ## Payment And Email Placeholders
@@ -221,6 +228,9 @@ Email/CRM integration is not configured. Forms validate server-side and can late
 ```bash
 EMAIL_PROVIDER=console
 EMAIL_FROM=farm@example.com
+NOTIFICATION_BASE_URL=http://localhost:3000
+NOTIFICATION_RATE_LIMIT_WINDOW_SECONDS=900
+NOTIFICATION_RATE_LIMIT_MAX=5
 ```
 
 ## Known Dependency Warnings

@@ -44,9 +44,9 @@ inventory metadata during seed.
 | `available` | Yes | Yes | Yes | No | Add to cart if fulfillment allows |
 | `low-stock` | Yes | Yes | Yes | No | Add to cart with low-stock messaging |
 | `sold-out` | Yes | Yes | No | Yes | Notify-me later |
-| `coming-soon` | Yes | Yes | No | Yes | Ask availability until notify-me exists |
-| `seasonal` | Yes | Yes | Only if explicitly cartable | Yes | Harvest-dependent ordering or inquiry |
-| `preorder` | Yes | Yes | Only with preorder fulfillment | No | Preorder coordination |
+| `coming-soon` | Yes | Yes | No | Yes | Join launch/availability updates |
+| `seasonal` | Yes | Yes | Only if explicitly cartable | Yes | Harvest-dependent ordering or seasonal notification |
+| `preorder` | Yes | Yes | Only with preorder fulfillment | Yes | Preorder coordination or preorder updates |
 | `hidden` | No | No | No | No | Admin/internal only |
 | `wholesale-only` | Yes | Yes | No | No | Restaurant/wholesale inquiry |
 | `inquiry-only` | Yes | Yes | No | No | Contact/availability inquiry |
@@ -120,7 +120,9 @@ internal system unless explicitly approved for customer display.
 
 - Final launch quantities and stock notes need owner confirmation.
 - Final pickup windows and local-delivery rules need confirmation.
-- Notify-me/back-in-stock storage is Phase 3 and is not implemented yet.
+- Notify-me/back-in-stock storage now has a Postgres-backed Phase 3 foundation,
+  but production email sending still needs provider, privacy, unsubscribe, and
+  owner-approval work.
 - The development admin scaffold needs authenticated persistence before
   production use.
 - Legal/business review is still required for supplement and functional
