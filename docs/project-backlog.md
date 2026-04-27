@@ -115,11 +115,17 @@ document current as phases are completed, split, or deferred.
 - Major tasks: Finalize Docker Compose services, environment variable checklist,
   database migration/seed process, backups, logs, reverse proxy/TLS plan, health checks,
   and rollback notes.
+- Current implementation note: `codex/digitalocean-staging` adds IP-only staging
+  Compose files, a Node build image, Nginx port-80 reverse proxy, `.env.staging`
+  example, and a DigitalOcean deployment runbook. Staging keeps Medusa/Postgres/Redis
+  private to the Docker network except for the public Store API paths proxied through
+  port 80.
 - Done when: Staging runs storefront, Medusa, Postgres, and Redis from documented
   commands; backups are tested; and staging is not connected to production DNS.
 - Suggested branch: `codex/digitalocean-staging`
 - Dependencies or cautions: Do not touch GoDaddy or production DNS. Requires staging
-  secrets and droplet access outside the repo.
+  secrets and droplet access outside the repo. IP-only staging is HTTP-only until a
+  domain-based staging host is approved.
 
 ## Phase 7: Production app integration architecture
 

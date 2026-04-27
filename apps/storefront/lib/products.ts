@@ -49,7 +49,11 @@ function getAdapterMode(): CommerceAdapterMode {
 }
 
 function getBackendUrl() {
-  return process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? defaultBackendUrl;
+  return (
+    process.env.MEDUSA_STORE_API_URL ??
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ??
+    defaultBackendUrl
+  );
 }
 
 function getPublishableKey() {

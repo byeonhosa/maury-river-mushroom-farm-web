@@ -1,0 +1,133 @@
+name: mrmf-staging
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mrmf_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-mrmf}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.staging}
+    volumes:
+      - staging-postgres-data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mrmf} -d ${POSTGRES_DB:-mrmf_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/node.Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-mrmf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mrmf_staging}?sslmode=disable
+      PGSSLMODE: disable
+      REDIS_URL: redis://redis:6379
+      MEDUSA_BACKEND_URL: http://backend:9000
+      MEDUSA_STORE_CORS: ${MEDUSA_STORE_CORS:-http://167.99.59.42}
+      MEDUSA_ADMIN_CORS: ${MEDUSA_ADMIN_CORS:-http://167.99.59.42}
+      MEDUSA_AUTH_CORS: ${MEDUSA_AUTH_CORS:-http://167.99.59.42}
+      MEDUSA_ADMIN_DISABLED: ${MEDUSA_ADMIN_DISABLED:-true}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.staging}
+      COOKIE_SECRET: ${COOKIE_SECRET:?Set COOKIE_SECRET in .env.staging}
+      MEDUSA_SEED_SALES_CHANNEL_NAME: ${MEDUSA_SEED_SALES_CHANNEL_NAME:-Maury River Storefront}
+      MEDUSA_SEED_FULFILLMENT_PROVIDER_ID: ${MEDUSA_SEED_FULFILLMENT_PROVIDER_ID:-manual_manual}
+      MRMF_SHIPPING_SMOKE_SHELF_STABLE_HANDLE: ${MRMF_SHIPPING_SMOKE_SHELF_STABLE_HANDLE:-mushroom-salt}
+      CHECKOUT_MODE: ${CHECKOUT_MODE:-staging}
+      ENABLE_TEST_PAYMENTS: ${ENABLE_TEST_PAYMENTS:-false}
+      ENABLE_LIVE_PAYMENTS: ${ENABLE_LIVE_PAYMENTS:-false}
+      STRIPE_SECRET_KEY_TEST: ${STRIPE_SECRET_KEY_TEST:-}
+      STRIPE_WEBHOOK_SECRET_TEST: ${STRIPE_WEBHOOK_SECRET_TEST:-}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      EMAIL_FROM: ${EMAIL_FROM:-staging@example.invalid}
+      NOTIFICATION_BASE_URL: ${NOTIFICATION_BASE_URL:-http://167.99.59.42}
+      NOTIFICATION_RATE_LIMIT_WINDOW_SECONDS: ${NOTIFICATION_RATE_LIMIT_WINDOW_SECONDS:-900}
+      NOTIFICATION_RATE_LIMIT_MAX: ${NOTIFICATION_RATE_LIMIT_MAX:-5}
+      NOTIFICATION_PREVIEW_TARGET_TYPE: ${NOTIFICATION_PREVIEW_TARGET_TYPE:-}
+      NOTIFICATION_PREVIEW_TARGET_SLUG: ${NOTIFICATION_PREVIEW_TARGET_SLUG:-}
+      NOTIFICATION_PREVIEW_AVAILABILITY_STATE: ${NOTIFICATION_PREVIEW_AVAILABILITY_STATE:-}
+      NOTIFICATION_PREVIEW_SEND_CONSOLE: ${NOTIFICATION_PREVIEW_SEND_CONSOLE:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "9000"
+    command: >
+      sh -c "corepack pnpm --filter @mrmf/backend exec medusa build &&
+             corepack pnpm --filter @mrmf/backend start"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:9000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+
+  storefront:
+    build:
+      context: .
+      dockerfile: docker/node.Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-mrmf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mrmf_staging}?sslmode=disable
+      PGSSLMODE: disable
+      MEDUSA_STORE_API_URL: http://backend:9000
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-http://167.99.59.42}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://167.99.59.42}
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:-}
+      NEXT_PUBLIC_MEDUSA_REGION_NAME: ${NEXT_PUBLIC_MEDUSA_REGION_NAME:-Maury River Local Development Region}
+      NEXT_PUBLIC_COMMERCE_ADAPTER: ${NEXT_PUBLIC_COMMERCE_ADAPTER:-medusa-hybrid}
+      NEXT_PUBLIC_CART_ADAPTER: ${NEXT_PUBLIC_CART_ADAPTER:-medusa-hybrid}
+      CHECKOUT_MODE: ${CHECKOUT_MODE:-staging}
+      ENABLE_TEST_PAYMENTS: ${ENABLE_TEST_PAYMENTS:-false}
+      ENABLE_LIVE_PAYMENTS: ${ENABLE_LIVE_PAYMENTS:-false}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST:-}
+      STRIPE_SECRET_KEY_TEST: ${STRIPE_SECRET_KEY_TEST:-}
+      STRIPE_WEBHOOK_SECRET_TEST: ${STRIPE_WEBHOOK_SECRET_TEST:-}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      EMAIL_FROM: ${EMAIL_FROM:-staging@example.invalid}
+      TAX_MODE: ${TAX_MODE:-placeholder}
+      MRMF_ENABLE_DEV_AVAILABILITY_ADMIN: ${MRMF_ENABLE_DEV_AVAILABILITY_ADMIN:-false}
+      NOTIFICATION_BASE_URL: ${NOTIFICATION_BASE_URL:-http://167.99.59.42}
+      NOTIFICATION_RATE_LIMIT_WINDOW_SECONDS: ${NOTIFICATION_RATE_LIMIT_WINDOW_SECONDS:-900}
+      NOTIFICATION_RATE_LIMIT_MAX: ${NOTIFICATION_RATE_LIMIT_MAX:-5}
+    depends_on:
+      backend:
+        condition: service_healthy
+    expose:
+      - "3000"
+    command: >
+      sh -c "corepack pnpm --filter @mrmf/storefront build &&
+             corepack pnpm --filter @mrmf/storefront exec next start -H 0.0.0.0 -p 3000"
+
+  reverse-proxy:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      storefront:
+        condition: service_started
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/staging.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  staging-postgres-data:
