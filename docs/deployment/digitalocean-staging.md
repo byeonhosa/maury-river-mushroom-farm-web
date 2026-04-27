@@ -110,7 +110,7 @@ Create `/opt/mrmf-website-staging/.env.staging` from `.env.staging.example`.
 Generate server-local secrets:
 
 ```bash
-POSTGRES_PASSWORD_VALUE="$(openssl rand -base64 32 | tr -d '\n')"
+POSTGRES_PASSWORD_VALUE="$(openssl rand -hex 32)"
 JWT_SECRET_VALUE="$(openssl rand -hex 32)"
 COOKIE_SECRET_VALUE="$(openssl rand -hex 32)"
 ```
