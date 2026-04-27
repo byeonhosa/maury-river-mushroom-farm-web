@@ -130,6 +130,8 @@ MEDUSA_STORE_CORS=http://167.99.59.42
 MEDUSA_ADMIN_CORS=http://167.99.59.42
 MEDUSA_AUTH_CORS=http://167.99.59.42
 NOTIFICATION_BASE_URL=http://167.99.59.42
+DATABASE_URL=postgres://mrmf:server-generated-password@postgres:5432/mrmf_staging?sslmode=disable
+PGSSLMODE=disable
 ```
 
 Leave Stripe test keys empty unless an owner-approved test-payment task provides test

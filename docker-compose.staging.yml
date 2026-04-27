@@ -34,7 +34,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://${POSTGRES_USER:-mrmf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mrmf_staging}
+      DATABASE_URL: postgres://${POSTGRES_USER:-mrmf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mrmf_staging}?sslmode=disable
+      PGSSLMODE: disable
       REDIS_URL: redis://redis:6379
       MEDUSA_BACKEND_URL: http://backend:9000
       MEDUSA_STORE_CORS: ${MEDUSA_STORE_CORS:-http://167.99.59.42}
@@ -84,7 +85,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://${POSTGRES_USER:-mrmf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mrmf_staging}
+      DATABASE_URL: postgres://${POSTGRES_USER:-mrmf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mrmf_staging}?sslmode=disable
+      PGSSLMODE: disable
       MEDUSA_STORE_API_URL: http://backend:9000
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-http://167.99.59.42}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://167.99.59.42}
