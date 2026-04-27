@@ -184,6 +184,12 @@ Official brand fonts are documented in `docs/brand/typography.md`, but the initi
 
 ## Deployment
 
-Deployment is intentionally deferred. Notes for the future DigitalOcean Docker Compose deployment live in `docs/deployment`.
+IP-only DigitalOcean staging is documented in
+`docs/deployment/digitalocean-staging.md`. The staging stack uses
+`docker-compose.staging.yml`, `/opt/mrmf-website-staging/.env.staging`, Postgres,
+Redis, Medusa, the Next.js storefront, and an Nginx reverse proxy on port 80.
+
+Do not point production DNS or GoDaddy at staging. Checkout remains staged/test-only,
+live payments stay disabled, and email remains console/preview-only.
 
 Detailed local commerce setup notes live in `docs/deployment/local-commerce-setup.md`.

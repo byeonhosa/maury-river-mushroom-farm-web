@@ -7,9 +7,22 @@ import {
 } from "../lib/products";
 
 const originalAdapter = process.env.NEXT_PUBLIC_COMMERCE_ADAPTER;
+const originalServerBackendUrl = process.env.MEDUSA_STORE_API_URL;
+const originalPublicBackendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
+function restoreEnv(name: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = value;
+}
 
 afterEach(() => {
-  process.env.NEXT_PUBLIC_COMMERCE_ADAPTER = originalAdapter;
+  restoreEnv("NEXT_PUBLIC_COMMERCE_ADAPTER", originalAdapter);
+  restoreEnv("MEDUSA_STORE_API_URL", originalServerBackendUrl);
+  restoreEnv("NEXT_PUBLIC_MEDUSA_BACKEND_URL", originalPublicBackendUrl);
   resetProductCatalogCacheForTests();
   vi.unstubAllGlobals();
 });
@@ -74,5 +87,25 @@ describe("storefront product adapter", () => {
     expect(catalog.mode).toBe("medusa-hybrid");
     expect(catalog.error).toBe("Medusa offline");
     expect(catalog.products).toHaveLength(10);
+  });
+
+  it("prefers a server-only Store API URL for Docker builds", async () => {
+    process.env.NEXT_PUBLIC_COMMERCE_ADAPTER = "medusa";
+    process.env.MEDUSA_STORE_API_URL = "http://backend:9000";
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = "http://167.99.59.42";
+    resetProductCatalogCacheForTests();
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      expect(String(input)).toContain("http://backend:9000/store/products");
+
+      return new Response(JSON.stringify({ products: [] }), { status: 200 });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const catalog = await getProductCatalog();
+
+    expect(catalog.source).toBe("medusa");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
