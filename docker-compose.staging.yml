@@ -114,7 +114,7 @@ services:
       - "3000"
     command: >
       sh -c "corepack pnpm --filter @mrmf/storefront build &&
-             corepack pnpm --filter @mrmf/storefront start -- -H 0.0.0.0 -p 3000"
+             corepack pnpm --filter @mrmf/storefront exec next start -H 0.0.0.0 -p 3000"
 
   reverse-proxy:
     image: nginx:1.27-alpine
