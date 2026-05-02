@@ -182,6 +182,7 @@ Backend and commerce checks:
 ```bash
 $COMPOSE run --rm backend corepack pnpm --filter @mrmf/backend seed:verify
 $COMPOSE run --rm backend corepack pnpm --filter @mrmf/backend shipping:smoke
+$COMPOSE run --rm backend corepack pnpm --filter @mrmf/backend cart:smoke
 $COMPOSE run --rm backend corepack pnpm --filter @mrmf/backend checkout:smoke
 $COMPOSE run --rm backend corepack pnpm --filter @mrmf/backend notifications:preview
 curl -I http://127.0.0.1/health
@@ -219,6 +220,10 @@ Manual browser checks:
 - Cart and checkout load.
 - Checkout states that it is staging/test-only.
 - A fresh-only cart does not expose parcel shipping.
+- After adding Fresh Lion's Mane, the cart bridge shows `Medusa-backed cart active`
+  instead of the staged browser fallback. If it does not, confirm
+  `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` is populated in `.env.staging`, rebuild and
+  restart the storefront, then rerun `cart:smoke`.
 - Notify-me forms do not send real production email.
 
 ## Logs And Operations
@@ -278,3 +283,5 @@ encrypted backups with a tested restore plan.
   remain launch blockers.
 - Internal development admin routes are disabled in production-mode staging.
 - The storefront may need a rebuild after changing public `NEXT_PUBLIC_*` values.
+- Shop, product detail, cart, and checkout pages intentionally render dynamically so the browser cart bridge
+  receives current Medusa variant IDs instead of a build-time shared-seed fallback.

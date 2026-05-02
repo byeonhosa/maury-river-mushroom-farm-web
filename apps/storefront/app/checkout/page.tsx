@@ -4,6 +4,8 @@ import { CheckoutClient } from "../../components/checkout-client";
 import { PageHero } from "../../components/page-hero";
 import { listProducts } from "../../lib/products";
 
+export const dynamic = "force-dynamic";
+
 export default async function CheckoutPage() {
   const products = await listProducts();
   const checkoutMode = resolveCheckoutModeConfig(process.env);

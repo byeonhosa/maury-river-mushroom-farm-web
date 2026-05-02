@@ -8,11 +8,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "../../../components/add-to-cart-button";
 import { NotificationSignupForm } from "../../../components/notification-signup-form";
-import { getProduct, listProducts } from "../../../lib/products";
+import { getProduct } from "../../../lib/products";
 
-export async function generateStaticParams() {
-  return (await listProducts()).map((product) => ({ slug: product.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function ProductDetailPage({
   params,

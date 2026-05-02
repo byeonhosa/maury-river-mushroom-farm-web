@@ -77,6 +77,18 @@ The storefront product adapter is now hybrid by default with `NEXT_PUBLIC_COMMER
 
 The storefront cart uses `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid` by default. It persists a staged browser cart first, then mirrors it to a Medusa Store API cart when Medusa-backed products include variant IDs and the publishable key is configured. If Medusa is offline or the key is missing, the cart remains staged-only. It supports add, quantity change, remove, subtotal, fresh/local-only warnings, mixed-cart restrictions, safe shipping option filtering, selected fulfillment-method persistence, and checkout validation. In checkout, valid Medusa shipping or pickup options are shown for the current cart and the selected method is written back to the Medusa cart when practical. Live payment and final Medusa cart completion remain disabled until Stripe, policies, and launch fulfillment settings are approved.
 
+Shop, product detail, cart, and checkout pages are dynamic because they must receive current Medusa-backed product identifiers for the browser cart bridge. If `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`, `NEXT_PUBLIC_COMMERCE_ADAPTER`, or `NEXT_PUBLIC_CART_ADAPTER` changes, rebuild and restart the storefront; public `NEXT_PUBLIC_*` values are embedded into the browser bundle. To smoke-test the Store API cart bridge against a running backend:
+
+```bash
+corepack pnpm --filter @mrmf/backend cart:smoke
+```
+
+For IP-based staging from a shell with the public staging key already set:
+
+```bash
+MRMF_STORE_API_BASE_URL=http://167.99.59.42 MRMF_CART_SMOKE_HANDLE=fresh-lions-mane corepack pnpm --filter @mrmf/backend cart:smoke
+```
+
 Checkout mode is guarded by explicit environment variables:
 
 ```bash
@@ -151,6 +163,8 @@ corepack pnpm --filter @mrmf/backend seed:verify
 If checkout shows every fulfillment option as unavailable, confirm the cart products are still in the current product adapter source and refresh the cart by removing and re-adding the items.
 
 If the cart bridge says the staged browser cart is active, confirm the backend is running, `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000`, `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` is set to the public `pk_...` value printed by the seed, and `NEXT_PUBLIC_CART_ADAPTER=medusa-hybrid`. Products must be read from Medusa for the cart bridge to have Medusa variant IDs.
+
+If staging still says the staged browser cart is active after the key is present, rebuild and restart the storefront so dynamic commerce pages read current Medusa product data. Then run `corepack pnpm --filter @mrmf/backend cart:smoke` and verify the cart page displays `Medusa-backed cart active`.
 
 If Medusa cart creation reports that a sales channel is not associated with a stock location for a variant, rerun `corepack pnpm --filter @mrmf/backend seed` and `corepack pnpm --filter @mrmf/backend seed:verify`. Managed seeded variants need inventory items, inventory levels, and variant inventory links before the Store API can add them to a cart.
 

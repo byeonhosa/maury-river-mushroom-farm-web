@@ -9,6 +9,8 @@ import {
 const originalAdapter = process.env.NEXT_PUBLIC_COMMERCE_ADAPTER;
 const originalServerBackendUrl = process.env.MEDUSA_STORE_API_URL;
 const originalPublicBackendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+const originalPublishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
+const originalTimeout = process.env.MEDUSA_STORE_API_TIMEOUT_MS;
 
 function restoreEnv(name: string, value: string | undefined) {
   if (value === undefined) {
@@ -23,6 +25,8 @@ afterEach(() => {
   restoreEnv("NEXT_PUBLIC_COMMERCE_ADAPTER", originalAdapter);
   restoreEnv("MEDUSA_STORE_API_URL", originalServerBackendUrl);
   restoreEnv("NEXT_PUBLIC_MEDUSA_BACKEND_URL", originalPublicBackendUrl);
+  restoreEnv("NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY", originalPublishableKey);
+  restoreEnv("MEDUSA_STORE_API_TIMEOUT_MS", originalTimeout);
   resetProductCatalogCacheForTests();
   vi.unstubAllGlobals();
 });
@@ -107,5 +111,48 @@ describe("storefront product adapter", () => {
 
     expect(catalog.source).toBe("medusa");
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not permanently cache a transient shared-seed fallback", async () => {
+    process.env.NEXT_PUBLIC_COMMERCE_ADAPTER = "medusa-hybrid";
+    process.env.MEDUSA_STORE_API_URL = "http://backend:9000";
+    process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY = "pk_test_storefront";
+    resetProductCatalogCacheForTests();
+
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Medusa warming up"))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                id: "prod_fresh_lions_mane",
+                handle: "fresh-lions-mane",
+                title: "Fresh Lion's Mane",
+                variants: [{ id: "variant_fresh_lions_mane" }]
+              }
+            ]
+          }),
+          { status: 200 }
+        )
+      );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const fallbackCatalog = await getProductCatalog();
+
+    expect(fallbackCatalog.source).toBe("shared-seed");
+    expect(fallbackCatalog.products[0]?.variantId).toBeUndefined();
+
+    const recoveredCatalog = await getProductCatalog();
+
+    expect(recoveredCatalog.source).toBe("medusa");
+    expect(recoveredCatalog.products.find((product) => product.slug === "fresh-lions-mane"))
+      .toMatchObject({
+        source: "medusa",
+        variantId: "variant_fresh_lions_mane"
+      });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

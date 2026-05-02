@@ -32,6 +32,7 @@ interface FetchMedusaProductsOptions {
 }
 
 const defaultBackendUrl = "http://localhost:9000";
+const defaultTimeoutMs = 5000;
 let catalogPromise: Promise<ProductCatalogResult> | undefined;
 
 function getAdapterMode(): CommerceAdapterMode {
@@ -60,6 +61,12 @@ function getPublishableKey() {
   return process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
 }
 
+function getMedusaProductFetchTimeoutMs() {
+  const configured = Number(process.env.MEDUSA_STORE_API_TIMEOUT_MS);
+
+  return Number.isFinite(configured) && configured > 0 ? configured : defaultTimeoutMs;
+}
+
 function sharedSeedCatalog(mode: CommerceAdapterMode, error?: unknown): ProductCatalogResult {
   const products = listCommerceProducts()
     .map(applyDevAvailabilityOverride)
@@ -77,7 +84,7 @@ export async function fetchMedusaStoreProducts({
   backendUrl,
   publishableKey,
   fetchImpl = fetch,
-  timeoutMs = 1500
+  timeoutMs = defaultTimeoutMs
 }: FetchMedusaProductsOptions) {
   const url = new URL("/store/products", backendUrl);
   url.searchParams.set("limit", "100");
@@ -123,7 +130,8 @@ export async function getProductCatalog(): Promise<ProductCatalogResult> {
     try {
       const products = await fetchMedusaStoreProducts({
         backendUrl: getBackendUrl(),
-        publishableKey: getPublishableKey()
+        publishableKey: getPublishableKey(),
+        timeoutMs: getMedusaProductFetchTimeoutMs()
       });
 
       return {
@@ -140,7 +148,18 @@ export async function getProductCatalog(): Promise<ProductCatalogResult> {
     }
   })();
 
-  return catalogPromise;
+  try {
+    const result = await catalogPromise;
+
+    if (result.source === "shared-seed" && result.error) {
+      catalogPromise = undefined;
+    }
+
+    return result;
+  } catch (error) {
+    catalogPromise = undefined;
+    throw error;
+  }
 }
 
 export async function listProducts() {

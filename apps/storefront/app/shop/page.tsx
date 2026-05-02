@@ -5,6 +5,8 @@ import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
 import { getProductCatalog } from "../../lib/products";
 
+export const dynamic = "force-dynamic";
+
 export default async function ShopPage() {
   const catalog = await getProductCatalog();
   const products = catalog.products;

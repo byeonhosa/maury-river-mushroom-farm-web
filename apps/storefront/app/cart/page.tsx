@@ -2,6 +2,8 @@ import { CartClient } from "../../components/cart-client";
 import { PageHero } from "../../components/page-hero";
 import { listProducts } from "../../lib/products";
 
+export const dynamic = "force-dynamic";
+
 export default async function CartPage() {
   const products = await listProducts();
 
