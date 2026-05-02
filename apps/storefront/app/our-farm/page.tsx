@@ -9,9 +9,8 @@ export default function OurFarmPage() {
         title="A farm story built around freshness, clarity, and trust."
       >
         <p>
-          This page will grow with owner-provided story, photography, growing
-          practices, market details, and the production-tracking connection
-          planned for a later phase.
+          The farm story should help customers trust what they are buying: small-batch harvests,
+          clear handling, practical cooking education, and honest availability.
         </p>
       </PageHero>
       <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[1fr_0.9fr]">
@@ -26,6 +25,10 @@ export default function OurFarmPage() {
             The website is also being structured for the future: restaurant
             leads, recurring boxes, shelf-stable ecommerce, and a possible
             customer-facing view into production availability.
+          </p>
+          <p>
+            Before launch, this page still needs final owner story, farm photos,
+            growing-practice notes, market details, and any claims reviewed for accuracy.
           </p>
         </div>
         <div className="relative min-h-[360px] overflow-hidden bg-brand-ebony p-8 text-brand-ivory shadow-card">

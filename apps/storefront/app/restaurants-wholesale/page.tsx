@@ -12,7 +12,7 @@ export default function RestaurantsWholesalePage() {
         <p>
           The wholesale flow is built around conversation: what is fruiting,
           what volume is realistic, and how the farm can support specials,
-          tasting menus, and recurring orders.
+          tasting menus, zero-proof pairings, and recurring orders.
         </p>
       </PageHero>
       <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[0.9fr_1.1fr]">
@@ -20,19 +20,19 @@ export default function RestaurantsWholesalePage() {
           {[
             [
               "Weekly availability",
-              "Share what is harvest-ready before menu planning locks in.",
+              "Share what is harvest-ready, what is nearly ready, and what should stay off the menu this week.",
             ],
             [
               "Chef's mix",
-              "Offer variety boxes that let kitchens work with the best of the current crop.",
+              "Offer variety boxes that let kitchens work with the best of the current crop without promising unavailable species.",
             ],
             [
               "Clear handling",
-              "Send storage and shelf-life notes so restaurants can protect quality.",
+              "Send storage, shelf-life, and pickup or delivery notes so restaurants can protect quality.",
             ],
             [
               "Future production layer",
-              "The site can eventually expose customer-facing availability from internal grow tracking.",
+              "The site can eventually expose customer-facing availability from internal grow tracking after the bridge is ready.",
             ],
           ].map(([title, body]) => (
             <div
@@ -56,8 +56,8 @@ export default function RestaurantsWholesalePage() {
           </div>
           <h2 className="font-heading text-4xl">Wholesale inquiry</h2>
           <p className="mt-3 text-sm leading-7">
-            Server-side validation is active; final email/CRM integration is
-            intentionally deferred.
+            Tell the farm what your kitchen needs, how much volume is realistic, and when you
+            need it. Server-side validation is active; final email/CRM integration is intentionally deferred.
           </p>
           <div className="mt-6">
             <WholesaleInquiryForm />

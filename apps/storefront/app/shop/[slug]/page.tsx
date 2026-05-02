@@ -1,6 +1,8 @@
 import {
   getCommerceProductAvailability,
   getProductNotificationCta,
+  recipes,
+  speciesPages,
   SUPPLEMENT_DISCLAIMER,
 } from "@mrmf/shared";
 import Image from "next/image";
@@ -29,6 +31,16 @@ export default async function ProductDetailPage({
     product,
     `/shop/${product.slug}`,
   );
+  const relatedRecipes = product.metadata.relatedRecipes
+    .map((recipeSlug) => recipes.find((recipe) => recipe.slug === recipeSlug))
+    .filter((recipe): recipe is (typeof recipes)[number] => Boolean(recipe));
+  const relatedSpecies = product.metadata.relatedSpeciesPage
+    .map((speciesSlug) =>
+      speciesPages.find((species) => species.slug === speciesSlug),
+    )
+    .filter((species): species is (typeof speciesPages)[number] =>
+      Boolean(species),
+    );
 
   return (
     <section className="mrmf-shell grid gap-10 py-12 lg:grid-cols-[0.9fr_1.1fr]">
@@ -107,6 +119,44 @@ export default async function ProductDetailPage({
             </ul>
           </div>
         </div>
+
+        {relatedSpecies.length > 0 || relatedRecipes.length > 0 ? (
+          <div className="mrmf-panel mt-8 grid gap-5 p-5 sm:grid-cols-2">
+            {relatedSpecies.length > 0 ? (
+              <div>
+                <h2 className="font-heading text-3xl">Learn the mushroom</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {relatedSpecies.map((species) => (
+                    <Link
+                      key={species.slug}
+                      href={`/mushrooms/${species.slug}`}
+                      className="mrmf-badge-ebony"
+                    >
+                      {species.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {relatedRecipes.length > 0 ? (
+              <div>
+                <h2 className="font-heading text-3xl">Cook with it</h2>
+                <ul className="mt-3 space-y-2 text-sm leading-7">
+                  {relatedRecipes.map((recipe) => (
+                    <li key={recipe.slug}>
+                      <Link
+                        href={`/recipes-cooking/${recipe.slug}`}
+                        className="font-bold underline decoration-brand-burnt/50 underline-offset-4"
+                      >
+                        {recipe.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {product.metadata.supplementDisclaimer ? (
           <div className="mrmf-card mt-8 border-brand-burnt p-5 text-sm leading-7">
