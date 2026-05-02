@@ -75,8 +75,8 @@ None found in this pass.
    - Recommended branch: `codex/staging-qa-pass`.
 
 2. **Fresh Lion's Mane cart uses the staged fallback on live staging.**
-   - Status: observed, not changed in this QA branch.
-   - Details: after adding Fresh Lion's Mane, the cart showed the safe staged browser cart fallback because the live product was missing a Medusa variant ID for the bridge. This is safe, but it means live staging is not exercising the full Medusa-backed cart path for that product.
+   - Status: observed in this QA branch; follow-up work is documented in `docs/qa/staging-medusa-cart-path.md`.
+   - Details: after adding Fresh Lion's Mane, the cart showed the safe staged browser cart fallback because the product data handed to the browser bridge did not include a Medusa variant ID. This is safe, but it means live staging is not exercising the full Medusa-backed cart path for that product.
    - Recommended branch: `codex/staging-cart-medusa-variant-sync`.
 
 ### P2 polish
