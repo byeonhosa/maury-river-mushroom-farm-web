@@ -36,7 +36,16 @@ export const metadata: Metadata = {
     template: "%s | The Maury River Mushroom Farm"
   },
   description:
-    "Fresh gourmet mushrooms, pantry products, recipes, pickup information, and restaurant inquiries from The Maury River Mushroom Farm."
+    "Fresh gourmet mushrooms, pantry products, recipes, pickup information, and restaurant inquiries from The Maury River Mushroom Farm.",
+  icons: {
+    icon: [
+      {
+        url: "/brand/MRMF_PrimaryLogo_Mahogany.png",
+        type: "image/png"
+      }
+    ],
+    apple: "/brand/MRMF_PrimaryLogo_Mahogany.png"
+  }
 };
 
 export default function RootLayout({

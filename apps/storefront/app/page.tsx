@@ -59,7 +59,7 @@ export default async function HomePage() {
               priority
               sizes="(min-width: 1024px) 45vw, 100vw"
             />
-            <div className="absolute inset-x-3 bottom-3 bg-brand-mahogany/92 p-5 text-brand-ivory">
+            <div className="absolute inset-x-3 bottom-3 bg-brand-mahogany p-5 text-brand-ivory">
               <p className="font-heading text-3xl leading-tight">
                 Fresh, dried, seasoned, and functional mushroom products.
               </p>
