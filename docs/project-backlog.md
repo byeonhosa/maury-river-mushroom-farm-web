@@ -140,6 +140,23 @@ document current as phases are completed, split, or deferred.
 - Dependencies or cautions: Needs owner input on the internal production system. Avoid
   exposing sensitive production, customer, or operational data.
 
+## Content completion pass: Product, species, and recipe content
+
+- Goal: Make the current storefront read like a real specialty mushroom business
+  while keeping production-app integration, live checkout, and final launch claims
+  out of scope.
+- Current implementation note: `codex/catalog-content-completion` improves product
+  descriptions, species education, recipe instructions, category explanations,
+  buying guidance, and internal product/species/recipe links. It also adds
+  `docs/content/catalog-content-review.md` for owner/legal/design follow-up.
+- Done when: Seeded products, master species, category pages, and recipes explain
+  flavor, texture, cooking, storage, fulfillment, availability, and notify-me paths
+  clearly without making unavailable items cartable or adding disease claims.
+- Suggested branch: `codex/catalog-content-completion`
+- Dependencies or cautions: Draft recipes still need owner testing. Final prices,
+  pickup windows, launch stock, product photos, and supplement/legal review remain
+  required before launch.
+
 ## Phase 8: FarmRaise/accounting export layer
 
 - Goal: Prepare clean exports for accounting, grants, or farm operations workflows.
@@ -215,6 +232,8 @@ document current as phases are completed, split, or deferred.
 
 - Replace generated SVG logo wrappers with official designer-provided vector files.
 - Complete missing product photography and confirm image usage rights.
+- Complete owner review of the catalog content pass, especially recipe testing,
+  final market/pickup language, wholesale expectations, and supplement wording.
 - Confirm final pickup windows, delivery rules, preorder cutoffs, market schedules,
   prices, unit sizes, and stock quantities.
 - Replace the development-only availability manager with an authenticated Medusa Admin

@@ -13,37 +13,37 @@ export const productCategories: Array<{
     slug: "fresh-mushrooms",
     title: "Fresh Mushrooms",
     description:
-      "Harvest-driven gourmet mushrooms for pickup, market pickup, local delivery, and restaurant preorders.",
+      "Harvest-driven gourmet mushrooms for farm pickup, market pickup, local delivery, and preorder. Fresh products stay local by default.",
   },
   {
     slug: "dried-mushrooms",
     title: "Dried Mushrooms",
     description:
-      "Shelf-stable mushrooms for broths, sauces, risotto, ramen, and pantry cooking.",
+      "Shelf-stable mushrooms for broths, sauces, risotto, ramen, and pantry cooking when fresh harvests are between windows.",
   },
   {
     slug: "salts-seasonings",
     title: "Mushroom Salts & Seasonings",
     description:
-      "Savory mushroom-powered finishing salts and seasoning blends for everyday cooking.",
+      "Savory mushroom-powered finishing salts and seasoning blends for potatoes, eggs, vegetables, popcorn, and soups.",
   },
   {
     slug: "supplements",
     title: "Functional Mushroom Supplements",
     description:
-      "Carefully labeled mushroom capsules and powders with cautious structure/function language.",
+      "Carefully labeled mushroom capsules and powders with cautious language, supplement disclaimers, and legal/business review before launch.",
   },
   {
     slug: "subscriptions",
     title: "CSA-Style Boxes",
     description:
-      "Recurring fresh mushroom boxes built around weekly harvest availability.",
+      "CSA-style fresh mushroom boxes built around weekly harvest availability, pickup windows, and preorder communication.",
   },
   {
     slug: "restaurant-wholesale",
     title: "Restaurant & Wholesale",
     description:
-      "Chef-focused fresh mushrooms, weekly mixes, and direct wholesale inquiries.",
+      "Chef-focused fresh mushrooms, weekly mixes, harvest planning, and direct wholesale inquiries.",
   },
 ];
 
@@ -57,9 +57,9 @@ export const products: Product[] = [
     price: 14,
     unitSize: "8 oz clamshell",
     shortDescription:
-      "Tender, snow-white lion's mane with a delicate seafood-like bite.",
+      "Tender, snow-white lion's mane for seared steaks, pull-apart patties, and lemony skillet dinners.",
     longDescription:
-      "Fresh lion's mane is harvested in small batches for customers who want a centerpiece mushroom for searing, shredding, and crisping. It is best handled like fresh produce and kept cold until cooking.",
+      "Fresh lion's mane is harvested in small batches for customers who want a centerpiece mushroom for searing, shredding, and crisping. Tear it by hand for patties, cut it into slabs for steak-style bites, or brown it simply with butter and herbs. It is fresh produce and should stay cold until cooking.",
     flavorProfile:
       "Mild, savory, lightly sweet, and reminiscent of crab or scallop when browned.",
     texture: "Tender and shreddable with crisp edges when pan-seared.",
@@ -70,6 +70,8 @@ export const products: Product[] = [
       "lemon",
       "parsley",
       "Old Bay-style seasoning",
+      "potatoes",
+      "sparkling apple cider",
     ],
     storageInstructions:
       "Keep refrigerated in a breathable paper bag or vented container. Avoid sealed plastic once opened.",
@@ -97,7 +99,10 @@ export const products: Product[] = [
         alt: "Fresh lion's mane mushrooms in market baskets",
       },
     ],
-    relatedRecipes: ["lions-mane-crab-cake-style-patties"],
+    relatedRecipes: [
+      "lions-mane-crab-cake-style-patties",
+      "lions-mane-steak-bites",
+    ],
     relatedSpeciesPage: ["lion-s-mane"],
     visibilityStatus: "published",
   },
@@ -110,13 +115,21 @@ export const products: Product[] = [
     price: 10,
     unitSize: "8 oz clamshell",
     shortDescription:
-      "Cool-toned oyster mushrooms with a deep savory aroma and quick-cooking texture.",
+      "Cool-toned oyster mushrooms that brown quickly for tacos, stir-fries, eggs, pasta, and rice bowls.",
     longDescription:
-      "Blue oyster mushrooms are a weeknight favorite: fast to cook, generous in the pan, and excellent for browning hard over high heat.",
+      "Blue oyster mushrooms are a weeknight favorite: fast to cook, generous in the pan, and excellent for browning over high heat. They are the most flexible fresh oyster for customers who are learning how to cook specialty mushrooms.",
     flavorProfile: "Savory, earthy, and slightly nutty after browning.",
     texture: "Velvety caps with tender stems that crisp well at the edges.",
     cookingMethods: ["saute", "roast", "stir-fry", "grill"],
-    pairings: ["thyme", "soy sauce", "cream", "eggs", "polenta"],
+    pairings: [
+      "thyme",
+      "soy sauce",
+      "cream",
+      "eggs",
+      "polenta",
+      "ginger",
+      "green tea",
+    ],
     storageInstructions:
       "Refrigerate in a breathable bag and cook promptly for best texture.",
     shelfLife: "Best within 5-7 days of harvest.",
@@ -139,7 +152,10 @@ export const products: Product[] = [
         alt: "Blue oyster mushroom cluster",
       },
     ],
-    relatedRecipes: ["crispy-oyster-mushroom-tacos"],
+    relatedRecipes: [
+      "crispy-oyster-mushroom-tacos",
+      "garlic-blue-oyster-mushroom-stir-fry",
+    ],
     relatedSpeciesPage: ["blue-oyster"],
     visibilityStatus: "published",
   },
@@ -152,13 +168,21 @@ export const products: Product[] = [
     price: 11,
     unitSize: "8 oz clamshell",
     shortDescription:
-      "Bright golden oyster mushrooms with a delicate, aromatic flavor.",
+      "Bright golden oysters with delicate caps for soup, quick sautes, egg dishes, and gentle stir-fries.",
     longDescription:
-      "Golden oysters bring color and a gentle savory note to soups, egg dishes, stir-fries, and composed plates. Their tender caps cook quickly.",
+      "Golden oysters bring color and a gentle savory note to soups, egg dishes, stir-fries, and composed plates. Their tender caps cook quickly, so add them near the end of broths or give them a fast saute with simple aromatics.",
     flavorProfile: "Light, nutty, and gently savory.",
     texture: "Delicate caps with crispable edges.",
     cookingMethods: ["saute", "stir-fry", "roast"],
-    pairings: ["eggs", "green onion", "ginger", "rice", "white beans"],
+    pairings: [
+      "eggs",
+      "green onion",
+      "ginger",
+      "rice",
+      "white beans",
+      "miso",
+      "sparkling water with lemon",
+    ],
     storageInstructions:
       "Keep cold in a breathable container and handle gently to protect the caps.",
     shelfLife: "Best within 3-5 days of harvest.",
@@ -183,7 +207,10 @@ export const products: Product[] = [
         alt: "Golden oyster mushroom cluster",
       },
     ],
-    relatedRecipes: ["crispy-oyster-mushroom-tacos"],
+    relatedRecipes: [
+      "crispy-oyster-mushroom-tacos",
+      "golden-oyster-mushroom-soup",
+    ],
     relatedSpeciesPage: ["golden-oyster"],
     visibilityStatus: "published",
   },
@@ -196,13 +223,21 @@ export const products: Product[] = [
     price: 11,
     unitSize: "8 oz clamshell",
     shortDescription:
-      "Vivid pink oyster mushrooms with a bold color and meaty pan presence.",
+      "Vivid pink oysters for crisp-edged tacos, rice bowls, roasted vegetables, and short-season market cooking.",
     longDescription:
-      "Pink oysters are best cooked soon after harvest. Their color softens with heat, but their savory aroma and crisp-tender texture make them a striking seasonal mushroom.",
+      "Pink oysters are best cooked soon after harvest. Their color softens with heat, but their savory aroma and crisp-tender texture make them a striking seasonal mushroom for customers who want something bright and quick.",
     flavorProfile: "Savory, slightly smoky, and richer when browned.",
     texture: "Meaty for an oyster mushroom with crisp edges after searing.",
     cookingMethods: ["sear", "roast", "saute"],
-    pairings: ["smoked paprika", "corn tortillas", "lime", "beans", "chiles"],
+    pairings: [
+      "smoked paprika",
+      "corn tortillas",
+      "lime",
+      "beans",
+      "chiles",
+      "cilantro",
+      "hibiscus tea",
+    ],
     storageInstructions:
       "Refrigerate and cook quickly. Pink oysters have a shorter fresh shelf life than blue oysters.",
     shelfLife: "Best within 2-4 days of harvest.",
@@ -227,7 +262,10 @@ export const products: Product[] = [
         alt: "Pink oyster mushrooms held after harvest",
       },
     ],
-    relatedRecipes: ["crispy-oyster-mushroom-tacos"],
+    relatedRecipes: [
+      "crispy-oyster-mushroom-tacos",
+      "pink-oyster-rice-bowls",
+    ],
     relatedSpeciesPage: ["pink-oyster"],
     visibilityStatus: "published",
   },
@@ -240,13 +278,21 @@ export const products: Product[] = [
     price: 10,
     unitSize: "8 oz clamshell",
     shortDescription:
-      "Clean, versatile oyster mushrooms for roasting, sauteing, soups, and pasta.",
+      "Clean, versatile oysters for roasting, sauteing, brothy noodles, creamy pasta, and everyday skillet meals.",
     longDescription:
-      "White oysters are a flexible kitchen staple with a mild flavor that takes on herbs, garlic, sauces, and high-heat browning beautifully.",
+      "White oysters are a flexible kitchen staple with a mild flavor that takes on herbs, garlic, sauces, and high-heat browning beautifully. They are a good first specialty mushroom for customers who want familiar flavor with better texture.",
     flavorProfile: "Mild, savory, and adaptable.",
     texture: "Tender caps with pleasant chew.",
     cookingMethods: ["saute", "roast", "simmer", "stir-fry"],
-    pairings: ["garlic", "cream", "miso", "pasta", "rosemary"],
+    pairings: [
+      "garlic",
+      "cream",
+      "miso",
+      "pasta",
+      "rosemary",
+      "rice",
+      "ginger tea",
+    ],
     storageInstructions:
       "Keep refrigerated in breathable packaging and cook while caps are firm.",
     shelfLife: "Best within 5-7 days of harvest.",
@@ -270,7 +316,10 @@ export const products: Product[] = [
         alt: "White oyster mushroom cluster",
       },
     ],
-    relatedRecipes: ["crispy-oyster-mushroom-tacos"],
+    relatedRecipes: [
+      "crispy-oyster-mushroom-tacos",
+      "garlic-blue-oyster-mushroom-stir-fry",
+    ],
     relatedSpeciesPage: ["white-oyster"],
     visibilityStatus: "published",
   },
@@ -289,14 +338,22 @@ export const products: Product[] = [
     price: 22,
     unitSize: "1 lb harvest box",
     shortDescription:
-      "A rotating fresh box with the best mushrooms from the current harvest.",
+      "A rotating fresh box for customers who want variety, cooking ideas, and the best of the current harvest.",
     longDescription:
-      "The mixed gourmet box changes with harvest conditions and is designed for customers who want variety, cooking inspiration, and a clear snapshot of what is fresh this week.",
+      "The mixed gourmet box changes with harvest conditions and is designed for customers who want variety, cooking inspiration, and a clear snapshot of what is fresh this week. It may include lion's mane, oyster varieties, or other confirmed harvest items depending on the grow room.",
     flavorProfile:
       "Varies by harvest; usually a mix of mild, savory, nutty, and seafood-like notes.",
     texture: "A mix of tender, meaty, and crispable mushrooms.",
     cookingMethods: ["saute", "roast", "sear"],
-    pairings: ["butter", "olive oil", "fresh herbs", "eggs", "rice", "pasta"],
+    pairings: [
+      "butter",
+      "olive oil",
+      "fresh herbs",
+      "eggs",
+      "rice",
+      "pasta",
+      "lemon seltzer",
+    ],
     storageInstructions:
       "Keep refrigerated and separate delicate varieties if storing longer than two days.",
     shelfLife: "Best within 3-7 days depending on the mix.",
@@ -324,6 +381,8 @@ export const products: Product[] = [
     relatedRecipes: [
       "crispy-oyster-mushroom-tacos",
       "lions-mane-crab-cake-style-patties",
+      "lions-mane-steak-bites",
+      "pink-oyster-rice-bowls",
     ],
     relatedSpeciesPage: [
       "lion-s-mane",
@@ -343,13 +402,17 @@ export const products: Product[] = [
     price: 28,
     unitSize: "60 capsules",
     shortDescription:
-      "Lion's mane capsules for customers seeking a simple daily functional mushroom routine.",
+      "A coming-soon lion's mane capsule concept for customers interested in a simple functional mushroom routine.",
     longDescription:
-      "A shelf-stable lion's mane capsule product scaffolded for careful labeling, conservative structure/function language, and legal/business review before launch.",
+      "A shelf-stable lion's mane capsule product scaffolded for careful labeling, conservative structure/function language, and legal/business review before launch. This listing is informational until packaging, supplement facts, disclaimers, and final approval are complete.",
     flavorProfile: "Neutral capsule format.",
     texture: "Capsule.",
     cookingMethods: [],
-    pairings: ["daily routine", "coffee or tea ritual"],
+    pairings: [
+      "daily routine",
+      "coffee or tea ritual",
+      "breakfast prep area",
+    ],
     storageInstructions:
       "Store tightly closed in a cool, dry place away from direct sunlight.",
     shelfLife: "Use by the date printed on final packaging.",
@@ -383,13 +446,20 @@ export const products: Product[] = [
     price: 12,
     unitSize: "3 oz jar",
     shortDescription:
-      "A savory finishing salt for potatoes, eggs, popcorn, soups, and grilled vegetables.",
+      "A coming-soon savory finishing salt for potatoes, eggs, popcorn, soups, grilled vegetables, and weeknight cooking.",
     longDescription:
-      "Mushroom salt is a shelf-stable pantry product designed to bring mushroom depth to everyday cooking without needing a fresh harvest on hand.",
+      "Mushroom salt is a shelf-stable pantry product designed to bring mushroom depth to everyday cooking without needing a fresh harvest on hand. Use it as a finishing pinch or as the savory base for roasted vegetables, potatoes, eggs, and soups.",
     flavorProfile: "Savory, mineral, roasted, and gently earthy.",
     texture: "Fine-to-medium finishing salt.",
     cookingMethods: ["finish", "season", "roast"],
-    pairings: ["potatoes", "eggs", "popcorn", "roasted vegetables", "steak"],
+    pairings: [
+      "potatoes",
+      "eggs",
+      "popcorn",
+      "roasted vegetables",
+      "beans",
+      "tomato juice",
+    ],
     storageInstructions: "Store sealed in a cool, dry pantry.",
     shelfLife: "Best within 12 months of packing.",
     fulfillment: ["shipping", "farm-pickup", "farmers-market-pickup"],
@@ -421,13 +491,21 @@ export const products: Product[] = [
     price: 16,
     unitSize: "1.5 oz bag",
     shortDescription:
-      "Shelf-stable dried oyster mushrooms for broths, sauces, risotto, and ramen.",
+      "Coming-soon dried oyster mushrooms for broths, sauces, risotto, ramen, beans, and pantry meals.",
     longDescription:
-      "Dried oyster mushrooms concentrate the savory aroma of the fresh harvest and make it easy to keep local mushrooms in the pantry.",
+      "Dried oyster mushrooms concentrate the savory aroma of the fresh harvest and make it easy to keep local mushrooms in the pantry. Rehydrate them for soups and sauces, or grind small pieces into seasoning once final packaging is approved.",
     flavorProfile: "Deeply savory, brothy, and gently earthy.",
     texture: "Chewy after rehydration; crisp if ground into seasoning.",
     cookingMethods: ["rehydrate", "simmer", "grind", "braise"],
-    pairings: ["broth", "rice", "noodles", "cream sauces", "beans"],
+    pairings: [
+      "broth",
+      "rice",
+      "noodles",
+      "cream sauces",
+      "beans",
+      "miso",
+      "ginger tea",
+    ],
     storageInstructions:
       "Store sealed in a cool, dry pantry. Keep away from moisture.",
     shelfLife: "Best within 12 months of drying.",
@@ -466,9 +544,9 @@ export const products: Product[] = [
     price: 0,
     unitSize: "Custom weekly order",
     shortDescription:
-      "A restaurant-focused weekly mix built around harvest timing and chef needs.",
+      "A restaurant-focused weekly harvest mix built around chef needs, menu timing, and realistic farm availability.",
     longDescription:
-      "Chef's Weekly Mushroom Mix is a wholesale inquiry product for restaurants that need reliable communication, fresh harvest windows, and variety based on what is fruiting well.",
+      "Chef's Weekly Mushroom Mix is a wholesale inquiry product for restaurants that need reliable communication, fresh harvest windows, and variety based on what is fruiting well. It is not an ordinary checkout product; chefs should inquire so the farm can match volume, timing, and handling notes to the week.",
     flavorProfile: "Varies by weekly harvest and chef request.",
     texture: "Custom mix of tender, meaty, and crispable mushrooms.",
     cookingMethods: ["chef-preferred"],
@@ -477,6 +555,7 @@ export const products: Product[] = [
       "specials",
       "tasting menus",
       "vegetable plates",
+      "chef-prepared zero-proof pairings",
     ],
     storageInstructions:
       "Keep refrigerated. Restaurants receive harvest and handling notes with each order.",

@@ -12,9 +12,9 @@ export default function MarketsPickupPage() {
         title="Fresh harvest pickup should feel predictable."
       >
         <p>
-          Pickup windows, market dates, and delivery routes will be finalized
-          before launch. The scaffold already distinguishes local fresh
-          fulfillment from shelf-stable shipping.
+          Fresh mushrooms should reach customers quickly, cold, and with clear expectations.
+          Pickup windows, market dates, and delivery routes will be finalized before launch,
+          while shelf-stable shipping remains separate.
         </p>
       </PageHero>
       <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[0.9fr_1.1fr]">
@@ -36,8 +36,8 @@ export default function MarketsPickupPage() {
           <div className="mrmf-card p-5">
             <h2 className="font-heading text-3xl">Shelf-stable shipping</h2>
             <p className="mt-2 text-sm leading-7">
-              Dried, seasoning, and supplement products can use shipping once
-              packaging and policies are ready.
+              Dried, seasoning, and approved supplement products can use shipping once
+              packaging, policies, and inventory are ready. Fresh mushrooms remain local-only.
             </p>
           </div>
         </div>
@@ -53,8 +53,8 @@ export default function MarketsPickupPage() {
           </div>
           <h2 className="font-heading text-4xl">Ask about availability</h2>
           <p className="mt-3 text-sm leading-7">
-            This form validates on the server and can later connect to email or
-            CRM routing.
+            Ask about the next harvest, pickup timing, local delivery, or a product that is
+            coming soon. The form validates on the server and can later connect to email or CRM routing.
           </p>
           <div className="mt-6">
             <AvailabilityInquiryForm />

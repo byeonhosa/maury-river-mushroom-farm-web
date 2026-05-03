@@ -2,9 +2,13 @@ import {
   availabilityStateBehaviors,
   getSpeciesNotificationCta,
   getSpeciesBySlug,
+  products,
+  recipes,
+  shouldShowProductInShop,
   speciesPages,
 } from "@mrmf/shared";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { NotificationSignupForm } from "../../../components/notification-signup-form";
 
@@ -44,6 +48,14 @@ export default async function SpeciesDetailPage({
   const notificationCta = getSpeciesNotificationCta(
     species,
     `/mushrooms/${species.slug}`,
+  );
+  const relatedProducts = products.filter(
+    (product) =>
+      product.relatedSpeciesPage.includes(species.slug) &&
+      shouldShowProductInShop(product),
+  );
+  const relatedRecipes = recipes.filter((recipe) =>
+    recipe.mushroomFocus.includes(species.slug),
   );
 
   return (
@@ -115,6 +127,44 @@ export default async function SpeciesDetailPage({
           ))}
         </ul>
       </section>
+      {relatedProducts.length > 0 || relatedRecipes.length > 0 ? (
+        <section className="mrmf-panel mt-8 grid gap-5 p-5 sm:grid-cols-2">
+          {relatedProducts.length > 0 ? (
+            <div>
+              <h2 className="font-heading text-3xl">Related products</h2>
+              <ul className="mt-3 space-y-2 text-sm leading-7">
+                {relatedProducts.map((product) => (
+                  <li key={product.slug}>
+                    <Link
+                      href={`/shop/${product.slug}`}
+                      className="font-bold underline decoration-brand-burnt/50 underline-offset-4"
+                    >
+                      {product.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {relatedRecipes.length > 0 ? (
+            <div>
+              <h2 className="font-heading text-3xl">Recipe ideas</h2>
+              <ul className="mt-3 space-y-2 text-sm leading-7">
+                {relatedRecipes.map((recipe) => (
+                  <li key={recipe.slug}>
+                    <Link
+                      href={`/recipes-cooking/${recipe.slug}`}
+                      className="font-bold underline decoration-brand-burnt/50 underline-offset-4"
+                    >
+                      {recipe.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </article>
   );
 }

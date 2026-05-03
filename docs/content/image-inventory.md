@@ -51,6 +51,9 @@ with `sharp-cli` as WebP at quality 82 and resized to sensible display widths.
 - Exact Golden Oyster product photography.
 - Packaged product photos for mushroom salt, dried oyster mushrooms, lion's mane capsules, and any powders.
 - Market table, farm exterior, delivery, and pickup-window lifestyle photos.
+- Recipe photos for lion's mane patties, oyster mushroom tacos, mushroom salt
+  potatoes, blue oyster stir-fry, golden oyster soup, pink oyster rice bowls, and
+  lion's mane steak bites.
 - Final review of image provenance and usage rights.
 - Final alt text review with the owner before launch.
 - Production image optimization review once the final photo set is selected.

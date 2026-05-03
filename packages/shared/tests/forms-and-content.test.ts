@@ -3,6 +3,8 @@ import {
   getProductBySlug,
   policyPages,
   products,
+  recipes,
+  speciesPages,
   SUPPLEMENT_DISCLAIMER,
   wholesaleInquirySchema
 } from "../src";
@@ -52,5 +54,54 @@ describe("forms and required content", () => {
       "terms-and-conditions"
     ]);
     expect(policyPages.every((policy) => policy.requiresLegalReview)).toBe(true);
+  });
+
+  it("keeps the full mushroom species catalog represented", () => {
+    expect(speciesPages.map((species) => species.code).sort()).toEqual([
+      "BO",
+      "CDY",
+      "CNT",
+      "ENK",
+      "EO",
+      "GO",
+      "KB",
+      "KT",
+      "LM",
+      "MTK",
+      "PO",
+      "PP",
+      "RSH",
+      "STK",
+      "TT",
+      "WO"
+    ]);
+    expect(
+      speciesPages.every(
+        (species) =>
+          species.overview.length > 80 &&
+          species.flavor.length > 20 &&
+          species.cookingTips.length >= 3
+      )
+    ).toBe(true);
+  });
+
+  it("keeps product, species, and recipe links internally valid", () => {
+    const productSlugs = new Set(products.map((product) => product.slug));
+    const speciesSlugs = new Set(speciesPages.map((species) => species.slug));
+    const recipeSlugs = new Set(recipes.map((recipe) => recipe.slug));
+
+    expect(recipes.length).toBeGreaterThanOrEqual(7);
+    expect(
+      products.flatMap((product) => product.relatedSpeciesPage).every((slug) => speciesSlugs.has(slug))
+    ).toBe(true);
+    expect(
+      products.flatMap((product) => product.relatedRecipes).every((slug) => recipeSlugs.has(slug))
+    ).toBe(true);
+    expect(
+      recipes.flatMap((recipe) => recipe.relatedProducts).every((slug) => productSlugs.has(slug))
+    ).toBe(true);
+    expect(
+      recipes.flatMap((recipe) => recipe.mushroomFocus).every((slug) => speciesSlugs.has(slug))
+    ).toBe(true);
   });
 });

@@ -360,6 +360,7 @@ describe("cart and pickup commerce rules", () => {
     ]);
     expect(speciesPages.filter((species) => species.requiresLegalReview).map((species) => species.code)).toEqual([
       "LM",
+      "MTK",
       "TT",
       "RSH",
       "CDY"

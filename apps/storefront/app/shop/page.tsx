@@ -21,15 +21,17 @@ export default async function ShopPage() {
     <>
       <PageHero eyebrow="Shop" title="Mushrooms, pantry products, and chef inquiries.">
         <p>
-          Browse the initial product catalog. Checkout will later connect to Medusa while preserving
-          the fresh-local and shelf-stable shipping rules tested in the shared package.
+          Browse fresh harvest items, coming-soon pantry products, and restaurant inquiry options.
+          Fresh mushrooms stay local by default, while shelf-stable products can be prepared for shipping
+          once packaging and policies are ready.
         </p>
       </PageHero>
       <section className="mrmf-shell mrmf-section">
         <LocalFulfillmentCallout />
         <p className="mrmf-card mt-5 p-4 text-sm leading-7">
-          Fresh harvest products stay local by default, while dried, seasoning,
-          and supplement products can be prepared for shipping when enabled.
+          Use the product cards to see what is available now, what is seasonal,
+          what is coming soon, and which products are better handled through a
+          chef or availability inquiry.
           {" "}
           {fulfillmentSummary.warnings[0]}
         </p>

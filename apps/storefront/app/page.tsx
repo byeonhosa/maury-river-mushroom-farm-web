@@ -117,9 +117,9 @@ export default async function HomePage() {
             title="Clear fulfillment before checkout."
           />
           <p className="mt-4 leading-8">
-            The first checkout milestone will keep fresh local-only products
-            separate from shippable shelf-stable products so customers never
-            accidentally order fresh mushrooms for shipping.
+            Fresh mushrooms are local produce, so the buying path keeps pickup,
+            market pickup, local delivery, preorder, and shelf-stable shipping
+            clearly separated before customers make plans.
           </p>
         </div>
         <div className="grid gap-4">
@@ -248,9 +248,9 @@ export default async function HomePage() {
             <div className="relative">
               <p className="font-heading text-4xl">Farm story</p>
               <p className="mt-4 text-sm leading-7">
-                The site is being built to earn trust through clear pickup
-                rules, transparent product education, careful supplement
-                language, and a future path into the farm's production-tracking
+                The farm earns trust through clear pickup rules, transparent
+                product education, careful supplement language, and a future
+                path into harvest availability from the production-tracking
                 system.
               </p>
             </div>
