@@ -15,6 +15,20 @@ document current as phases are completed, split, or deferred.
   direct `main` only for owner-approved baseline documentation commits.
 - Dependencies or cautions: Do not begin Phase 1 hardening here. Do not commit `.env`,
   `.next`, logs, database files, or other generated local artifacts.
+- Status 2026-06-11 (takeover review, see `docs/review/takeover-review-2026-06.md`):
+  `corepack pnpm check` passes locally on `main` @ `8b76360` including the build
+  step (67 tests, 50/50 static pages). Staging at `http://167.99.59.42` runs a
+  build content-identical to `main` HEAD — hero contrast, favicon, cart-path, and
+  catalog content changes are all live; cart smoke against staging passes with no
+  parcel leakage for fresh carts; 19/19 routes return 200. New gaps recorded:
+  staging Postgres backups are manual-only (single Apr 27 dump, restore untested),
+  staging is search-engine-indexable (no robots.txt/noindex; bingbot observed),
+  live-site catalog diverges from the seed catalog (flat $7.00/4 oz live vs
+  $10–$14/8 oz seeded; live king blue oyster + chestnut products missing from the
+  rebuild; supplements $15 live vs $28 seeded), and the farm's email is Microsoft
+  365 resold through GoDaddy with broken SPF/DKIM — email continuity is the
+  critical migration dependency. Owner pricing/packaging confirmation and the
+  migration sequence proposal are in the takeover report.
 
 ## Phase 1: Native shipping rules / fulfillment hardening
 
