@@ -175,6 +175,39 @@ $COMPOSE up -d storefront reverse-proxy
 $COMPOSE ps
 ```
 
+## Redeploying after catalog or price changes
+
+The seed is idempotent for **metadata** on existing products, but the Medusa
+update path does **not** rewrite existing variant **prices**. If a product's
+price changed in `packages/shared/src/products.ts`, a plain re-seed will leave
+the old price in the database and `seed:verify` will fail with a "price
+mismatch" — and the storefront (which reads prices from the Store API) will
+display the stale price.
+
+To apply price changes on staging, recreate the database and seed fresh
+(staging data is disposable; this regenerates the publishable key):
+
+```bash
+PU=$(grep -E '^POSTGRES_USER=' .env.staging | tail -1 | cut -d= -f2-)
+PD=$(grep -E '^POSTGRES_DB=' .env.staging | tail -1 | cut -d= -f2-)
+$COMPOSE stop backend storefront
+$COMPOSE exec -T postgres psql -U "$PU" -d postgres \
+  -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='$PD' AND pid<>pg_backend_pid();"
+$COMPOSE exec -T postgres psql -U "$PU" -d postgres -c "DROP DATABASE IF EXISTS $PD;"
+$COMPOSE exec -T postgres psql -U "$PU" -d postgres -c "CREATE DATABASE $PD;"
+$COMPOSE run --rm -T backend corepack pnpm --filter @mrmf/backend db:migrate
+$COMPOSE run --rm -T backend corepack pnpm --filter @mrmf/backend seed       # note the new pk_... key
+$COMPOSE run --rm -T backend corepack pnpm --filter @mrmf/backend seed:verify
+# set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY in .env.staging to the new pk_... value, then:
+$COMPOSE up -d backend
+$COMPOSE build storefront reverse-proxy
+$COMPOSE up -d storefront reverse-proxy
+```
+
+Recreating the database also clears any orphaned seed records (for example, a
+renamed pickup/shipping option). For **production**, prefer a deliberate price
+migration over a database drop.
+
 ## Verification Commands
 
 Backend and commerce checks:
