@@ -29,7 +29,8 @@ describe("cart and pickup commerce rules", () => {
     ]);
 
     expect(summary.lines).toHaveLength(2);
-    expect(summary.subtotal).toBe(40);
+    // 2 x $7 fresh lion's mane + $7 mushroom salt
+    expect(summary.subtotal).toBe(21);
     expect(summary.fulfillmentType).toBe("mixed");
     expect(summary.restrictions).toContain(
       "Mixed carts must separate local pickup or delivery items from shipped shelf-stable items before live checkout."
@@ -47,11 +48,11 @@ describe("cart and pickup commerce rules", () => {
     );
   });
 
-  it("defines provisional pickup locations and validates selections", () => {
+  it("defines pickup locations and validates selections", () => {
     expect(pickupLocations.map((location) => location.slug)).toEqual([
       "farm-pickup",
       "lexington-farmers-market-pickup",
-      "natural-bridge-local-market-pickup"
+      "staunton-farmers-market-pickup"
     ]);
 
     expect(
@@ -339,33 +340,46 @@ describe("cart and pickup commerce rules", () => {
     );
   });
 
-  it("defines the full master mushroom species catalog without making every species cartable", () => {
+  it("defines the owner-approved 18-species lineup without making every species cartable", () => {
     expect(speciesPages.map((species) => species.code)).toEqual([
-      "LM",
       "BO",
-      "GO",
+      "LM",
+      "STK",
+      "CNT",
       "PO",
       "WO",
-      "EO",
-      "KB",
       "KT",
+      "BKO",
       "PP",
-      "CNT",
-      "STK",
       "MTK",
-      "TT",
-      "RSH",
+      "BCH",
+      "NMK",
+      "GEN",
+      "WEN",
       "CDY",
-      "ENK"
+      "GO",
+      "RSH",
+      "TT"
     ]);
+    // King Blue and Elm Oyster were retired from the lineup.
+    expect(speciesPages.some((species) => species.code === "KB")).toBe(false);
+    expect(speciesPages.some((species) => species.slug === "elm-oyster")).toBe(false);
     expect(speciesPages.filter((species) => species.requiresLegalReview).map((species) => species.code)).toEqual([
       "LM",
       "MTK",
-      "TT",
+      "CDY",
       "RSH",
-      "CDY"
+      "TT"
     ]);
-    expect(speciesPages.filter((species) => species.availabilityState === "coming-soon").length).toBeGreaterThan(8);
+    // Functional-future species stay non-cartable education pages.
+    expect(
+      speciesPages
+        .filter((species) => species.availabilityTier === "functional-coming-later")
+        .every((species) => species.availabilityState === "coming-soon")
+    ).toBe(true);
+    expect(
+      speciesPages.filter((species) => species.availabilityTier === "year-round").map((species) => species.code)
+    ).toEqual(["BO", "LM", "STK", "CNT"]);
   });
 
   it("documents all availability states and their safe storefront behavior", () => {

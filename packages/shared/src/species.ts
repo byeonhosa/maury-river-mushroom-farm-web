@@ -1,16 +1,46 @@
 import type { SpeciesPage } from "./types";
 
+// Species lineup approved by the owner (Decisions D15/D16, 2026-06-11):
+//   Year-round staples: Blue Oyster, Lion's Mane, Shiitake, Chestnut
+//   Rotating/seasonal:  Pink Oyster, White Oyster, King Trumpet, Black King
+//                       Oyster, Pioppino, Maitake, Beech, Nameko, Golden Enoki,
+//                       White Enoki, Cordyceps
+//   Functional-future:  Reishi, Turkey Tail (education only; display pieces)
+//   Wholesale-only:     Golden Oyster
+// King Blue and Elm Oyster were retired from this lineup; King Blue is distinct
+// from Black King Oyster and is not a rename.
 export const speciesPages: SpeciesPage[] = [
+  // --- Year-round staples ---------------------------------------------------
+  {
+    code: "BO",
+    name: "Blue Oyster",
+    slug: "blue-oyster",
+    catalogStatus: "active",
+    availabilityState: "available",
+    availabilityTier: "year-round",
+    overview:
+      "Blue oysters are the farm's year-round workhorse: productive, versatile, and one of the easiest specialty mushrooms for first-time customers to cook well. Cool-toned caps brown quickly and carry a reliable savory flavor.",
+    flavor: "Earthy, savory, and nutty after browning.",
+    texture: "Tender caps with edges that crisp beautifully under high heat.",
+    cookingTips: [
+      "Cook in a wide pan so steam can escape and the edges crisp.",
+      "Brown before salting heavily.",
+      "Use in tacos, grain bowls, pasta, omelets, and soups."
+    ],
+    storage: "Refrigerate in a breathable bag and use while caps remain firm and aromatic.",
+    pairsWith: ["thyme", "soy sauce", "cream", "eggs", "polenta", "onions", "ginger", "green tea"]
+  },
   {
     code: "LM",
     name: "Lion's Mane",
     slug: "lion-s-mane",
     catalogStatus: "active",
-    availabilityState: "seasonal",
+    availabilityState: "available",
+    availabilityTier: "year-round",
     overview:
-      "Lion's mane grows in cascading white clusters and is a seasonal fresh mushroom for seared steaks, pull-apart patties, and gentle skillet cooking. It can also support carefully reviewed functional product education.",
-    flavor: "Mild, savory, lightly sweet, and excellent with butter, lemon, herbs, and browned edges.",
-    texture: "Tender, pull-apart strands with crisp edges after hard searing.",
+      "Lion's mane grows in cascading white clusters and is a year-round favorite for seared steaks, pull-apart patties, and gentle skillet cooking. Its seafood-like character makes it the farm's most-requested centerpiece mushroom.",
+    flavor: "Mild, savory, lightly sweet, and reminiscent of crab or scallop when browned.",
+    texture: "Tender, pull-apart strands with crisp edges after a hard sear.",
     cookingTips: [
       "Tear into pieces by hand instead of slicing whenever possible.",
       "Press gently in the pan to drive off moisture before adding butter.",
@@ -29,63 +59,57 @@ export const speciesPages: SpeciesPage[] = [
       "sparkling apple cider"
     ],
     functionalNote:
-      "Functional mushroom copy for lion's mane should stay cautious and be reviewed before publication.",
+      "Lion's mane has been studied for its culinary compounds and is a popular functional mushroom. The farm keeps any functional language cautious and educational; it is offered here as a fresh cooking mushroom.",
     requiresLegalReview: true
   },
   {
-    code: "BO",
-    name: "Blue Oyster",
-    slug: "blue-oyster",
+    code: "STK",
+    name: "Shiitake",
+    slug: "shiitake",
     catalogStatus: "active",
     availabilityState: "available",
+    availabilityTier: "year-round",
     overview:
-      "Blue oysters are productive, versatile fresh mushrooms with cool-toned caps and a reliable savory flavor. They are one of the easiest specialty mushrooms for first-time customers to cook well.",
-    flavor: "Earthy, savory, and nutty after browning.",
-    texture: "Tender caps with edges that crisp beautifully under high heat.",
+      "Shiitake is a year-round staple for customers who want a deeply savory mushroom for broths, noodles, rice, and vegetable dishes. Meaty caps deliver one of the most recognizable umami flavors in the kitchen.",
+    flavor: "Rich, savory, and brothy when cooked.",
+    texture: "Tender caps with firmer stems that are best reserved for stock.",
     cookingTips: [
-      "Cook in a wide pan so steam can escape.",
-      "Brown before salting heavily.",
-      "Use in tacos, grain bowls, pasta, omelets, and soups."
+      "Remove the tough stems before quick cooking and save them for broth.",
+      "Use caps in stir-fries, soups, rice dishes, and noodle bowls.",
+      "Give caps room in the pan so they brown rather than steam."
     ],
-    storage:
-      "Refrigerate in a breathable bag and use while caps remain firm and aromatic.",
-    pairsWith: ["thyme", "soy sauce", "cream", "eggs", "polenta", "onions", "ginger", "green tea"]
+    storage: "Keep refrigerated in breathable packaging and use while caps are firm.",
+    pairsWith: ["soy sauce", "ginger", "rice", "noodles", "broth", "garlic", "green tea"]
   },
   {
-    code: "GO",
-    name: "Golden Oyster",
-    slug: "golden-oyster",
+    code: "CNT",
+    name: "Chestnut",
+    slug: "chestnut",
     catalogStatus: "active",
-    availabilityState: "seasonal",
+    availabilityState: "available",
+    availabilityTier: "year-round",
     overview:
-      "Golden oysters bring bright color and a delicate savory flavor to fast-cooking dishes. They are best treated as a seasonal or occasional fresh harvest because the tender caps are most exciting soon after picking.",
-    flavor: "Light, nutty, and gently savory.",
-    texture: "Delicate caps that are best cooked quickly.",
+      "Chestnut mushrooms are a year-round staple with firm caps and a nutty, savory depth. They shine in breakfast dishes, on toast, in soups, and across chef menus.",
+    flavor: "Nutty, savory, and earthy after browning.",
+    texture: "Firm caps with a pleasant bite that holds up to high heat.",
     cookingTips: [
-      "Use medium-high heat and avoid overcrowding.",
-      "Add near the end of soups and stir-fries.",
-      "Pair with simple aromatics so the mushroom stays clear."
+      "Trim the base and cook clusters in a wide pan.",
+      "Use in omelets, on toast, in soups, and with roasted vegetables.",
+      "Let moisture cook off before seasoning heavily."
     ],
-    storage:
-      "Keep cold and use quickly; delicate caps are best within a few days of harvest.",
-    pairsWith: [
-      "ginger",
-      "green onion",
-      "rice",
-      "eggs",
-      "white beans",
-      "miso",
-      "lemon sparkling water"
-    ]
+    storage: "Keep refrigerated in breathable packaging and use while clusters are firm.",
+    pairsWith: ["eggs", "toast", "thyme", "cream", "onions", "coffee or black tea"]
   },
+  // --- In rotation now ------------------------------------------------------
   {
     code: "PO",
     name: "Pink Oyster",
     slug: "pink-oyster",
     catalogStatus: "active",
-    availabilityState: "seasonal",
+    availabilityState: "available",
+    availabilityTier: "in-rotation-now",
     overview:
-      "Pink oysters are vivid, fast-growing fresh mushrooms that bring seasonal color and a richer savory note. They have a shorter fresh window, so customer copy should encourage quick cooking.",
+      "Pink oysters are vivid, fast-growing fresh mushrooms that bring seasonal color and a richer savory note. They have a short fresh window, so they are best cooked soon after pickup.",
     flavor: "Savory, slightly smoky, and deeper when browned.",
     texture: "Meaty caps and stems that crisp well.",
     cookingTips: [
@@ -93,164 +117,249 @@ export const speciesPages: SpeciesPage[] = [
       "Use high heat for tacos, bowls, and roasted vegetable plates.",
       "Expect the bright pink color to soften after cooking."
     ],
-    storage:
-      "Keep refrigerated and cook within a few days for best aroma and texture.",
-    pairsWith: [
-      "lime",
-      "corn tortillas",
-      "smoked paprika",
-      "beans",
-      "chiles",
-      "cilantro",
-      "hibiscus tea"
-    ]
+    storage: "Keep refrigerated and cook within a few days for best aroma and texture.",
+    pairsWith: ["lime", "corn tortillas", "smoked paprika", "beans", "chiles", "cilantro", "hibiscus tea"]
   },
   {
     code: "WO",
     name: "White Oyster",
     slug: "white-oyster",
     catalogStatus: "active",
-    availabilityState: "low-stock",
+    availabilityState: "available",
+    availabilityTier: "in-rotation-now",
     overview:
-      "White oysters are a mild, adaptable fresh kitchen mushroom for everyday cooking. They work well in familiar dishes where customers want specialty texture without an unfamiliar flavor profile.",
+      "White oysters are a mild, adaptable fresh kitchen mushroom for everyday cooking. They work well in familiar dishes where customers want specialty texture without an unfamiliar flavor.",
     flavor: "Clean, mild, savory, and friendly to many sauces and cuisines.",
     texture: "Tender with a pleasant chew.",
     cookingTips: [
-      "Start with a dry pan or a small amount of oil to encourage browning.",
+      "Start with a dry pan or a little oil to encourage browning.",
       "Use in creamy pasta, ramen, rice bowls, and roasted sides.",
-      "Save trimmings for broth if they are clean and fresh."
+      "Save clean trimmings for broth."
     ],
-    storage:
-      "Store refrigerated in breathable packaging and use while the clusters are firm.",
+    storage: "Store refrigerated in breathable packaging and use while the clusters are firm.",
     pairsWith: ["garlic", "cream", "miso", "pasta", "rosemary", "rice", "ginger tea"]
   },
-  {
-    code: "EO",
-    name: "Elm Oyster",
-    slug: "elm-oyster",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
-    overview:
-      "Elm oyster is part of the farm's broader oyster-style master catalog. It can support future fresh availability or education pages without becoming cartable before the farm schedules and confirms the crop.",
-    flavor: "Generally mild and savory; final farm-specific notes are pending.",
-    texture: "Tender caps with a firmer bite than some delicate oyster varieties.",
-    cookingTips: [
-      "Use high heat for browning once a harvest is available.",
-      "Treat as a versatile oyster-style mushroom for pastas, bowls, and sautés.",
-      "Confirm farm handling notes before launch."
-    ],
-    storage: "Storage guidance is pending final harvest and packaging decisions.",
-    pairsWith: ["garlic", "thyme", "rice", "cream", "soy sauce", "green tea"]
-  },
-  {
-    code: "KB",
-    name: "King Blue",
-    slug: "king-blue",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
-    overview:
-      "King blue is tracked in the master catalog so future harvests can be described, photographed, and prepared for customer interest without making the item purchasable by default.",
-    flavor: "Savory notes are expected, with final tasting copy pending farm trials.",
-    texture: "Expected to be denser than standard oyster clusters; final texture notes are pending.",
-    cookingTips: [
-      "Use as a searing mushroom once harvest details are confirmed.",
-      "Slice larger stems for even browning.",
-      "Keep launch copy conservative until the farm confirms product form."
-    ],
-    storage: "Storage guidance is pending final harvest and packaging decisions.",
-    pairsWith: ["butter", "garlic", "herbs", "beans", "grains", "sparkling water"]
-  },
+  // --- Returning (rotating, not in the current harvest) ---------------------
   {
     code: "KT",
     name: "King Trumpet",
     slug: "king-trumpet",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
     overview:
-      "King trumpet is a thick-stemmed culinary mushroom suited to slicing, scoring, and hard searing when available. It is a future fresh crop candidate and should remain coming-soon until production details are confirmed.",
+      "King trumpet is a thick-stemmed culinary mushroom built for slicing, scoring, and hard searing. It rotates through the farm's harvest and returns regularly as a meaty, scallop-like centerpiece.",
     flavor: "Mild, savory, and lightly nutty after browning.",
-    texture: "Dense, meaty stems with a firm bite.",
+    texture: "Dense, meaty stems with a firm, satisfying bite.",
     cookingTips: [
       "Slice into rounds or lengthwise planks.",
       "Score larger pieces before searing.",
       "Cook until the cut faces are deeply browned."
     ],
-    storage: "Keep refrigerated in breathable packaging once harvest details are finalized.",
+    storage: "Keep refrigerated in breathable packaging and use while stems are firm.",
     pairsWith: ["miso", "butter", "garlic", "thyme", "noodles", "black tea"]
+  },
+  {
+    code: "BKO",
+    name: "Black King Oyster",
+    slug: "black-king-oyster",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
+    overview:
+      "Black king oyster is a dark-capped oyster-style mushroom with a firmer bite and deeper color than the everyday oysters. It rotates through the harvest as a striking, meaty option for searing and grilling. It is a distinct mushroom, not the same as the retired king blue.",
+    flavor: "Robust, savory, and earthy with a deeper finish than pale oysters.",
+    texture: "Firm, meaty caps that hold their shape over high heat.",
+    cookingTips: [
+      "Sear hard so the caps brown and firm up.",
+      "Slice thick for grilling or roasting.",
+      "Pair with bold aromatics that match the deeper flavor."
+    ],
+    storage: "Keep refrigerated in breathable packaging and use while caps are firm.",
+    pairsWith: ["garlic", "black pepper", "soy sauce", "rosemary", "grains", "red miso"]
   },
   {
     code: "PP",
     name: "Pioppino",
     slug: "pioppino",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
     overview:
-      "Pioppino is tracked as a future specialty fresh mushroom with small caps and slender stems. It belongs in chef, pasta, risotto, and brothy dish education once farm-specific harvest notes are ready.",
-    flavor: "Savory, nutty, and lightly peppery notes are typical; farm-specific notes are pending.",
-    texture: "Small caps and stems that hold shape well in sautés.",
+      "Pioppino is a specialty fresh mushroom with small brown caps and slender crisp stems. It rotates through the harvest for chefs and home cooks who love it in pasta, risotto, and brothy dishes.",
+    flavor: "Savory, nutty, and lightly peppery.",
+    texture: "Small caps and firm stems that hold their shape in sautés.",
     cookingTips: [
       "Cook whole or in small clusters.",
       "Use in pasta, risotto, and brothy dishes.",
       "Brown lightly before adding liquid."
     ],
-    storage: "Keep refrigerated and cook promptly once fresh harvests are available.",
+    storage: "Keep refrigerated and cook promptly while clusters are firm.",
     pairsWith: ["risotto", "parsley", "shallot", "broth", "pasta", "lemon water"]
-  },
-  {
-    code: "CNT",
-    name: "Chestnut",
-    slug: "chestnut",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
-    overview:
-      "Chestnut mushrooms are included in the master catalog as a future fresh specialty crop with strong breakfast, toast, soup, and chef-menu potential.",
-    flavor: "Nutty, savory, and earthy after browning.",
-    texture: "Firm caps with a pleasant bite.",
-    cookingTips: [
-      "Trim the base and cook clusters in a wide pan.",
-      "Use in omelets, toast, soups, and roasted vegetable dishes.",
-      "Let moisture cook off before seasoning heavily."
-    ],
-    storage: "Keep refrigerated in breathable packaging once harvested.",
-    pairsWith: ["eggs", "toast", "thyme", "cream", "onions", "coffee or black tea"]
-  },
-  {
-    code: "STK",
-    name: "Shiitake",
-    slug: "shiitake",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
-    overview:
-      "Shiitake is tracked as a future culinary crop for customers who want a deeply savory mushroom for broths, noodles, rice, and vegetable dishes.",
-    flavor: "Rich, savory, and brothy when cooked.",
-    texture: "Tender caps with firmer stems that may be reserved for stock.",
-    cookingTips: [
-      "Remove tough stems before quick cooking.",
-      "Use caps in stir-fries, soups, rice dishes, and noodle bowls.",
-      "Save clean stems for broth."
-    ],
-    storage: "Keep refrigerated in breathable packaging once harvests are available.",
-    pairsWith: ["soy sauce", "ginger", "rice", "noodles", "broth", "green tea"]
   },
   {
     code: "MTK",
     name: "Maitake",
     slug: "maitake",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
     overview:
-      "Maitake is a frilled specialty mushroom tracked for future culinary availability and careful functional-mushroom review if any non-culinary product language is added later.",
+      "Maitake, also called hen-of-the-woods, is a frilled specialty mushroom that rotates through the harvest. Torn into petals and roasted hard, it becomes deeply savory with crisp edges.",
     flavor: "Deeply savory and aromatic after roasting or searing.",
     texture: "Frilly edges that crisp well with tender inner pieces.",
     cookingTips: [
       "Tear into petals and roast or sear hard.",
-      "Use enough space in the pan for edges to crisp.",
-      "Finish with herbs, lemon, or a small amount of butter."
+      "Give the pan enough space for the edges to crisp.",
+      "Finish with herbs, lemon, or a little butter."
     ],
-    storage: "Keep refrigerated in breathable packaging once harvests are available.",
+    storage: "Keep refrigerated in breathable packaging and use while the cluster is firm.",
     pairsWith: ["rosemary", "butter", "lemon", "potatoes", "beans", "sparkling apple cider"],
     functionalNote:
-      "Maitake can be discussed as a culinary specialty here. Any functional mushroom positioning requires legal/business review and must avoid disease-treatment claims.",
+      "Maitake is a popular functional mushroom that has been studied for its culinary compounds. The farm offers it here as a fresh cooking mushroom and keeps any functional language cautious and educational.",
+    requiresLegalReview: true
+  },
+  {
+    code: "BCH",
+    name: "Beech",
+    slug: "beech",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
+    overview:
+      "Beech mushrooms (brown and white) grow in tidy clusters of small, button-topped caps. They rotate through the harvest and are prized for a firm bite and a nutty flavor that develops with thorough cooking.",
+    flavor: "Nutty and savory once fully cooked; bitter if undercooked, so cook them through.",
+    texture: "Small firm caps with a crisp-tender, slightly crunchy bite.",
+    cookingTips: [
+      "Separate clusters and cook fully to develop the nutty flavor.",
+      "Sauté or roast until lightly browned.",
+      "Add to stir-fries, soups, and noodle bowls."
+    ],
+    storage: "Keep refrigerated in breathable packaging and use while caps are firm.",
+    pairsWith: ["butter", "garlic", "soy sauce", "noodles", "spinach", "green tea"]
+  },
+  {
+    code: "NMK",
+    name: "Nameko",
+    slug: "nameko",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
+    overview:
+      "Nameko is a small amber-capped mushroom with a signature glossy sheen. It rotates through the harvest and is a classic in miso soup, hot pots, and brothy noodle dishes, where its natural body enriches the broth.",
+    flavor: "Mild, earthy, and gently savory.",
+    texture: "Small caps with a slightly gelatinous, silky surface that thickens broth.",
+    cookingTips: [
+      "Add to miso soup, hot pot, and brothy noodle dishes.",
+      "Rinse gently and cook briefly to keep the silky texture.",
+      "Use as a finishing mushroom in soups and donburi."
+    ],
+    storage: "Keep refrigerated and use quickly while the caps are glossy and firm.",
+    pairsWith: ["miso", "dashi", "tofu", "green onion", "soba", "green tea"]
+  },
+  {
+    code: "GEN",
+    name: "Golden Enoki",
+    slug: "golden-enoki",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
+    overview:
+      "Golden enoki are warm-toned clusters of slender, long-stemmed mushrooms. A rotating specialty crop, they bring a gentle crunch and mild flavor to broths, noodle bowls, and quick sautés.",
+    flavor: "Mild, clean, and lightly savory with a touch of sweetness.",
+    texture: "Thin stems with a delicate snap when fresh.",
+    cookingTips: [
+      "Trim the cluster base and separate the strands.",
+      "Add near the end of broths and noodle bowls.",
+      "Sauté quickly so they keep their gentle crunch."
+    ],
+    storage: "Keep refrigerated and use while the strands are firm and crisp.",
+    pairsWith: ["broth", "noodles", "soy sauce", "green onion", "miso", "green tea"]
+  },
+  {
+    code: "WEN",
+    name: "White Enoki",
+    slug: "white-enoki",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
+    overview:
+      "White enoki are the familiar pale, delicate clusters of long thin mushrooms. A rotating specialty crop, they are gentle and quick-cooking, perfect for broths, hot pots, and light sautés.",
+    flavor: "Mild, clean, and lightly savory.",
+    texture: "Thin stems with a delicate snap when fresh.",
+    cookingTips: [
+      "Trim the base and pull the strands apart.",
+      "Add to broths and hot pots near the end of cooking.",
+      "Avoid overcooking delicate clusters."
+    ],
+    storage: "Keep refrigerated and use while the strands are firm and crisp.",
+    pairsWith: ["broth", "noodles", "soy sauce", "green onion", "miso", "green tea"]
+  },
+  {
+    code: "CDY",
+    name: "Cordyceps",
+    slug: "cordyceps",
+    catalogStatus: "active",
+    availabilityState: "seasonal",
+    availabilityTier: "returning",
+    overview:
+      "Cultivated cordyceps (Cordyceps militaris) grow as vivid orange clusters. A rotating specialty crop, they bring bright color and a savory, faintly sweet note to broths, teas, and rice dishes.",
+    flavor: "Savory and mildly sweet with an earthy finish.",
+    texture: "Slender firm fingers that soften in liquid.",
+    cookingTips: [
+      "Steep into broths, stocks, and teas for color and savor.",
+      "Add to rice and grain dishes near the end of cooking.",
+      "Use small amounts as a finishing accent."
+    ],
+    storage: "Keep refrigerated and use promptly, or dry for longer storage.",
+    pairsWith: ["broth", "rice", "ginger", "chicken or vegetable stock", "honey", "tea"],
+    functionalNote:
+      "Cordyceps is a popular functional mushroom that has been studied for its compounds. The farm offers it here as a culinary specialty and keeps any functional language cautious and educational.",
+    requiresLegalReview: true
+  },
+  // --- Wholesale only -------------------------------------------------------
+  {
+    code: "GO",
+    name: "Golden Oyster",
+    slug: "golden-oyster",
+    catalogStatus: "active",
+    availabilityState: "wholesale-only",
+    availabilityTier: "wholesale-only",
+    overview:
+      "Golden oysters bring bright color and a delicate, nutty flavor to fast-cooking dishes. The farm supplies golden oysters exclusively to professional kitchens and does not sell them to retail customers.",
+    flavor: "Light, nutty, and gently savory.",
+    texture: "Delicate caps that are best cooked quickly.",
+    cookingTips: [
+      "Use medium-high heat and avoid overcrowding the pan.",
+      "Add near the end of soups and stir-fries.",
+      "Pair with simple aromatics so the mushroom stays bright."
+    ],
+    storage: "Keep cold and cook quickly; the delicate caps are best within a few days.",
+    pairsWith: ["ginger", "green onion", "rice", "eggs", "white beans", "miso", "lemon water"],
+    functionalNote:
+      "Stewardship note: because Pleurotus citrinopileatus can naturalize and is being watched as a potential invasive species in parts of North America, the farm supplies golden oysters only to professional kitchens that handle them carefully. They are kept out of retail for that reason. Restaurants can inquire for current availability."
+  },
+  // --- Functional-future (education only; display pieces) -------------------
+  {
+    code: "RSH",
+    name: "Reishi",
+    slug: "reishi",
+    catalogStatus: "research",
+    availabilityState: "coming-soon",
+    availabilityTier: "functional-coming-later",
+    overview:
+      "Reishi is a woody, fan-shaped mushroom the farm grows for future functional products. It is not a fresh cooking mushroom; for now it appears as a display piece at the farm's market tables while product plans and review are completed.",
+    flavor: "Bitter and woody; traditionally simmered into teas and broths rather than eaten as a vegetable.",
+    texture: "Hard and woody; not a tender culinary mushroom.",
+    cookingTips: [
+      "Reishi is not sold as a fresh cooking product today.",
+      "Traditional preparations simmer dried slices into teas or broths.",
+      "Any functional preparation waits on owner-approved, reviewed product copy."
+    ],
+    storage: "As a future dried/functional product; fresh culinary storage does not apply.",
+    pairsWith: ["future functional product", "educational content", "owner-approved labeling"],
+    functionalNote:
+      "Reishi is grown for future functional products and has been studied for its compounds. The farm shares cautious, educational information only and makes no health claims; functional copy and labeling require legal/business review before any product launches.",
     requiresLegalReview: true
   },
   {
@@ -259,80 +368,21 @@ export const speciesPages: SpeciesPage[] = [
     slug: "turkey-tail",
     catalogStatus: "research",
     availabilityState: "coming-soon",
+    availabilityTier: "functional-coming-later",
     overview:
-      "Turkey tail is tracked for possible future functional or educational content. It is not currently an ordinary checkout product, and any customer-facing benefits language should be reviewed before publication.",
-    flavor: "Product format and tasting notes are pending.",
-    texture: "Typically not presented as a fresh cooking mushroom for customers.",
+      "Turkey tail is a colorful banded bracket mushroom the farm grows for future functional products. It is not a fresh cooking mushroom; for now it appears as a display piece at the farm's market tables while product plans and review are completed.",
+    flavor: "Woody and astringent; traditionally simmered into teas rather than eaten as a vegetable.",
+    texture: "Thin, leathery, and woody; not a tender culinary mushroom.",
     cookingTips: [
-      "Do not treat this as a ready-to-cook fresh product until the farm defines a final format.",
-      "Any functional copy requires legal/business review.",
-      "Use cautious educational language only."
+      "Turkey tail is not sold as a fresh cooking product today.",
+      "Traditional preparations simmer it into teas or extracts.",
+      "Any functional preparation waits on owner-approved, reviewed product copy."
     ],
-    storage: "Storage guidance depends on the future product format.",
-    pairsWith: ["educational content", "future product review", "owner-approved labeling"],
+    storage: "As a future dried/functional product; fresh culinary storage does not apply.",
+    pairsWith: ["future functional product", "educational content", "owner-approved labeling"],
     functionalNote:
-      "Functional mushroom copy for turkey tail requires legal/business review and must avoid disease-treatment claims.",
+      "Turkey tail is grown for future functional products and has been studied for its compounds. The farm shares cautious, educational information only and makes no health claims; functional copy and labeling require legal/business review before any product launches.",
     requiresLegalReview: true
-  },
-  {
-    code: "RSH",
-    name: "Reishi",
-    slug: "reishi",
-    catalogStatus: "research",
-    availabilityState: "coming-soon",
-    overview:
-      "Reishi is tracked for possible future functional mushroom education or product development, not current checkout. It should remain informational until the farm approves a product format and legal/business review.",
-    flavor: "Bitter and woody notes are typical; final product format is pending.",
-    texture: "Woody; not positioned here as a fresh culinary mushroom.",
-    cookingTips: [
-      "Do not list as a fresh cooking product without a final owner-approved format.",
-      "Keep functional copy cautious and reviewed.",
-      "Avoid disease-treatment or prevention language."
-    ],
-    storage: "Storage guidance depends on the future product format.",
-    pairsWith: ["future product review", "educational content", "owner-approved labeling"],
-    functionalNote:
-      "Functional mushroom copy for reishi requires legal/business review and must avoid disease-treatment claims.",
-    requiresLegalReview: true
-  },
-  {
-    code: "CDY",
-    name: "Cordyceps",
-    slug: "cordyceps",
-    catalogStatus: "research",
-    availabilityState: "coming-soon",
-    overview:
-      "Cordyceps is tracked for possible future functional mushroom education or product development. It is a research/planning catalog item until the farm approves a product format, sourcing, labeling, and launch plan.",
-    flavor: "Final product format and tasting notes are pending.",
-    texture: "Final product format is pending.",
-    cookingTips: [
-      "Do not make this cartable until a final product format is approved.",
-      "Use cautious educational copy only.",
-      "Any structure/function language requires legal/business review."
-    ],
-    storage: "Storage guidance depends on the future product format.",
-    pairsWith: ["future product review", "educational content", "owner-approved labeling"],
-    functionalNote:
-      "Functional mushroom copy for cordyceps requires legal/business review and must avoid disease-treatment claims.",
-    requiresLegalReview: true
-  },
-  {
-    code: "ENK",
-    name: "Enoki",
-    slug: "enoki",
-    catalogStatus: "planned",
-    availabilityState: "coming-soon",
-    overview:
-      "Enoki is tracked as a future delicate culinary mushroom for broths, noodles, and gentle cooking. It is not currently available for checkout and should remain notify-me only until production and food-safety handling notes are finalized.",
-    flavor: "Mild, clean, and lightly savory.",
-    texture: "Thin stems with a delicate snap when handled fresh.",
-    cookingTips: [
-      "Use gently in broths, noodle bowls, and quick sautés.",
-      "Avoid overcooking delicate clusters.",
-      "Confirm final food-safety and packaging guidance before launch."
-    ],
-    storage: "Keep refrigerated and follow final farm handling notes once available.",
-    pairsWith: ["broth", "noodles", "soy sauce", "green onion", "miso", "green tea"]
   }
 ];
 

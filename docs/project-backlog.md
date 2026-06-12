@@ -30,6 +30,50 @@ document current as phases are completed, split, or deferred.
   critical migration dependency. Owner pricing/packaging confirmation and the
   migration sequence proposal are in the takeover report.
 
+## Section 7 implementation (2026-06-12): staging hygiene, catalog, informational mode
+
+Owner-approved Section 7 scope, implemented across two PRs. Production, DNS,
+GoDaddy, and live payments were not touched.
+
+- **Staging hygiene (PR #17, merged, deployed):** nginx serves a disallow-all
+  `robots.txt` + `X-Robots-Tag: noindex`; conservative `limit_req` rate limits;
+  automated daily `pg_dump` with 14-day rotation (`deploy/scripts/staging-pg-backup.sh`,
+  root cron 03:17 UTC) with a verified restore drill (137 tables, exact row-count
+  match — see `docs/deployment/postgresql-backups.md`); 60 pending apt updates
+  applied and the droplet rebooted with owner approval (restart policy validated).
+  Off-droplet backup destination is still an open owner decision (local pull vs DO
+  Spaces; both documented).
+- **Markets corrected:** the farm sells at the Lexington Farmers Market (Wednesday
+  mornings) and the Staunton Farmers Market (Saturday mornings). Natural Bridge was
+  removed everywhere, including the seeded Medusa pickup/fulfillment options
+  (`packages/shared/src/pickup.ts`).
+- **Catalog restructure (D15/D16):** the species lineup is the owner-approved 18
+  with five availability tiers (`year-round`, `in-rotation-now`, `returning`,
+  `wholesale-only`, `functional-coming-later`) surfaced as badges and grouped
+  sections. King Blue and Elm Oyster retired; Enoki split into Golden/White Enoki;
+  Black King Oyster, Beech, and Nameko added. Pink + White Oyster are flagged
+  in-rotation-now; the other rotating species default to returning. Golden Oyster is
+  wholesale-only with an invasive-species stewardship note. Fresh products are $7 /
+  4 oz; salt $7; dried $7; the lion's mane supplement corrected to $15 / 30-count
+  tin (+ $45 / 100-count bag) as education + notify-me only. Redirect map at
+  `docs/migration/redirect-map.md`; legacy `/mushrooms/{king-blue,elm-oyster,enoki}`
+  301 in `next.config.mjs`.
+- **Informational mode (launch path):** `NEXT_PUBLIC_INFORMATIONAL_MODE` renders the
+  full catalog + availability tiers + notify-me while disabling every cart/checkout
+  path site-wide (commerce code intact behind the flag). Enabled on staging. This is
+  the intended initial public-launch posture; online checkout returns in a later
+  phase by flipping the flag off (after Stripe/email/policy/tax work lands).
+- **Photography slots:** manifest-driven branded placeholders
+  (`apps/storefront/lib/image-manifest.ts` + `components/branded-image.tsx`) so real
+  photos drop in without code changes; shoot checklist at
+  `docs/content/photo-shot-list.md`.
+
+Still unconfirmed / deferred: 8-oz fresh pricing (not invented — only 4 oz / $7 is
+modeled online); final mushroom-salt product identity vs. the live "Umami Garlic
+Salt"; whether Chestnut / King Trumpet / Black King should become purchasable
+`/shop` products; recipe testing and photography; supplement/legal review before any
+online supplement sale.
+
 ## Phase 1: Native shipping rules / fulfillment hardening
 
 - Goal: Move as much fresh-product shipping protection as practical into Medusa

@@ -2,6 +2,8 @@ import { Menu, ShoppingBasket } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { informationalModeEnabled } from "../lib/site-mode";
+
 const navItems = [
   { href: "/shop", label: "Shop" },
   { href: "/fresh-mushrooms", label: "Fresh" },
@@ -12,6 +14,8 @@ const navItems = [
 ];
 
 export function SiteHeader() {
+  const informational = informationalModeEnabled();
+
   return (
     <header className="sticky top-0 z-40 border-b border-brand-mahogany/15 bg-brand-cream/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
@@ -38,13 +42,19 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/cart"
-            className="mrmf-button-primary h-11 px-4"
-          >
-            <ShoppingBasket className="h-4 w-4" aria-hidden="true" />
-            Cart
-          </Link>
+          {informational ? (
+            <Link href="/markets-pickup" className="mrmf-button-primary h-11 px-4">
+              Visit us
+            </Link>
+          ) : (
+            <Link
+              href="/cart"
+              className="mrmf-button-primary h-11 px-4"
+            >
+              <ShoppingBasket className="h-4 w-4" aria-hidden="true" />
+              Cart
+            </Link>
+          )}
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center border border-brand-mahogany/30 bg-white text-brand-mahogany lg:hidden"

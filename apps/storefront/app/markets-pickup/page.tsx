@@ -13,8 +13,10 @@ export default function MarketsPickupPage() {
       >
         <p>
           Fresh mushrooms should reach customers quickly, cold, and with clear expectations.
-          Pickup windows, market dates, and delivery routes will be finalized before launch,
-          while shelf-stable shipping remains separate.
+          You can find the farm at the <strong>Lexington Farmers Market on Wednesday mornings</strong>{" "}
+          and the <strong>Staunton Farmers Market on Saturday mornings</strong>, plus farm pickup and
+          local delivery. Exact stall locations and seasonal dates are confirmed each season, while
+          shelf-stable shipping remains separate.
         </p>
       </PageHero>
       <section className="mrmf-shell grid gap-8 py-12 lg:grid-cols-[0.9fr_1.1fr]">

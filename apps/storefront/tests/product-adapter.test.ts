@@ -90,7 +90,12 @@ describe("storefront product adapter", () => {
     expect(catalog.source).toBe("shared-seed");
     expect(catalog.mode).toBe("medusa-hybrid");
     expect(catalog.error).toBe("Medusa offline");
-    expect(catalog.products).toHaveLength(10);
+    // 10 seeded products minus golden oyster, which is now wholesale-only and
+    // hidden from the retail shop grid (D16).
+    expect(catalog.products).toHaveLength(9);
+    expect(catalog.products.some((product) => product.slug === "golden-oyster-mushrooms")).toBe(
+      false
+    );
   });
 
   it("prefers a server-only Store API URL for Docker builds", async () => {

@@ -1,6 +1,7 @@
 import { loadEnv } from "@medusajs/framework/utils";
 import {
   filterSafeCommerceShippingOptions,
+  isInformationalMode,
   medusaProductToCommerceProduct,
   type CommerceCartLineInput,
   type MedusaProductLike
@@ -93,6 +94,31 @@ async function storeRequest<TResponse>(
 
 async function runCartSmoke() {
   const baseUrl = getStoreApiBaseUrl();
+
+  if (
+    isInformationalMode({
+      NEXT_PUBLIC_INFORMATIONAL_MODE: process.env.NEXT_PUBLIC_INFORMATIONAL_MODE,
+      INFORMATIONAL_MODE: process.env.INFORMATIONAL_MODE
+    })
+  ) {
+    // Informational mode disables cart/checkout site-wide, so there is no
+    // Store API cart to exercise. Report the mode and pass rather than fail.
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          informationalMode: true,
+          baseUrl,
+          message:
+            "Informational mode is enabled: cart and checkout are disabled site-wide, so the Store API cart bridge is intentionally not exercised."
+        },
+        null,
+        2
+      )
+    );
+    return;
+  }
+
   const publishableKey = requireValue(
     process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
     "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is required for Store API cart smoke."

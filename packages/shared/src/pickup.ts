@@ -25,33 +25,33 @@ export const pickupLocations: PickupLocation[] = [
     slug: "lexington-farmers-market-pickup",
     fulfillmentType: "farmers-market-pickup",
     description:
-      "Preorder for pickup at the Lexington farmers market when the farm is scheduled to attend.",
-    addressNote: "Final market stall location and seasonal schedule require owner confirmation.",
+      "Preorder for pickup at the Lexington Farmers Market on Wednesday mornings when the farm is at the market.",
+    addressNote: "Exact stall location and seasonal market dates are confirmed each season.",
     requiresFinalConfirmation: true,
     windows: [
       {
-        label: "Provisional Lexington market pickup",
-        weekday: "Saturday",
+        label: "Lexington Farmers Market (Wednesday morning)",
+        weekday: "Wednesday",
         startTime: "08:00",
         endTime: "12:00",
-        cutoff: "Friday at noon",
+        cutoff: "Tuesday at noon",
         requiresConfirmation: true
       }
     ]
   },
   {
-    name: "Natural Bridge local market pickup",
-    slug: "natural-bridge-local-market-pickup",
+    name: "Staunton Farmers Market pickup",
+    slug: "staunton-farmers-market-pickup",
     fulfillmentType: "farmers-market-pickup",
     description:
-      "A provisional Natural Bridge area pickup option for future local market or route-based pickup.",
-    addressNote: "Exact pickup point, market name, and dates require owner confirmation.",
+      "Preorder for pickup at the Staunton Farmers Market on Saturday mornings when the farm is at the market.",
+    addressNote: "Exact stall location and seasonal market dates are confirmed each season.",
     requiresFinalConfirmation: true,
     windows: [
       {
-        label: "Provisional Natural Bridge area pickup",
-        weekday: "Sunday",
-        startTime: "10:00",
+        label: "Staunton Farmers Market (Saturday morning)",
+        weekday: "Saturday",
+        startTime: "07:00",
         endTime: "12:00",
         cutoff: "Friday at noon",
         requiresConfirmation: true

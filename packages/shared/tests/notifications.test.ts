@@ -116,10 +116,10 @@ describe("availability notification model", () => {
   });
 
   it("supports species and weekly availability notification CTAs", () => {
-    const enoki = getSpeciesBySlug("enoki");
+    const reishi = getSpeciesBySlug("reishi");
 
-    expect(enoki).toBeDefined();
-    expect(getSpeciesNotificationCta(enoki!)?.notificationType).toBe(
+    expect(reishi).toBeDefined();
+    expect(getSpeciesNotificationCta(reishi!)?.notificationType).toBe(
       "coming-soon-update"
     );
     expect(getWeeklyAvailabilityNotificationCta("/shop")).toMatchObject({

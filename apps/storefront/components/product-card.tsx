@@ -4,6 +4,7 @@ import {
 } from "@mrmf/shared";
 import Image from "next/image";
 import Link from "next/link";
+import { informationalModeEnabled } from "../lib/site-mode";
 import { AddToCartButton } from "./add-to-cart-button";
 
 function availabilityBadgeClass(status: CommerceProduct["inventoryStatus"]) {
@@ -24,6 +25,7 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
       ? `$${product.price.toFixed(2)} / ${product.unitSize}`
       : product.unitSize;
   const availability = getCommerceProductAvailability(product);
+  const informational = informationalModeEnabled();
 
   return (
     <article className="mrmf-card group flex h-full flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-lifted">
@@ -84,6 +86,13 @@ export function ProductCard({ product }: { product: CommerceProduct }) {
               className="mrmf-button-primary px-4"
             >
               Ask availability
+            </Link>
+          ) : informational ? (
+            <Link
+              href={`/shop/${product.slug}`}
+              className="mrmf-button-primary px-4"
+            >
+              View details
             </Link>
           ) : (
             <AddToCartButton

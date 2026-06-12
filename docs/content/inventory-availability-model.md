@@ -9,24 +9,33 @@ The master catalog is the long-lived record of mushrooms and products the farm
 grows, sells, may sell, or wants to educate customers about. A catalog item can
 exist without being cartable.
 
-Current species codes in the master mushroom catalog:
+Current species codes in the master mushroom catalog (18-species lineup approved
+by the owner via Decisions D15/D16 on 2026-06-11). Each species also carries an
+`availabilityTier`: `year-round`, `in-rotation-now`, `returning`,
+`wholesale-only`, or `functional-coming-later`.
 
-- `BO`: Blue Oyster
-- `GO`: Golden Oyster
-- `PO`: Pink Oyster
-- `WO`: White Oyster
-- `EO`: Elm Oyster
-- `KB`: King Blue
-- `KT`: King Trumpet
-- `LM`: Lion's Mane
-- `PP`: Pioppino
-- `CNT`: Chestnut
-- `STK`: Shiitake
-- `MTK`: Maitake
-- `TT`: Turkey Tail
-- `RSH`: Reishi
-- `CDY`: Cordyceps
-- `ENK`: Enoki
+- `BO`: Blue Oyster (year-round)
+- `LM`: Lion's Mane (year-round)
+- `STK`: Shiitake (year-round)
+- `CNT`: Chestnut (year-round)
+- `PO`: Pink Oyster (in rotation now)
+- `WO`: White Oyster (in rotation now)
+- `KT`: King Trumpet (returning)
+- `BKO`: Black King Oyster (returning)
+- `PP`: Pioppino (returning)
+- `MTK`: Maitake (returning)
+- `BCH`: Beech (returning)
+- `NMK`: Nameko (returning)
+- `GEN`: Golden Enoki (returning)
+- `WEN`: White Enoki (returning)
+- `CDY`: Cordyceps (returning)
+- `GO`: Golden Oyster (wholesale-only)
+- `RSH`: Reishi (functional — coming later)
+- `TT`: Turkey Tail (functional — coming later)
+
+Retired from the lineup: `EO` Elm Oyster and `KB` King Blue (distinct from Black
+King Oyster — not a rename). The former generic `ENK` Enoki split into Golden
+Enoki and White Enoki.
 
 Species placeholders use conservative culinary or educational copy. Functional
 mushroom species are flagged for legal/business review and must not make

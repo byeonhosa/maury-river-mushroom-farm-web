@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { createTestCheckoutRecord } from "../../../../lib/checkout-record-store";
 import { getProductsForCart } from "../../../../lib/products";
+import { informationalModeEnabled } from "../../../../lib/site-mode";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,16 @@ function getSiteUrl(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    if (informationalModeEnabled()) {
+      return NextResponse.json(
+        {
+          error:
+            "Online ordering is paused (informational mode). Checkout is disabled site-wide."
+        },
+        { status: 403 }
+      );
+    }
+
     const input = checkoutCompletionInputSchema.parse(await request.json());
     const checkoutMode = resolveCheckoutModeConfig(process.env);
 
