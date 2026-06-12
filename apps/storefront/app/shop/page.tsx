@@ -1,15 +1,21 @@
-import { getWeeklyAvailabilityNotificationCta, summarizeCommerceCart } from "@mrmf/shared";
+import {
+  getWeeklyAvailabilityNotificationCta,
+  informationalModeMessage,
+  summarizeCommerceCart,
+} from "@mrmf/shared";
 import { LocalFulfillmentCallout } from "../../components/local-fulfillment-callout";
 import { NotificationSignupForm } from "../../components/notification-signup-form";
 import { PageHero } from "../../components/page-hero";
 import { ProductGrid } from "../../components/product-grid";
 import { getProductCatalog } from "../../lib/products";
+import { informationalModeEnabled } from "../../lib/site-mode";
 
 export const dynamic = "force-dynamic";
 
 export default async function ShopPage() {
   const catalog = await getProductCatalog();
   const products = catalog.products;
+  const informational = informationalModeEnabled();
   const sampleProducts = ["fresh-lions-mane", "mushroom-salt"]
     .map((slug) => products.find((product) => product.slug === slug))
     .filter((product): product is (typeof products)[number] => Boolean(product));
@@ -27,6 +33,11 @@ export default async function ShopPage() {
         </p>
       </PageHero>
       <section className="mrmf-shell mrmf-section">
+        {informational ? (
+          <p className="mrmf-card mb-5 border-brand-burnt p-4 text-sm leading-7">
+            {informationalModeMessage}
+          </p>
+        ) : null}
         <LocalFulfillmentCallout />
         <p className="mrmf-card mt-5 p-4 text-sm leading-7">
           Use the product cards to see what is available now, what is seasonal,

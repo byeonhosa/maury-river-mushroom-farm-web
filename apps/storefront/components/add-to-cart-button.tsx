@@ -4,6 +4,7 @@ import { ShoppingBasket } from "lucide-react";
 import { useState } from "react";
 
 import { addCartItem, notifyCartUpdated } from "../lib/cart-storage";
+import { informationalModeEnabled } from "../lib/site-mode";
 
 export function AddToCartButton({
   productSlug,
@@ -17,7 +18,10 @@ export function AddToCartButton({
   className?: string;
 }) {
   const [label, setLabel] = useState("Add to cart");
-  const disabled = Boolean(disabledReason);
+  // Defense in depth: server components already omit this button in
+  // informational mode, but never allow an add even if one is rendered.
+  const informational = informationalModeEnabled();
+  const disabled = informational || Boolean(disabledReason);
 
   return (
     <button

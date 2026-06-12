@@ -24,7 +24,8 @@ describe("CartPage", () => {
       await screen.findByRole("heading", { name: "Fresh Lion's Mane" })
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Mushroom Salt" })).toBeInTheDocument();
-    expect(screen.getAllByText("$26.00")[0]).toBeInTheDocument();
+    // $7 fresh lion's mane + $7 mushroom salt
+    expect(screen.getAllByText("$14.00")[0]).toBeInTheDocument();
     expect(
       screen.getByText(
         "Mixed carts must separate local pickup or delivery items from shipped shelf-stable items before live checkout."

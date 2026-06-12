@@ -1,6 +1,7 @@
 import {
   getCommerceProductAvailability,
   getProductNotificationCta,
+  informationalModeMessage,
   recipes,
   speciesPages,
   SUPPLEMENT_DISCLAIMER,
@@ -11,6 +12,7 @@ import { notFound } from "next/navigation";
 import { AddToCartButton } from "../../../components/add-to-cart-button";
 import { NotificationSignupForm } from "../../../components/notification-signup-form";
 import { getProduct } from "../../../lib/products";
+import { informationalModeEnabled } from "../../../lib/site-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,7 @@ export default async function ProductDetailPage({
   }
 
   const availability = getCommerceProductAvailability(product);
+  const informational = informationalModeEnabled();
   const notificationCta = getProductNotificationCta(
     product,
     `/shop/${product.slug}`,
@@ -167,6 +170,12 @@ export default async function ProductDetailPage({
           </div>
         ) : null}
 
+        {informational ? (
+          <p className="mrmf-card mt-8 border-brand-burnt p-4 text-sm leading-7">
+            {informationalModeMessage}
+          </p>
+        ) : null}
+
         <div className="mt-8 flex flex-wrap gap-3">
           {availability.showWholesaleCta ? (
             <Link
@@ -182,7 +191,7 @@ export default async function ProductDetailPage({
             >
               Ask about availability
             </Link>
-          ) : (
+          ) : informational ? null : (
             <AddToCartButton
               productSlug={product.slug}
               productName={product.name}
@@ -192,12 +201,14 @@ export default async function ProductDetailPage({
               className="mrmf-button-primary"
             />
           )}
-          <Link
-            href="/cart"
-            className="mrmf-button-secondary"
-          >
-            View cart
-          </Link>
+          {informational ? null : (
+            <Link
+              href="/cart"
+              className="mrmf-button-secondary"
+            >
+              View cart
+            </Link>
+          )}
           <Link
             href="/contact"
             className="mrmf-button-secondary"

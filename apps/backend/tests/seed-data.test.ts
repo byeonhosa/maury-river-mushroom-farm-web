@@ -50,7 +50,7 @@ describe("backend seed data contract", () => {
     expect(medusaSeedShippingOptions.map((option) => option.key)).toEqual([
       "farm-pickup",
       "lexington-farmers-market-pickup",
-      "natural-bridge-local-market-pickup",
+      "staunton-farmers-market-pickup",
       "fresh-local-delivery",
       "fresh-local-preorder",
       "shelf-stable-parcel",

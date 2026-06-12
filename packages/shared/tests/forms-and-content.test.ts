@@ -58,23 +58,37 @@ describe("forms and required content", () => {
 
   it("keeps the full mushroom species catalog represented", () => {
     expect(speciesPages.map((species) => species.code).sort()).toEqual([
+      "BCH",
+      "BKO",
       "BO",
       "CDY",
       "CNT",
-      "ENK",
-      "EO",
+      "GEN",
       "GO",
-      "KB",
       "KT",
       "LM",
       "MTK",
+      "NMK",
       "PO",
       "PP",
       "RSH",
       "STK",
       "TT",
+      "WEN",
       "WO"
     ]);
+    // Every species carries one of the five availability tiers.
+    expect(
+      speciesPages.every((species) =>
+        [
+          "year-round",
+          "in-rotation-now",
+          "returning",
+          "wholesale-only",
+          "functional-coming-later"
+        ].includes(species.availabilityTier)
+      )
+    ).toBe(true);
     expect(
       speciesPages.every(
         (species) =>

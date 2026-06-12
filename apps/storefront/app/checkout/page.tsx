@@ -1,12 +1,20 @@
 import { resolveCheckoutModeConfig } from "@mrmf/shared";
+import { redirect } from "next/navigation";
 
 import { CheckoutClient } from "../../components/checkout-client";
 import { PageHero } from "../../components/page-hero";
 import { listProducts } from "../../lib/products";
+import { informationalModeEnabled } from "../../lib/site-mode";
 
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
+  if (informationalModeEnabled()) {
+    // Online ordering is paused; send checkout traffic to the cart page, which
+    // explains the informational-mode state gracefully.
+    redirect("/cart");
+  }
+
   const products = await listProducts();
   const checkoutMode = resolveCheckoutModeConfig(process.env);
 

@@ -44,6 +44,16 @@ export type InventoryStatus =
 
 export type AvailabilityState = InventoryStatus;
 
+// Customer-facing catalog tier for species. Distinct from AvailabilityState
+// (which drives cart/notify mechanics): a tier describes how the farm grows
+// and offers a species across the season, for badges and catalog grouping.
+export type AvailabilityTier =
+  | "year-round"
+  | "in-rotation-now"
+  | "returning"
+  | "wholesale-only"
+  | "functional-coming-later";
+
 export type PublicAvailabilityVisibility = "shop" | "catalog" | "hidden";
 
 export type VisibilityStatus = "published" | "draft" | "archived";
@@ -131,6 +141,7 @@ export interface SpeciesPage {
   slug: string;
   catalogStatus: "active" | "planned" | "research";
   availabilityState: AvailabilityState;
+  availabilityTier: AvailabilityTier;
   overview: string;
   flavor: string;
   texture: string;

@@ -54,8 +54,8 @@ export const products: Product[] = [
     category: "fresh-mushrooms",
     species: ["lion-s-mane"],
     productFormat: "fresh",
-    price: 14,
-    unitSize: "8 oz clamshell",
+    price: 7,
+    unitSize: "4 oz (¼ lb)",
     shortDescription:
       "Tender, snow-white lion's mane for seared steaks, pull-apart patties, and lemony skillet dinners.",
     longDescription:
@@ -112,8 +112,8 @@ export const products: Product[] = [
     category: "fresh-mushrooms",
     species: ["blue-oyster"],
     productFormat: "fresh",
-    price: 10,
-    unitSize: "8 oz clamshell",
+    price: 7,
+    unitSize: "4 oz (¼ lb)",
     shortDescription:
       "Cool-toned oyster mushrooms that brown quickly for tacos, stir-fries, eggs, pasta, and rice bowls.",
     longDescription:
@@ -165,12 +165,12 @@ export const products: Product[] = [
     category: "fresh-mushrooms",
     species: ["golden-oyster"],
     productFormat: "fresh",
-    price: 11,
-    unitSize: "8 oz clamshell",
+    price: 7,
+    unitSize: "4 oz (¼ lb), wholesale",
     shortDescription:
-      "Bright golden oysters with delicate caps for soup, quick sautes, egg dishes, and gentle stir-fries.",
+      "Bright, nutty golden oysters supplied exclusively to professional kitchens. Not sold to retail customers.",
     longDescription:
-      "Golden oysters bring color and a gentle savory note to soups, egg dishes, stir-fries, and composed plates. Their tender caps cook quickly, so add them near the end of broths or give them a fast saute with simple aromatics.",
+      "Golden oysters bring color and a delicate, nutty flavor to soups, egg dishes, and quick sautés. The farm grows them for chefs and supplies them to professional kitchens only. Because Pleurotus citrinopileatus can naturalize and is being watched as a potential invasive species in parts of North America, the farm keeps golden oysters out of retail and works with kitchens that handle them carefully. Restaurants can inquire for current availability.",
     flavorProfile: "Light, nutty, and gently savory.",
     texture: "Delicate caps with crispable edges.",
     cookingMethods: ["saute", "stir-fry", "roast"],
@@ -193,13 +193,14 @@ export const products: Product[] = [
       "local-preorder",
     ],
     shippable: false,
-    inventoryStatus: "seasonal",
+    inventoryStatus: "wholesale-only",
     availability: {
-      cartable: true,
-      availableQuantity: 18,
-      stockNote: "Seasonal fixture quantity; confirm before launch.",
+      wholesaleOnly: true,
+      publicVisibility: "catalog",
+      availableQuantity: 0,
+      stockNote: "Wholesale availability is quote-based and changes with the weekly harvest.",
       publicMessage:
-        "Seasonal harvest item. Availability depends on current fruiting and may need pickup-window confirmation."
+        "Supplied to professional kitchens only. Restaurants can inquire for current golden oyster availability."
     },
     images: [
       {
@@ -220,8 +221,8 @@ export const products: Product[] = [
     category: "fresh-mushrooms",
     species: ["pink-oyster"],
     productFormat: "fresh",
-    price: 11,
-    unitSize: "8 oz clamshell",
+    price: 7,
+    unitSize: "4 oz (¼ lb)",
     shortDescription:
       "Vivid pink oysters for crisp-edged tacos, rice bowls, roasted vegetables, and short-season market cooking.",
     longDescription:
@@ -275,8 +276,8 @@ export const products: Product[] = [
     category: "fresh-mushrooms",
     species: ["white-oyster"],
     productFormat: "fresh",
-    price: 10,
-    unitSize: "8 oz clamshell",
+    price: 7,
+    unitSize: "4 oz (¼ lb)",
     shortDescription:
       "Clean, versatile oysters for roasting, sauteing, brothy noodles, creamy pasta, and everyday skillet meals.",
     longDescription:
@@ -399,12 +400,12 @@ export const products: Product[] = [
     category: "supplements",
     species: ["lion-s-mane"],
     productFormat: "capsule",
-    price: 28,
-    unitSize: "60 capsules",
+    price: 15,
+    unitSize: "30-count tin",
     shortDescription:
-      "A coming-soon lion's mane capsule concept for customers interested in a simple functional mushroom routine.",
+      "Lion's mane capsules, available at the farm's market tables. Online ordering is not open yet — sign up to hear when it is.",
     longDescription:
-      "A shelf-stable lion's mane capsule product scaffolded for careful labeling, conservative structure/function language, and legal/business review before launch. This listing is informational until packaging, supplement facts, disclaimers, and final approval are complete.",
+      "Lion's mane capsules offered as a simple functional mushroom option. They come as a $15 30-count tin and a $45 100-count bag at the farm's market tables. Online ordering is not available yet: this page is for education and notify-me only while packaging, supplement facts, disclaimers, and legal/business review are completed. Final claims language stays cautious and is reviewed before any online sale.",
     flavorProfile: "Neutral capsule format.",
     texture: "Capsule.",
     cookingMethods: [],
@@ -422,9 +423,9 @@ export const products: Product[] = [
     availability: {
       availableQuantity: 0,
       notifyMeEnabled: true,
-      stockNote: "Packaging, labeling, and legal review must be completed before launch.",
+      stockNote: "Available now at the farm's market tables ($15 / 30-count tin, $45 / 100-count bag). Online ordering opens after labeling, policy, and legal review.",
       publicMessage:
-        "Coming soon after supplement labeling, policy language, and legal/business review are complete."
+        "Available at our market tables. Online ordering is not open yet — sign up to hear when lion's mane capsules can be ordered online."
     },
     images: [
       {
@@ -443,8 +444,8 @@ export const products: Product[] = [
     category: "salts-seasonings",
     species: ["blue-oyster", "white-oyster"],
     productFormat: "seasoning",
-    price: 12,
-    unitSize: "3 oz jar",
+    price: 7,
+    unitSize: "jar",
     shortDescription:
       "A coming-soon savory finishing salt for potatoes, eggs, popcorn, soups, grilled vegetables, and weeknight cooking.",
     longDescription:
@@ -488,8 +489,8 @@ export const products: Product[] = [
     category: "dried-mushrooms",
     species: ["blue-oyster", "white-oyster"],
     productFormat: "dried",
-    price: 16,
-    unitSize: "1.5 oz bag",
+    price: 7,
+    unitSize: "bag",
     shortDescription:
       "Coming-soon dried oyster mushrooms for broths, sauces, risotto, ramen, beans, and pantry meals.",
     longDescription:

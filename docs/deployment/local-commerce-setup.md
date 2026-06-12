@@ -91,7 +91,7 @@ The seed also creates or reuses a publishable Store API key, links it to the sto
 
 ## Fulfillment Configuration
 
-The provisional pickup locations and windows are maintained in `packages/shared/src/pickup.ts`. Update that file when the owner confirms final farm pickup hours, Lexington Farmers Market schedule, Natural Bridge/local market details, cutoff times, and local delivery rules.
+The pickup locations and windows are maintained in `packages/shared/src/pickup.ts`. The farm attends the Lexington Farmers Market (Wednesday mornings) and the Staunton Farmers Market (Saturday mornings); update that file when the owner confirms final farm pickup hours, exact market stall locations, seasonal dates, cutoff times, and local delivery rules.
 
 The Medusa seed turns those pickup locations into development shipping options in `apps/backend/src/scripts/medusa-seed-data.ts`. Parcel options are currently limited to:
 

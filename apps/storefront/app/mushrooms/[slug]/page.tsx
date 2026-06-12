@@ -1,4 +1,5 @@
 import {
+  SUPPLEMENT_DISCLAIMER,
   availabilityStateBehaviors,
   getSpeciesNotificationCta,
   getSpeciesBySlug,
@@ -7,25 +8,12 @@ import {
   shouldShowProductInShop,
   speciesPages,
 } from "@mrmf/shared";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BrandedImage } from "../../../components/branded-image";
 import { NotificationSignupForm } from "../../../components/notification-signup-form";
-
-const speciesImages: Partial<Record<string, { src: string; alt: string }>> = {
-  "lion-s-mane": {
-    src: "/images/products/lions-mane-mushrooms-studio-01.webp",
-    alt: "Fresh lion's mane mushroom cluster",
-  },
-  "pink-oyster": {
-    src: "/images/products/pink-oyster-mushrooms-01.webp",
-    alt: "Close view of pink oyster mushroom gills",
-  },
-  "white-oyster": {
-    src: "/images/products/white-oyster-mushrooms-01.webp",
-    alt: "White oyster mushroom cluster",
-  },
-};
+import { SpeciesTierBadge } from "../../../components/species-tier-badge";
+import { getSpeciesImage } from "../../../lib/image-manifest";
 
 export function generateStaticParams() {
   return speciesPages.map((species) => ({ slug: species.slug }));
@@ -43,7 +31,7 @@ export default async function SpeciesDetailPage({
     notFound();
   }
 
-  const speciesImage = speciesImages[species.slug];
+  const speciesImage = getSpeciesImage(species.slug);
   const availability = availabilityStateBehaviors[species.availabilityState];
   const notificationCta = getSpeciesNotificationCta(
     species,
@@ -66,6 +54,10 @@ export default async function SpeciesDetailPage({
       <h1 className="mt-3 font-heading text-5xl leading-tight">
         {species.name}
       </h1>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <SpeciesTierBadge tier={species.availabilityTier} />
+        <span className="mrmf-badge-mahogany">{availability.label}</span>
+      </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
         <div>
           <p className="text-lg leading-8">{species.overview}</p>
@@ -75,11 +67,16 @@ export default async function SpeciesDetailPage({
             </span>{" "}
             {availability.defaultMessage}
           </p>
-          {species.requiresLegalReview ? (
-            <p className="mrmf-card mt-6 border-brand-burnt p-4 font-subheading text-xs font-extrabold uppercase tracking-[0.12em] text-brand-mahogany">
-              Functional mushroom copy on this page requires legal/business
-              review.
-            </p>
+          {species.functionalNote ? (
+            <div className="mrmf-panel mt-6 p-4">
+              <p className="font-subheading text-xs font-extrabold uppercase tracking-[0.14em] text-brand-mahogany">
+                {species.requiresLegalReview ? "Functional note" : "Good to know"}
+              </p>
+              <p className="mt-2 text-sm leading-7">{species.functionalNote}</p>
+              {species.requiresLegalReview ? (
+                <p className="mt-3 text-xs italic leading-6">{SUPPLEMENT_DISCLAIMER}</p>
+              ) : null}
+            </div>
           ) : null}
           {notificationCta ? (
             <div className="mt-6">
@@ -87,17 +84,13 @@ export default async function SpeciesDetailPage({
             </div>
           ) : null}
         </div>
-        {speciesImage ? (
-          <div className="mrmf-card relative min-h-[300px] overflow-hidden">
-            <Image
-              src={speciesImage.src}
-              alt={speciesImage.alt}
-              fill
-              className="object-cover"
-              sizes="(min-width: 1024px) 35vw, 100vw"
-            />
-          </div>
-        ) : null}
+        <div className="mrmf-card relative min-h-[300px] overflow-hidden">
+          <BrandedImage
+            image={speciesImage}
+            label={species.name}
+            sizes="(min-width: 1024px) 35vw, 100vw"
+          />
+        </div>
       </div>
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
         <div className="mrmf-card p-5">
